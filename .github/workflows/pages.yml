@@ -16,24 +16,50 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-      - name: Verify app JavaScript
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate existing PWA
         run: |
           node --check app/app.js
           node --check app/advanced.js
           node scripts/smoke-test.cjs
-      - name: Generate installable app icons
-        run: python3 scripts/generate-icons.py
+      - name: Generate install icons
+        run: |
+          python3 scripts/generate-icons.py
+          python3 scripts/prepare-original-assets.py
+      - name: Build original Expo web application
+        working-directory: original/frontend
+        env:
+          CI: "1"
+          EXPO_PUBLIC_BACKEND_URL: ${{ vars.HABIT_HERO_API_URL }}
+        run: |
+          npm install --legacy-peer-deps --no-audit --no-fund
+          npx expo export --platform web --clear
+      - name: Assemble safe website artifact
+        run: |
+          mkdir -p publish/app publish/original-preview
+          cp index.html site.css .nojekyll publish/
+          cp -a app/. publish/app/
+          cp -a original/frontend/dist/. publish/original-preview/
+          cp publish/original-preview/index.html publish/original-preview/404.html
+          python3 scripts/add-original-pwa.py publish/original-preview
+          test -f publish/index.html
+          test -f publish/app/index.html
+          test -f publish/original-preview/index.html
       - name: Set up Pages
         uses: actions/configure-pages@v5
         with:
           enablement: true
-      - name: Upload website and PWA
+      - name: Upload both web apps
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: publish
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
