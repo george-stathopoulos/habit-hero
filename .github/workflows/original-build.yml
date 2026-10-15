@@ -1,0 +1,40 @@
+name: Verify original Expo web build
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "original/**"
+      - "scripts/prepare-original-assets.py"
+      - ".github/workflows/original-build.yml"
+permissions:
+  contents: read
+jobs:
+  expo-web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Recreate missing original images
+        run: python3 scripts/prepare-original-assets.py
+      - name: Install original app dependencies
+        working-directory: original/frontend
+        run: npm install --legacy-peer-deps --no-audit --no-fund
+      - name: Build real Habit Hero Expo web frontend
+        working-directory: original/frontend
+        env:
+          CI: "1"
+          EXPO_PUBLIC_BACKEND_URL: ${{ vars.HABIT_HERO_API_URL }}
+        run: npx expo export --platform web --clear
+      - name: Inspect generated site
+        run: |
+          test -f original/frontend/dist/index.html
+          find original/frontend/dist -maxdepth 2 -type f | head -40
+      - name: Store build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: habit-hero-original-web
+          path: original/frontend/dist/
