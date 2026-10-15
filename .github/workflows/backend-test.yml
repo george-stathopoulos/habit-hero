@@ -1,0 +1,63 @@
+name: Verify original Habit Hero backend
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "original/backend/**"
+      - ".github/workflows/backend-test.yml"
+permissions:
+  contents: read
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping:1})'"
+          --health-interval 10s --health-timeout 5s --health-retries 12
+    env:
+      MONGO_URL: mongodb://localhost:27017
+      DB_NAME: habit_hero_ci
+      BREVO_API_KEY: ""
+      SENDER_EMAIL: noreply@example.org
+      BASE_URL: http://localhost:8001
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install backend dependencies
+        working-directory: original/backend
+        run: pip install -r requirements.txt
+      - name: Check backend imports and routes
+        working-directory: original/backend
+        run: |
+          python -m py_compile server.py
+          python - <<'PY'
+          from server import app
+          routes=[r.path for r in app.routes]
+          print('FastAPI routes:',len(routes))
+          assert len(routes) > 50, 'Original routes missing'
+          PY
+      - name: Check backend starts with MongoDB
+        working-directory: original/backend
+        run: |
+          uvicorn server:app --host 127.0.0.1 --port 8001 > /tmp/habit-hero-backend.log 2>&1 &
+          python - <<'PY'
+          import json, time, urllib.request
+          for attempt in range(35):
+              try:
+                  response=urllib.request.urlopen('http://127.0.0.1:8001/openapi.json',timeout=3)
+                  payload=json.load(response)
+                  assert '/api/children' in payload['paths']
+                  print('OpenAPI available, total routes:',len(payload['paths']))
+                  break
+              except Exception as exc:
+                  if attempt==34: raise
+                  time.sleep(1)
+          PY
