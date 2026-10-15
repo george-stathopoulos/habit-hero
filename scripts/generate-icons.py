@@ -29,7 +29,7 @@ for n in (192,512):
                 rows.extend((255,224,117,255))
             else:
                 rows.extend((109,74,255,255))
-    png=b'\\x89PNG\\r\\n\\x1a\\n'
+    png=b'\x89PNG\r\n\x1a\n'
     png+=chunk(b'IHDR',struct.pack('!2I5B',n,n,8,6,0,0,0))
     png+=chunk(b'IDAT',zlib.compress(bytes(rows),9))
     png+=chunk(b'IEND',b'')
