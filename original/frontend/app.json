@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "Habit Hero",
+    "slug": "habit-hero",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "habit-hero",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.habit.hero.kids",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Χρειαζόμαστε πρόσβαση στην κάμερα για να βγάλετε φωτογραφία προφίλ.",
+        "NSPhotoLibraryUsageDescription": "Χρειαζόμαστε πρόσβαση στις φωτογραφίες σας για να επιλέξετε εικόνα προφίλ."
+      }
+    },
+    "android": {
+      "package": "com.habit.hero.kids",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#4A90E2"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Χρειαζόμαστε πρόσβαση στις φωτογραφίες σας για να επιλέξετε εικόνα προφίλ.",
+          "cameraPermission": "Χρειαζόμαστε πρόσβαση στην κάμερα για να βγάλετε φωτογραφία προφίλ."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
