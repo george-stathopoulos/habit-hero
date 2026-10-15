@@ -1,0 +1,64 @@
+name: Build and deploy Cloudflare Habit Hero
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "cloudflare/**"
+      - "scripts/test-cloudflare.mjs"
+      - "scripts/add-original-pwa.py"
+      - "scripts/repair-original-web.cjs"
+      - "original/frontend/**"
+      - ".github/workflows/cloudflare.yml"
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test Cloudflare routing and fail-closed API
+        run: |
+          node --check cloudflare/worker.mjs
+          node scripts/test-cloudflare.mjs
+          python3 scripts/generate-icons.py
+          python3 scripts/prepare-original-assets.py
+      - name: Build original Expo app for Cloudflare
+        working-directory: original/frontend
+        env:
+          CI: "1"
+          EXPO_PUBLIC_BACKEND_URL: ""
+        run: |
+          npm install --legacy-peer-deps --no-audit --no-fund
+          npx expo export --platform web --clear
+          node ../../scripts/repair-original-web.cjs
+          node --check dist/_expo/static/js/web/entry-*.js
+      - name: Stage Cloudflare static assets
+        run: |
+          mkdir -p cloudflare-dist/habit-hero/app cloudflare-dist/habit-hero/original-preview
+          cp index.html site.css cloudflare-dist/habit-hero/
+          cp -a app/. cloudflare-dist/habit-hero/app/
+          cp -a original/frontend/dist/. cloudflare-dist/habit-hero/original-preview/
+          cp cloudflare-dist/habit-hero/original-preview/index.html cloudflare-dist/habit-hero/original-preview/404.html
+          python3 scripts/add-original-pwa.py cloudflare-dist/habit-hero/original-preview
+          test -f cloudflare-dist/habit-hero/index.html
+          test -f cloudflare-dist/habit-hero/original-preview/index.html
+      - name: Upload Cloudflare-ready artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: habit-hero-cloudflare
+          path: cloudflare-dist/
+      - name: Deploy using existing Cloudflare account
+        if: ${{ vars.HABIT_HERO_CLOUDFLARE_DEPLOY == 'true' }}
+        working-directory: cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "::error::Set repository secret CLOUDFLARE_API_TOKEN"; exit 1; }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "::error::Set repository variable CLOUDFLARE_ACCOUNT_ID"; exit 1; }
+          npx --yes wrangler@4 deploy --config wrangler.jsonc
