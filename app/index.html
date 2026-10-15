@@ -1,1 +1,25 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="theme-color" content="#6d4aff"><meta name="description" content="Habit Hero — make great habits an adventure."><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml"><title>Habit Hero</title><link rel="stylesheet" href="./style.css"></head><body><div id="app"></div><script src="./app.js" defer></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#6d4aff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Habit Hero">
+<meta name="description" content="Habit Hero — make great habits an adventure.">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<title>Habit Hero — Daily Quests</title>
+<link rel="stylesheet" href="./style.css?v=2">
+<style>#startup-error{display:none;max-width:620px;margin:32px auto;padding:24px;border:1px solid #f3bec0;background:#fff5f5;color:#7a2631;border-radius:18px;font:16px system-ui}#startup-error h2{color:#7a2631}</style>
+</head>
+<body>
+<div id="app"><main style="font:16px system-ui;text-align:center;padding:4rem">Opening Habit Hero…</main></div>
+<div id="startup-error" role="alert"><h2>Habit Hero couldn't start</h2><p>Please reload the page. If you're using an installed version, close and reopen it. If the problem continues, open the app in a browser and report the message below.</p><code id="error-detail"></code><p><button type="button" onclick="location.reload()">Reload app</button></p></div>
+<noscript>Habit Hero requires JavaScript. Please enable JavaScript in your browser.</noscript>
+<script>
+window.addEventListener('error',function(e){var b=document.getElementById('startup-error');if(b){b.style.display='block';document.getElementById('error-detail').textContent=e.message||'Application loading error';}});
+window.addEventListener('unhandledrejection',function(e){var b=document.getElementById('startup-error');if(b){b.style.display='block';document.getElementById('error-detail').textContent=String(e.reason||'Unexpected application error');}});
+</script>
+<script src="./app.js?v=2" defer></script>
+</body></html>
