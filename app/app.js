@@ -4,7 +4,7 @@ const avatars=['🦸','🦄','🚀','🐼','🦊','🐸','🐯','🌟'];
 const initial=()=>({profiles:[{id:'p1',name:'My Hero',avatar:'🦸'}],selected:'p1',habits:[{id:'h1',profile:'p1',name:'Brush my teeth',icon:'🪥',category:'Health',points:10},{id:'h2',profile:'p1',name:'Read for 15 minutes',icon:'📚',category:'Learning',points:15},{id:'h3',profile:'p1',name:'Tidy my room',icon:'🧹',category:'Home',points:10}],rewards:[{id:'r1',profile:'p1',name:'Choose a movie',icon:'🎬',cost:100},{id:'r2',profile:'p1',name:'Extra playtime',icon:'🎮',cost:150}],completions:[],redemptions:[]});
 function load(){try{const v=JSON.parse(localStorage.getItem(KEY));if(v&&Array.isArray(v.profiles)&&v.profiles.length&&Array.isArray(v.habits)&&Array.isArray(v.rewards)&&Array.isArray(v.completions)&&Array.isArray(v.redemptions))return v;}catch(e){}return initial()}
 let data=load(),tab='today',category='All',modal='',installEvent;
-const el=document.getElementById('app'),id=()=>Math.random().toString(36).slice(2),safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;':'&quot;',"'":'&#39;'}[c])),today=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
+const el=document.getElementById('app'),id=()=>Math.random().toString(36).slice(2),safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),today=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
 const save=()=>localStorage.setItem(KEY,JSON.stringify(data));
 const hero=()=>data.profiles.find(p=>p.id===data.selected)||data.profiles[0];
 const habits=()=>data.habits.filter(h=>h.profile===hero().id);
