@@ -1,5 +1,6 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const script=fs.readFileSync('app/app.js','utf8');
+assert.doesNotMatch(script,/\\b(?:function|const|let|class)\\s+top\\b/, 'Avoid declaring browser-reserved top global');
 const handlers={}, storage=new Map(), root={innerHTML:''};
 const document={
  getElementById:()=>root,
