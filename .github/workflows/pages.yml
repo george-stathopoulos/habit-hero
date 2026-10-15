@@ -19,6 +19,12 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+      - name: Verify app JavaScript
+        run: |
+          node --check app/app.js
+          node scripts/smoke-test.cjs
+      - name: Generate installable app icons
+        run: python3 scripts/generate-icons.py
       - name: Set up Pages
         uses: actions/configure-pages@v5
         with:
