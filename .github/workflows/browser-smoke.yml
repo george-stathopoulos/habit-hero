@@ -1,0 +1,57 @@
+name: Browser smoke test — Original Habit Hero
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Deploy Habit Hero to GitHub Pages"]
+    types: [completed]
+permissions:
+  contents: read
+jobs:
+  verify-original:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test dependencies
+        run: |
+          mkdir -p browser-tests
+          cd browser-tests
+          npm init -y >/dev/null
+          npm install --no-audit --no-fund playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Test original Expo app in Chromium
+        run: |
+          node <<'NODE'
+          const {chromium}=require('./browser-tests/node_modules/playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:390,height:844}});
+            const errors=[],consoleErrors=[];
+            page.on('pageerror',err=>errors.push(err.stack||err.message));
+            page.on('console',msg=>{if(msg.type()==='error')consoleErrors.push(msg.text())});
+            const url='https://george-stathopoulos.github.io/habit-hero/original-preview/';
+            const response=await page.goto(url,{waitUntil:'load',timeout:30000});
+            await page.waitForTimeout(5500);
+            const body=await page.locator('body').innerText();
+            console.log('HTTP status:',response.status());
+            console.log('Visible body:',body.slice(0,1600));
+            console.log('Page exceptions:',JSON.stringify(errors,null,2));
+            console.log('Console errors:',JSON.stringify(consoleErrors.slice(0,15),null,2));
+            await page.screenshot({path:'original-chromium.png',fullPage:true});
+            await browser.close();
+            if(response.status()!==200)throw Error('Original app returned HTTP '+response.status());
+            if(errors.length)throw Error('Original app JavaScript exceptions: '+errors.slice(0,2).join('; '));
+            if(body.trim().length<20)throw Error('Original app rendered a blank/near-blank screen');
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - name: Upload screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: original-habit-hero-browser
+          path: original-chromium.png
+          if-no-files-found: ignore
