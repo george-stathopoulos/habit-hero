@@ -28,7 +28,10 @@ jobs:
         env:
           CI: "1"
           EXPO_PUBLIC_BACKEND_URL: ${{ vars.HABIT_HERO_API_URL }}
-        run: npx expo export --platform web --clear
+        run: |
+          npx expo export --platform web --clear
+          node ../../scripts/repair-original-web.cjs
+          node --check dist/_expo/static/js/web/entry-*.js
       - name: Inspect generated site
         run: |
           test -f original/frontend/dist/index.html
