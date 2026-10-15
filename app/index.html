@@ -21,6 +21,6 @@
 window.addEventListener('error',function(e){var b=document.getElementById('startup-error');if(b){b.style.display='block';document.getElementById('error-detail').textContent=e.message||'Application loading error';}});
 window.addEventListener('unhandledrejection',function(e){var b=document.getElementById('startup-error');if(b){b.style.display='block';document.getElementById('error-detail').textContent=String(e.reason||'Unexpected application error');}});
 </script>
-<script src="./app.js?v=4"></script>
-<script src="./advanced.js?v=4" defer" defer></script>
+<script src="./app.js?v=4" defer></script>
+<script src="./advanced.js?v=4" defer></script>
 </body></html>
