@@ -32,6 +32,7 @@ progressPage=extendedProgress;
 function extendedDialog(){let base=originalDialog();if(modal==='habit'){base=base.replace('<div class="actions"><button type="button"', '<fieldset class="field"><legend>Repeat on (none selected means daily)</legend>'+dayLabels.map((x,i)=>'<label style="display:inline-block;margin:5px"><input type="checkbox" name="repeatDay" value="'+i+'"> '+x+'</label>').join('')+'</fieldset><div class="actions"><button type="button"')}return base}
 dialog=extendedDialog;
 function extendedRender(){
+ document.querySelectorAll('.modal-back[data-family-unlock]').forEach(el=>el.remove());
  if(!isParentMode()&&!['today','rewards','progress'].includes(tab))tab='today';
  if(tab==='family-settings'){const old=tab;tab='today';originalRender();tab=old;const main=document.querySelector('.main');if(main){const utility=main.querySelector('.app-utility')?.outerHTML||'';main.innerHTML=utility+familySettings()}}
  else originalRender();
@@ -52,7 +53,7 @@ function extendedRender(){
  if(!isParentMode()){
    document.querySelectorAll('[data-open],[data-delhabit],[data-delreward],[data-delprofile],[data-export],[data-import]').forEach(el=>el.remove());
  }
- if(parentUnlock)document.body.insertAdjacentHTML('beforeend',unlockDialog());
+ if(parentUnlock)document.body.insertAdjacentHTML('beforeend',unlockDialog().replace('class="modal-back"','class="modal-back" data-family-unlock="1"'));
 }
 render=extendedRender;
 document.addEventListener('click',e=>{
@@ -67,7 +68,6 @@ document.addEventListener('click',e=>{
    extendedSave();render();return
  }
  if(d.nav==='family-settings'){e.preventDefault();e.stopImmediatePropagation();tab='family-settings';render();return}
- if(d.famMode){return}
  if(d.famCancel){parentUnlock=false;render();return}
  if(d.famMode!==undefined){
   e.preventDefault();e.stopImmediatePropagation();
@@ -91,6 +91,6 @@ document.addEventListener('submit',e=>{
  const days=Array.from(e.target.querySelectorAll('input[name="repeatDay"]:checked')).map(el=>Number(el.value));
  const current=hero().id;
  queueMicrotask(()=>{const h=data.habits.filter(h=>h.profile===current).at(-1);if(h){h.days=days;extendedSave();render()}});
-});
+},true);
 document.addEventListener('change',e=>{if(e.target.id==='fam-approval'){data.settings.approval=e.target.checked;extendedSave();notify('Approval settings updated')}});
 render();
