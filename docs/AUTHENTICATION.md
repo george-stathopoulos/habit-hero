@@ -2,7 +2,7 @@
 
 **Selected approach:** social sign-in via standards-based OpenID Connect (OIDC), beginning with **Continue with Google** for parent accounts. Apple may be added later, with a separate provider configuration. This is not enterprise SAML SSO.
 
-**State:** architecture and setup instructions approved; login is **not yet live**. Do not activate the frontend login button or fake successful logins until OAuth callback, ID-token validation, and D1 identity/session flows pass security testing.
+**State (2026-10-16):** Google OIDC server routes and the original web welcome button are deployed. The live OIDC start redirect, PKCE/flow-cookie tests, D1 health probe and Expo web build pass. **A complete Google account callback and D1 session creation have not yet been tested with a real Google user.** Do not call the entire application production-ready; family feature endpoints remain unavailable.
 
 ## Google Cloud configuration (owner action required)
 
@@ -35,6 +35,6 @@ The Worker and D1 remain Cloudflare-native and designed for the free tier. Googl
 
 ## Work gate
 
-The credentials and Google Auth Platform setup are owner-controlled. Until they exist, all account-related API routes continue to return 503; the live PWA and D1 health endpoint remain available. Do not persist real family/child information before security tests pass.
+The Google Client ID and encrypted Client Secret were configured by the owner in Cloudflare. The Worker now exposes `/api/auth/google/start`, `/api/auth/google/callback`, `/api/auth/me` and `/api/auth/logout`. The GitHub Actions deployment verified that `/api/auth/google/start` returns HTTP 302 and the D1 connectivity route succeeds. The **next verification requires the owner to complete a real Google sign-in** and confirm the callback screen. Unimplemented family and child API routes continue to return HTTP 503; children and account operations must not be treated as functional yet. Do not persist real family/child information before security tests pass.
 
 References: https://developers.google.com/identity/openid-connect/openid-connect and https://developers.google.com/identity/protocols/oauth2/web-server
