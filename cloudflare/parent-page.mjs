@@ -12,6 +12,18 @@ export function parentPage() {
  input,select{width:100%;padding:12px;border:1px solid #d4ddea;border-radius:9px;font:inherit;margin:7px 0 15px}
  label{font-weight:600}ul{list-style:none;padding:0}li{padding:14px 0;border-bottom:1px solid #e9eef8}
  form{display:grid;gap:6px}.row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+ .snapshot-header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+ .eyebrow{color:#6a5ce3;font-size:12px;font-weight:850;letter-spacing:1px}
+ .snapshot-header h2{font-size:clamp(22px,4vw,30px);margin:8px 0}.snapshot-sparkle{font-size:52px}
+ .snapshot-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}
+ .snapshot-stats button{background:#f1efff;color:#453b9d;min-height:104px;padding:12px 7px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px}
+ .snapshot-stats button:nth-child(2){background:#e7f6fb;color:#137a9c}
+ .snapshot-stats button:nth-child(3){background:#fff2dc;color:#a35a1b}
+ .snapshot-stats strong{font-size:clamp(26px,5vw,38px);line-height:1}
+ .snapshot-stats span{font-size:12px;font-weight:750}
+ .next-step{background:#f5f3ff;padding:15px;border-radius:14px;font-weight:700}
+ #create:not(.expanded){display:none!important}
+ #create.expanded{display:block!important}
  .hero-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
  .hero-actions button{min-height:94px;border-radius:19px;font-size:16px;text-align:left;padding:16px;
   background:linear-gradient(135deg,#6155db,#8976f6)}
@@ -66,6 +78,15 @@ export function parentPage() {
  <section class="panel"><h2 id="greeting">Φόρτωση...</h2><p id="status" role="status" class="subtle">Έλεγχος σύνδεσης...</p>
  <div class="row"><a href="#approvalsPanel" id="pendingApprovalSummary">✅ Εγκρίσεις: —</a>
  <a href="#redemptionsPanel" id="pendingRedemptionSummary">🎁 Αιτήματα: —</a></div></section>
+ <section class="panel" data-tab="home" data-active="true" id="familySnapshot" hidden>
+ <div class="snapshot-header"><div><span class="eyebrow">🌞 ΣΗΜΕΡΑ ΣΤΟ HABIT HERO</span><h2>Η περιπέτεια της οικογένειας</h2><p class="subtle">Μικρές πράξεις, μεγάλες νίκες.</p></div><span class="snapshot-sparkle">✨</span></div>
+ <div class="snapshot-stats">
+  <button type="button" data-action-tab="home" data-action-section="family"><strong id="snapshotKids">—</strong><span>🦸 Ήρωες</span></button>
+  <button type="button" data-action-tab="habits" data-action-section="habitPanel"><strong id="snapshotHabits">—</strong><span>🎯 Αποστολές</span></button>
+  <button type="button" data-action-tab="approvals" data-action-section="approvalsPanel"><strong id="snapshotPending">—</strong><span>✅ Για έγκριση</span></button>
+ </div>
+ <p id="nextStep" class="next-step">Δώσε στους μικρούς ήρωες την επόμενη αποστολή τους! 🚀</p>
+ </section>
  <section class="panel" data-tab="home" data-active="true" id="homeActions" hidden>
   <h2>✨ Τι θέλεις να κάνεις σήμερα;</h2>
   <div class="hero-actions">
@@ -200,8 +221,13 @@ export function parentPage() {
   if(section)requestAnimationFrame(()=>document.getElementById(section)?.scrollIntoView({behavior:'smooth',block:'start'}));
   else window.scrollTo({top:0,behavior:'instant'});
  }
+ document.getElementById('familySnapshot').addEventListener('click',event=>{
+  const btn=event.target.closest('[data-action-tab]');
+  if(btn)openTab(btn.dataset.actionTab,btn.dataset.actionSection);
+ });
  document.getElementById('homeActions').addEventListener('click',event=>{
   const btn=event.target.closest('[data-action-tab]');if(!btn)return;
+  if(btn.dataset.actionSection==='create')document.getElementById('create').classList.add('expanded');
   openTab(btn.dataset.actionTab,btn.dataset.actionSection);
  });
  document.querySelector('.app-tabs').addEventListener('click',event=>{
@@ -238,6 +264,9 @@ export function parentPage() {
    status.textContent='Οικογένεια: '+data.family.name;
    document.getElementById('family').hidden=false;document.getElementById('create').hidden=false;
    document.getElementById('homeActions').hidden=false;
+   document.getElementById('familySnapshot').hidden=false;
+   document.getElementById('snapshotKids').textContent=data.children.length;
+   document.getElementById('nextStep').textContent=data.children.length?'Δημιούργησε μια νέα αποστολή ή έλεγξε τις προσπάθειες των παιδιών! 🌟':'Ξεκίνα δημιουργώντας το πρώτο προφίλ παιδιού! 🌈';
    document.getElementById('privacyPanel').hidden=false;
    document.getElementById('familySettingsPanel').hidden=false;
    document.getElementById('familyTimezone').value=data.family.timezone||'UTC';
