@@ -208,6 +208,25 @@ export function parentPage() {
    const btn=event.target.closest('[data-open-tab]');if(btn)openTab(btn.dataset.openTab);
  });
  openTab(tabMeta[location.hash.slice(1)]?location.hash.slice(1):'home');
+ const standaloneMode=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+ if(!standaloneMode&&/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){
+  const panel=document.createElement('aside');panel.id='installBanner';panel.setAttribute('role','note');
+  panel.style.cssText='background:#fff3d8;border:1px solid #f2d59b;border-radius:18px;padding:16px;margin:12px 0 20px;line-height:1.5;color:#403252';
+  const heading=document.createElement('strong');heading.textContent='📲 Άνοιξε το Habit Hero σαν εφαρμογή';
+  const info=document.createElement('p');
+  info.textContent=/iPhone|iPad|iPod/i.test(navigator.userAgent)?
+   'Άνοιξε τον σύνδεσμο στο Safari, πάτησε Κοινοποίηση → Προσθήκη στην Αρχική Οθόνη και μετά άνοιξε το νέο εικονίδιο.':
+   'Άνοιξε στο Chrome, πάτησε ⋮ → Εγκατάσταση εφαρμογής και μετά άνοιξε το εικονίδιο από την αρχική οθόνη.';
+  const install=document.createElement('button');install.type='button';install.textContent='Εγκατάσταση εφαρμογής';install.hidden=true;
+  let promptEvent=null;
+  window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();promptEvent=event;install.hidden=false});
+  install.addEventListener('click',async()=>{if(!promptEvent)return;promptEvent.prompt();await promptEvent.userChoice;promptEvent=null;install.hidden=true});
+  window.addEventListener('appinstalled',()=>panel.remove());
+  const dismiss=document.createElement('button');dismiss.type='button';dismiss.className='secondary';dismiss.textContent='Αργότερα';
+  dismiss.addEventListener('click',()=>panel.remove());
+  panel.append(heading,info,install,dismiss);
+  document.querySelector('main').prepend(panel);
+ }
  const status=document.getElementById('status'),greeting=document.getElementById('greeting');
  const list=document.getElementById('children'),empty=document.getElementById('empty');
  async function refresh() {
