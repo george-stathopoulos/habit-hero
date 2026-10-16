@@ -18,12 +18,34 @@ export function childPage(){
  nav.quick-nav a:focus-visible{outline:3px solid #f5a623}
  section{scroll-margin-top:80px}
  @media(max-width:600px){body{padding:10px}main{margin:10px auto}section{padding:19px}h1{font-size:27px}}
+ :root{--purple:#6658e8;--violet:#392f87}
+ body{background:linear-gradient(150deg,#f3eaff,#eef7ff 60%,#fff8eb);color:#242d52}
+ main{max-width:820px;padding-bottom:100px}
+ main>section:first-child{background:linear-gradient(125deg,#393082,#7764f5);color:white}
+ main>section:first-child p{color:#fff}
+ section{border-radius:26px;border:1px solid #eeebfd;box-shadow:0 12px 28px #232f6c13}
+ button{background:var(--purple);font-weight:750;border-radius:16px;min-height:45px}
+ button:active{transform:scale(.97)}
+ [data-tab]:not([data-active="true"]){display:none!important}
+ nav.quick-nav{display:none}
+ .child-tabs{position:fixed;bottom:0;left:0;right:0;z-index:50;display:flex;gap:6px;background:#fffefa;
+  border-top:1px solid #e8e6fb;box-shadow:0 -8px 30px #2525771a;
+  padding:9px 12px calc(9px + env(safe-area-inset-bottom))}
+ .child-tabs button{flex:1;background:transparent;color:#647391;font-size:14px;margin:0;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px}
+ .child-tabs button span:first-child{font-size:27px}
+ .child-tabs button[aria-selected="true"]{background:#eceaff;color:#4a3fca}
+ .child-heading{text-align:center;font-size:24px;font-weight:850;margin:15px 4px}
+ #activities li,#rewards li{background:#f8f8ff;padding:17px;border-radius:18px;margin-bottom:12px;border:1px solid #eeedfc}
+ @media(min-width:720px){.child-tabs{max-width:600px;left:50%;transform:translateX(-50%);border-radius:25px 25px 0 0}}
+ @media(max-width:600px){body{padding:10px}main{margin:0 auto}section{padding:20px;border-radius:24px}}
  </style></head><body>
  <main><section><h1>🏆 Habit Hero</h1><p id="status" role="status">Έλεγχος προφίλ...</p>
  <button id="lockProfile" class="secondary" hidden>🔒 Κλείδωμα</button> <button id="logout" class="secondary" hidden>Αποσύνδεση παιδιού</button></section>
  <nav id="quickNav" class="quick-nav" aria-label="Πλοήγηση παιδιού" hidden>
  <a href="#activitiesPanel">🌟 Συνήθειες</a><a href="#rewardsPanel">🎁 Έπαθλα</a>
  <a href="#progressPanel">📈 Πρόοδος</a></nav>
+ <h2 id="childTabTitle" class="child-heading" hidden>Οι αποστολές μου 🌟</h2>
  <section id="pairPanel" hidden><h2>🔑 Σύνδεση με οικογενειακό κωδικό</h2>
  <p class="muted">Ζήτησε από τον γονέα σου έναν νέο κωδικό σύνδεσης. Ο κωδικός λειτουργεί μόνο μία φορά και λήγει σε 10 λεπτά.</p>
  <form id="pairForm"><label for="code">Κωδικός συσκευής</label><input id="code" required maxlength="32" minlength="32" autocomplete="off" spellcheck="false" placeholder="Επικόλλησε τον κωδικό">
@@ -33,17 +55,34 @@ export function childPage(){
  <form id="pinUnlockForm"><label for="pinInput">4-ψήφιο PIN</label>
  <input id="pinInput" type="password" required inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="off">
  <button id="pinUnlockButton" type="submit">Ξεκλείδωμα</button></form><p id="pinMessage" role="status"></p></section>
- <section id="activitiesPanel" hidden><h2>🌟 Οι δραστηριότητές μου</h2>
+ <section id="activitiesPanel" data-tab="quests" hidden><h2>🌟 Οι δραστηριότητές μου</h2>
  <p class="muted">Πάτησε «Το έκανα!» όταν ολοκληρώσεις μια δραστηριότητα. Οι πόντοι προστίθενται μετά από έγκριση γονέα.</p>
  <ul id="activities"></ul><p id="feedback" role="status"></p></section>
- <section id="progressPanel" hidden><h2>📈 Η πρόοδός μου</h2>
+ <section id="progressPanel" data-tab="hero" hidden><h2>📈 Η πρόοδός μου</h2>
  <p id="progressStats" class="muted"></p>
  <p id="heroLevel" class="muted"></p><div id="levelBar" style="height:14px;border-radius:20px;background:#e8eff9;overflow:hidden"><div id="levelFill" style="height:100%;width:0;background:#f5a623;transition:width .3s"></div></div>
  <h3>🏅 Τα επιτεύγματά μου</h3><ul id="heroBadges"></ul><h3>Οι πρόσφατες προσπάθειές μου</h3><ul id="activityHistory"></ul></section>
- <section id="rewardsPanel" hidden><h2>🎁 Τα έπαθλά μου</h2>
+ <section id="rewardsPanel" data-tab="rewards" hidden><h2>🎁 Τα έπαθλά μου</h2>
  <p id="balance" class="muted"></p><ul id="rewards"></ul>
  <p id="rewardMessage" role="status"></p><h3>Τα αιτήματά μου</h3><ul id="redemptionHistory"></ul></section>
+ <nav id="childTabs" class="child-tabs" role="tablist" aria-label="Πλοήγηση παιδιού" hidden>
+ <button type="button" data-child-tab="quests" role="tab" aria-selected="true"><span>🎯</span><span>Αποστολές</span></button>
+ <button type="button" data-child-tab="rewards" role="tab" aria-selected="false"><span>🎁</span><span>Έπαθλα</span></button>
+ <button type="button" data-child-tab="hero" role="tab" aria-selected="false"><span>🦸</span><span>Ο ήρωάς μου</span></button>
+ </nav>
  </main><script>
+ const childTitles={quests:'Οι αποστολές μου 🎯',rewards:'Τα έπαθλά μου 🎁',hero:'Ο ήρωάς μου 🦸'};
+ function openChildTab(name){
+  if(!childTitles[name])name='quests';
+  for(const panel of document.querySelectorAll('[data-tab]'))panel.dataset.active=String(panel.dataset.tab===name);
+  for(const btn of document.querySelectorAll('[data-child-tab]'))btn.setAttribute('aria-selected',String(btn.dataset.childTab===name));
+  document.getElementById('childTabTitle').textContent=childTitles[name];
+  scrollTo({top:0,behavior:'instant'});
+ }
+ document.getElementById('childTabs').addEventListener('click',event=>{
+  const button=event.target.closest('[data-child-tab]');if(button)openChildTab(button.dataset.childTab);
+ });
+ openChildTab('quests');
  const status=document.getElementById('status');
  async function refresh(){
   const me=await fetch('/api/child/me',{credentials:'same-origin',cache:'no-store'});
@@ -53,6 +92,8 @@ export function childPage(){
    document.getElementById('pinPanel').hidden=!needsPin;
    document.getElementById('pairPanel').hidden=needsPin;
    document.getElementById('quickNav').hidden=true;
+   document.getElementById('childTabs').hidden=true;
+   document.getElementById('childTabTitle').hidden=true;
    document.getElementById('activitiesPanel').hidden=true;
    document.getElementById('rewardsPanel').hidden=true;
    document.getElementById('progressPanel').hidden=true;
@@ -72,6 +113,8 @@ export function childPage(){
   document.getElementById('pairPanel').hidden=true;
   document.getElementById('pinPanel').hidden=true;
   document.getElementById('quickNav').hidden=false;
+  document.getElementById('childTabs').hidden=false;
+  document.getElementById('childTabTitle').hidden=false;
   document.getElementById('logout').hidden=false;
   document.getElementById('lockProfile').hidden=!profile.pin_enabled;
   const res=await fetch('/api/child/activities',{credentials:'same-origin',cache:'no-store'});
