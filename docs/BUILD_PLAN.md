@@ -12,7 +12,7 @@
 
 ## Finish development first (ordered)
 
-1. **Rewards and redemption** — parent catalog, child eligibility, request/approval/fulfillment, atomic ledger debit and sufficient points checks.
+1. **Rewards and redemption — implementation drafted, not deployed or QA-verified.** Parent catalog, child eligibility, request/approval/fulfillment, ledger debit and balance check are in `cloudflare/rewards-api.mjs`, with parent/child UI added. Revisit single-use concurrency, approval race paths and full-ledger invariants in consolidated QA.
 2. **Habit operations** — edits, deletes, assignment management, scheduling/frequency and safe retry behavior.
 3. **Child experience** — home/progress/streaks, age-appropriate activity feedback and points views; no parent controls.
 4. **Parent experience** — unified navigation, dashboard summaries, management of profiles/devices/rewards, responsive/mobile styling.
@@ -21,6 +21,12 @@
 7. **Polish/installability** — PWA metadata, offline-friendly reads, responsive accessibility, documentation and project site updates.
 
 These features should be implemented but **not advertised as live until a milestone deployment**. Work must not depend on asking the owner to test every incremental change.
+
+## Implementation batch log
+
+- Reward feature files committed to GitHub without triggering Cloudflare or GitHub Pages deployments. Production retains the last verified release.
+- Manual release workflows are `.github/workflows/cloudflare.yml`, `d1-migrations.yml`, `pages.yml`, `original-build.yml`, `backend-test.yml`, and `provision-d1.yml`.
+- Next build batch: habit editing, deactivation/assignment changes, frequency handling and child progress.
 
 ## Later consolidated QA/release
 
