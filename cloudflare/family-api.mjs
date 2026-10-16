@@ -57,7 +57,7 @@ export async function createChild(req,env) {
  const pin=body.pin??null;
  if(name.length<1||name.length>80||/[\u0000-\u001f\u007f]/.test(name) ||
    (age!==null&&!['6-8','9-11','12-14'].includes(age)) ||
-   (pin!==null&&(typeof pin!=='string'||!/^\\d{4}$/.test(pin))))
+   (pin!==null&&(typeof pin!=='string'||!/^\d{4}$/.test(pin))))
    return out({detail:'Invalid name, age group or 4-digit PIN'},400);
  const id=crypto.randomUUID(),now=new Date().toISOString();
  try{
