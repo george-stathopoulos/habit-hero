@@ -12,6 +12,13 @@ export function parentPage() {
  input,select{width:100%;padding:12px;border:1px solid #d4ddea;border-radius:9px;font:inherit;margin:7px 0 15px}
  label{font-weight:600}ul{list-style:none;padding:0}li{padding:14px 0;border-bottom:1px solid #e9eef8}
  form{display:grid;gap:6px}.row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+ .goal-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,148px),1fr));gap:10px;margin:20px 0}
+ .goal-choices button{background:#f3f2ff;color:#40377c;border:2px solid transparent;border-radius:17px;min-height:72px;padding:13px 10px;text-align:left;font-weight:750;font-size:14px;line-height:1.35}
+ .goal-choices button[aria-pressed="true"]{background:#6253db;color:white;border-color:#a49aff;box-shadow:0 7px 20px #5b45b64a}
+ .goal-count{color:#6257a5;font-weight:800;margin:12px 0}
+ .goal-suggestions{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+ .goal-suggestions button{display:flex;flex-direction:column;gap:10px;align-items:flex-start;text-align:left;background:linear-gradient(140deg,#f4f0ff,#fff5e8);color:#382e76;border-radius:19px;min-height:120px;padding:19px}
+ .goal-suggestions strong{font-size:17px}.goal-suggestions small{font-size:13px;color:#675a84}
  .snapshot-header{display:flex;justify-content:space-between;align-items:center;gap:12px}
  .eyebrow{color:#6a5ce3;font-size:12px;font-weight:850;letter-spacing:1px}
  .snapshot-header h2{font-size:clamp(22px,4vw,30px);margin:8px 0}.snapshot-sparkle{font-size:52px}
@@ -89,6 +96,15 @@ export function parentPage() {
   <button type="button" data-action-tab="approvals" data-action-section="approvalsPanel"><strong id="snapshotPending">—</strong><span>✅ Για έγκριση</span></button>
  </div>
  <p id="nextStep" class="next-step">Δώσε στους μικρούς ήρωες την επόμενη αποστολή τους! 🚀</p>
+ </section>
+ <section class="panel" id="goalWizard" data-tab="home" hidden>
+ <span class="eyebrow">🧭 ΒΗΜΑ 1 · ΤΙ ΘΕΛΕΤΕ ΝΑ ΚΑΛΛΙΕΡΓΗΣΕΤΕ;</span>
+ <h2>Τι θα ήθελες να κατακτήσει το παιδί σου;</h2>
+ <p class="subtle">Διάλεξε όσους στόχους θέλεις. Θα σου προτείνουμε αποστολές για να ξεκινήσετε εύκολα.</p>
+ <div id="goalChoices" class="goal-choices" role="group" aria-label="Οικογενειακοί στόχοι"></div>
+ <div class="goal-count" id="goalCount" role="status">Διάλεξε έναν ή περισσότερους στόχους.</div>
+ <button id="suggestGoals" type="button" disabled>✨ Βρες τις αποστολές μας</button>
+ <div id="goalSuggestions" hidden><h3>🌟 Προτεινόμενες αποστολές</h3><p class="subtle">Πάτησε μια ιδέα για να τη διαμορφώσεις και να την αναθέσεις στο παιδί.</p><div id="goalSuggestionCards" class="goal-suggestions"></div></div>
  </section>
  <section class="panel" data-tab="home" data-active="true" id="homeActions" hidden>
   <h2>✨ Τι θέλεις να κάνεις σήμερα;</h2>
@@ -256,6 +272,58 @@ export function parentPage() {
   panel.append(heading,info,install,dismiss);
   document.querySelector('main').prepend(panel);
  }
+ const parentGoals=[
+  ['outdoor','🌳','Παίζω έξω','Παίζω ή περπατώ έξω για 20 λεπτά',15],
+  ['habits','🌟','Καλές συνήθειες','Στρώνω το κρεβάτι μου',10],
+  ['responsibility','🎒','Υπευθυνότητα','Ετοιμάζω την τσάντα μου για αύριο',12],
+  ['autonomy','🦸','Αυτονομία','Διαλέγω και ετοιμάζω τα ρούχα μου',12],
+  ['skills','🧩','Νέες δεξιότητες','Μαθαίνω κάτι καινούριο για 15 λεπτά',15],
+  ['reading','📚','Διάβασμα','Διαβάζω για 15 λεπτά',12],
+  ['creativity','🎨','Δημιουργικότητα','Δημιουργώ κάτι με τα χέρια μου',15],
+  ['sports','⚽','Αθλητισμός','Κινούμαι ή αθλούμαι για 20 λεπτά',15],
+  ['nature','🦋','Αγάπη στη φύση','Παρατηρώ κάτι ενδιαφέρον στη φύση',12],
+  ['kindness','💗','Καλοσύνη','Κάνω μια καλή πράξη',12],
+  ['teamwork','🤝','Συνεργασία','Βοηθώ σε μια οικογενειακή δουλειά',12],
+  ['hygiene','🪥','Υγιεινή','Βουρτσίζω τα δόντια μου το πρωί',10],
+  ['sleep','🌙','Καλός ύπνος','Ετοιμάζομαι για ύπνο στην ώρα μου',10],
+  ['food','🍎','Υγιεινό φαγητό','Δοκιμάζω ένα υγιεινό σνακ',10],
+  ['confidence','💪','Αυτοπεποίθηση','Δοκιμάζω κάτι δύσκολο μόνος μου',15],
+  ['emotions','🧠','Συναισθήματα','Μιλάω για το πώς νιώθω',12],
+  ['focus','🎯','Συγκέντρωση','Ασχολούμαι με μια δραστηριότητα χωρίς οθόνη',12],
+  ['screen','📵','Λιγότερες οθόνες','Παίζω για 30 λεπτά χωρίς οθόνη',15],
+  ['money','🐷','Διαχείριση χρημάτων','Μαθαίνω να ξεχωρίζω ανάγκες και επιθυμίες',15],
+  ['community','🌍','Προσφορά','Κάνω κάτι καλό για τη γειτονιά μου',15]
+ ];
+ const selectedGoals=new Set();
+ const goalChoices=document.getElementById('goalChoices');
+ for(const [id,emoji,label] of parentGoals){
+  const button=document.createElement('button');button.type='button';button.textContent=emoji+' '+label;
+  button.setAttribute('aria-pressed','false');
+  button.addEventListener('click',()=>{
+   if(selectedGoals.has(id))selectedGoals.delete(id);else selectedGoals.add(id);
+   button.setAttribute('aria-pressed',String(selectedGoals.has(id)));
+   document.getElementById('goalCount').textContent=selectedGoals.size?selectedGoals.size+' στόχοι επιλεγμένοι':'Διάλεξε έναν ή περισσότερους στόχους.';
+   document.getElementById('suggestGoals').disabled=!selectedGoals.size;
+   document.getElementById('goalSuggestions').hidden=true;
+  });
+  goalChoices.append(button);
+ }
+ document.getElementById('suggestGoals').addEventListener('click',()=>{
+  const target=document.getElementById('goalSuggestionCards');target.replaceChildren();
+  for(const [id,emoji,label,suggestion,points] of parentGoals.filter(g=>selectedGoals.has(g[0]))){
+   const button=document.createElement('button');button.type='button';
+   const title=document.createElement('strong');title.textContent=emoji+' '+suggestion;
+   const detail=document.createElement('small');detail.textContent=label+' · ⭐ '+points+' πόντοι';
+   button.append(title,detail);button.addEventListener('click',()=>{
+    document.getElementById('habitName').value=suggestion;
+    document.getElementById('habitPoints').value=points;
+    document.getElementById('habitFrequency').value='daily';
+    openTab('habits','habitPanel');
+   });target.append(button);
+  }
+  document.getElementById('goalSuggestions').hidden=false;
+  document.getElementById('goalSuggestions').scrollIntoView({behavior:'smooth',block:'nearest'});
+ });
  const status=document.getElementById('status'),greeting=document.getElementById('greeting');
  const list=document.getElementById('children'),empty=document.getElementById('empty');
  async function refresh() {
@@ -268,6 +336,7 @@ export function parentPage() {
    document.getElementById('family').hidden=false;document.getElementById('create').hidden=false;
    document.getElementById('homeActions').hidden=false;
    document.getElementById('familySnapshot').hidden=false;
+   document.getElementById('goalWizard').hidden=false;
    document.getElementById('snapshotKids').textContent=data.children.length;
    if(!data.children.length)document.getElementById('create').classList.add('expanded');
    document.getElementById('nextStep').textContent=data.children.length?'Δημιούργησε μια νέα αποστολή ή έλεγξε τις προσπάθειες των παιδιών! 🌟':'Ξεκίνα δημιουργώντας το πρώτο προφίλ παιδιού! 🌈';
