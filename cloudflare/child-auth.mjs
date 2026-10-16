@@ -100,41 +100,68 @@ export async function childActivities(request,env){
  const child=await authorizedChild(request,env);
  if(!child)return json({detail:'Not authenticated'},401);
  try{
-  const now=localDay(child.timezone);
+  const today=localDay(child.timezone);
   const rows=await env.DB.prepare(`SELECT h.id AS habit_id,h.name_el AS habit_name,h.points,h.emoji,
-    s.status AS submission_status
+    h.description_el,h.why_important_el,h.frequency_type,h.frequency_count,h.retry_delay_minutes,
+    s.slot_index,s.status AS submission_status,s.submitted_at
     FROM habit_assignments a JOIN habits h ON h.id=a.habit_id AND h.family_id=a.family_id
-    LEFT JOIN completion_submissions s ON s.id=(
-      SELECT x.id FROM completion_submissions x WHERE x.family_id=a.family_id
-        AND x.child_id=a.child_id AND x.habit_id=a.habit_id
-        AND x.occurrence_date=${occurrenceSql} LIMIT 1)
+    LEFT JOIN completion_submissions s ON s.family_id=a.family_id AND s.child_id=a.child_id AND s.habit_id=a.habit_id
+      AND s.occurrence_date=${occurrenceSql}
     WHERE a.family_id=? AND a.child_id=? AND h.active=1 AND h.deleted_at IS NULL
-    ORDER BY h.name_el LIMIT 100`).bind(now,now,now,child.family_id,child.child_id).all();
-  return json({name:child.child_name,activities:rows.results||[],date:now});
+    ORDER BY h.name_el,s.slot_index LIMIT 200`).bind(today,today,today,child.family_id,child.child_id).all();
+  const grouped=new Map();
+  for(const row of rows.results||[]){
+   if(!grouped.has(row.habit_id))grouped.set(row.habit_id,[]);
+   grouped.get(row.habit_id).push(row);
+  }
+  const activities=[];
+  for(const group of grouped.values()){
+   const first=group[0];
+   const target=first.frequency_type==='once'?1:Math.min(5,Math.max(1,Number(first.frequency_count)||1));
+   for(let slot=1;slot<=target;slot++){
+    const existing=group.find(x=>x.slot_index===slot);
+    activities.push({...first,slot_index:slot,slot_total:target,
+      submission_status:existing?.submission_status||null,
+      submitted_at:existing?.submitted_at||null});
+   }
+  }
+  return json({name:child.child_name,activities,date:today});
  }catch{return json({detail:'Could not load habits'},503)}
 }
 export async function childSubmit(request,env){
- const parsed=await bodyOf(request);
- if(parsed.error)return parsed.error;
- const child=await authorizedChild(request,env);
- if(!child)return json({detail:'Not authenticated'},401);
- const habitId=parsed.body.habit_id;
- if(!validUUID(habitId))return json({detail:'Invalid habit'},400);
+ const parsed=await bodyOf(request);if(parsed.error)return parsed.error;
+ const child=await authorizedChild(request,env);if(!child)return json({detail:'Not authenticated'},401);
+ const habitId=parsed.body.habit_id,slot=parsed.body.slot_index??1;
+ if(!validUUID(habitId)||!Number.isInteger(slot)||slot<1||slot>5)return json({detail:'Invalid habit slot'},400);
  try{
-  const assigned=await env.DB.prepare(`SELECT h.id,h.frequency_type FROM habit_assignments a
-   JOIN habits h ON h.id=a.habit_id AND h.family_id=a.family_id
+  const assigned=await env.DB.prepare(`SELECT h.id,h.frequency_type,h.frequency_count,h.retry_delay_minutes
+   FROM habit_assignments a JOIN habits h ON h.id=a.habit_id AND h.family_id=a.family_id
    WHERE a.family_id=? AND a.child_id=? AND a.habit_id=? AND h.active=1 AND h.deleted_at IS NULL`)
    .bind(child.family_id,child.child_id,habitId).first();
   if(!assigned)return json({detail:'Habit not assigned'},404);
-  const now=new Date().toISOString(),day=occurrenceKey(assigned.frequency_type,localDay(child.timezone));
+  const maximum=assigned.frequency_type==='once'?1:Math.min(5,Math.max(1,Number(assigned.frequency_count)||1));
+  if(slot>maximum)return json({detail:'Habit slot not configured'},400);
+  const now=new Date().toISOString(),period=occurrenceKey(assigned.frequency_type,localDay(child.timezone));
+  const current=await env.DB.prepare(`SELECT slot_index,submitted_at FROM completion_submissions
+    WHERE family_id=? AND child_id=? AND habit_id=? AND occurrence_date=? ORDER BY slot_index`)
+    .bind(child.family_id,child.child_id,habitId,period).all();
+  const entries=current.results||[];
+  if(entries.some(x=>x.slot_index===slot))return json({detail:'Already submitted'},409);
+  if(slot>1){
+   const previous=entries.find(x=>x.slot_index===slot-1);
+   if(!previous)return json({detail:'Complete the previous occurrence first'},409);
+   const delay=Number(assigned.retry_delay_minutes)||0;
+   if(delay>0&&Date.now()-Date.parse(previous.submitted_at)<delay*60000)
+    return json({detail:'Please wait '+delay+' minutes between repetitions'},429);
+  }
   await env.DB.prepare(`INSERT INTO completion_submissions
-    (id,family_id,child_id,habit_id,occurrence_date,status,submitted_at,idempotency_key)
-    VALUES (?,?,?,?,?,'pending',?,?)`)
-    .bind(crypto.randomUUID(),child.family_id,child.child_id,habitId,day,now,
-      'child-'+habitId+'-'+day).run();
-  return json({status:'pending'},201);
+   (id,family_id,child_id,habit_id,occurrence_date,slot_index,status,submitted_at,idempotency_key)
+   VALUES (?,?,?,?,?,?,'pending',?,?)`)
+   .bind(crypto.randomUUID(),child.family_id,child.child_id,habitId,period,slot,now,
+     'child-'+habitId+'-'+period+'-'+slot).run();
+  return json({status:'pending',slot_index:slot},201);
  }catch(e){
-  if(/constraint|UNIQUE/i.test(String(e)))return json({detail:'Already submitted for this period'},409);
+  if(/constraint|UNIQUE/i.test(String(e)))return json({detail:'Already submitted for this occurrence'},409);
   return json({detail:'Could not submit habit'},503);
  }
 }
