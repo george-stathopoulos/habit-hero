@@ -24,7 +24,9 @@ export async function authorizedParent(req,env) {
    LEFT JOIN family_settings settings ON settings.family_id=f.id
    WHERE s.token_hash=? AND s.role='parent' AND s.revoked_at IS NULL AND s.expires_at>?
    AND p.disabled_at IS NULL AND f.deleted_at IS NULL
-   AND (s.household_mode=0 OR s.pin_verified_at IS NOT NULL)
+   AND (p.pin_hash IS NULL OR s.pin_verified_at IS NOT NULL
+    OR (s.household_mode=0 AND NOT EXISTS(
+      SELECT 1 FROM child_profiles cc WHERE cc.family_id=m.family_id AND cc.deleted_at IS NULL)))
    ORDER BY m.created_at LIMIT 1`).bind(await sha(token),new Date().toISOString()).first();
   return row||null;
  }catch{return null}
