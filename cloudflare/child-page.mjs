@@ -20,7 +20,7 @@ export function childPage(){
  @media(max-width:600px){body{padding:10px}main{margin:10px auto}section{padding:19px}h1{font-size:27px}}
  </style></head><body>
  <main><section><h1>🏆 Habit Hero</h1><p id="status" role="status">Έλεγχος προφίλ...</p>
- <button id="logout" class="secondary" hidden>Αποσύνδεση παιδιού</button></section>
+ <button id="lockProfile" class="secondary" hidden>🔒 Κλείδωμα</button> <button id="logout" class="secondary" hidden>Αποσύνδεση παιδιού</button></section>
  <nav id="quickNav" class="quick-nav" aria-label="Πλοήγηση παιδιού" hidden>
  <a href="#activitiesPanel">🌟 Συνήθειες</a><a href="#rewardsPanel">🎁 Έπαθλα</a>
  <a href="#progressPanel">📈 Πρόοδος</a></nav>
@@ -62,6 +62,7 @@ export function childPage(){
    document.getElementById('activityHistory').replaceChildren();
    document.getElementById('heroBadges').replaceChildren();
    document.getElementById('logout').hidden=!needsPin;
+   document.getElementById('lockProfile').hidden=true;
    status.textContent=needsPin?'Εισαγωγή προσωπικού PIN.':'Χρειάζεται σύνδεση με κωδικό γονέα.';
    return;
   }
@@ -72,6 +73,7 @@ export function childPage(){
   document.getElementById('pinPanel').hidden=true;
   document.getElementById('quickNav').hidden=false;
   document.getElementById('logout').hidden=false;
+  document.getElementById('lockProfile').hidden=false;
   const res=await fetch('/api/child/activities',{credentials:'same-origin',cache:'no-store'});
   if(!res.ok){status.textContent='Οι δραστηριότητες δεν είναι διαθέσιμες αυτή τη στιγμή.';return}
   const data=await res.json();
@@ -197,6 +199,15 @@ export function childPage(){
    if(!response.ok)throw Error('Ο κωδικός έληξε ή χρησιμοποιήθηκε. Ζήτησε νέο από γονέα.');
    document.getElementById('code').value='';await refresh();
   }catch(e){document.getElementById('pairMessage').textContent=e.message}finally{btn.disabled=false}
+ });
+ document.getElementById('lockProfile').addEventListener('click',async()=>{
+  const button=document.getElementById('lockProfile');button.disabled=true;
+  try{
+   const response=await fetch('/api/child/pin/lock',{method:'POST',credentials:'same-origin'});
+   if(!response.ok)throw Error('Δεν μπόρεσα να κλειδώσω το προφίλ.');
+   await refresh();
+  }catch(e){document.getElementById('feedback').textContent=e.message}
+  finally{button.disabled=false}
  });
  document.getElementById('logout').addEventListener('click',async()=>{
   await fetch('/api/child/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
