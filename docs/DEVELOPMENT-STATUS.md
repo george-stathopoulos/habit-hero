@@ -29,3 +29,13 @@ Committed source is not proof of deployed functionality. Consolidate tests after
 - Parent family export and multi-child reward sharing.
 - Rewards show their affordability and how many points remain for the child.
 - The GitHub workflow now runs recurrence boundary checks; a successful deployment and family/browser checks remain to be confirmed.
+
+## Parent-managed 4-digit PIN (2026-10-16)
+
+- Optional 4-digit child PIN during profile creation; parent can set/reset later with confirmation.
+- First-time independent child use still requires a parent-issued, one-use device pairing code. PIN is a secondary child unlock, **not** an internet-facing four-digit login.
+- Child PIN unlock for paired device; child-only authorization rejects locked sessions.
+- Child Lock button preserves pairing and returns to PIN prompt.
+- PIN is stored as a salted PBKDF2 verifier (160,000 SHA-256 iterations) rather than plaintext. Five failed attempts trigger a fifteen-minute lockout, and parent reset clears the lock.
+- Migration 0003 adds child-session unlock state; deployment workflow checks whether migration was already applied before running it.
+- Tests cover cross-origin and anonymous authorization attempts. End-to-end browser and live database confirmation remain required.
