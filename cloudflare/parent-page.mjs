@@ -40,6 +40,8 @@ export function parentPage() {
  <ul id="children"></ul><p id="empty" class="subtle">Δεν υπάρχουν ακόμη προφίλ παιδιών.</p></section>
  <section class="panel" id="create" hidden><h2>➕ Προσθήκη παιδιού</h2><form id="form"><label for="name">Όνομα ή ψευδώνυμο</label>
  <input id="name" maxlength="80" autocomplete="off" required placeholder="π.χ. Αλέξης">
+ <label for="initialChildPin">PIN παιδιού (προαιρετικό, 4 ψηφία)</label>
+ <input id="initialChildPin" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="new-password" placeholder="π.χ. 2468">
  <label for="age">Ηλικιακή ομάδα (προαιρετική)</label><select id="age"><option value="">Δεν θέλω να δηλώσω</option><option value="6-8">6–8</option><option value="9-11">9–11</option><option value="12-14">12–14</option></select>
  <button id="save" type="submit">Προσθήκη παιδιού</button></form><p id="formStatus" role="status" class="subtle"></p></section>
  <section class="panel" id="devicesPanel" hidden><h2>📱 Συσκευές παιδιών</h2>
@@ -355,6 +357,16 @@ export function parentPage() {
    const r=await fetch('/api/children',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},
      body:JSON.stringify({name:document.getElementById('name').value,age_band:document.getElementById('age').value||null})});
    if(!r.ok)throw Error('Δεν αποθηκεύτηκε το προφίλ. Ελέγξτε τα στοιχεία.');
+   const created=await r.json(),initialPin=document.getElementById('initialChildPin').value;
+   if(initialPin){
+     const pinResult=await fetch('/api/children/pin',{method:'POST',credentials:'same-origin',
+      headers:{'content-type':'application/json'},body:JSON.stringify({child_id:created.id,pin:initialPin})});
+     if(!pinResult.ok){
+       note.textContent='Το προφίλ δημιουργήθηκε, αλλά το PIN δεν αποθηκεύτηκε. Ορίστε PIN από τις Συσκευές παιδιών.';
+       document.getElementById('initialChildPin').value='';
+       await refresh();return;
+     }
+   }
    document.getElementById('form').reset();note.textContent='Το παιδί προστέθηκε!';await refresh();
   }catch(e){note.textContent=e.message}finally{btn.disabled=false}
  });
