@@ -29,6 +29,7 @@ jobs:
           node scripts/test-activity-api.mjs
           node --check cloudflare/child-auth.mjs
           node --check cloudflare/child-pin.mjs
+          node --check cloudflare/pin-hash.mjs
           node --check cloudflare/child-page.mjs
           node --check cloudflare/rewards-api.mjs
           node --check cloudflare/progress-api.mjs
