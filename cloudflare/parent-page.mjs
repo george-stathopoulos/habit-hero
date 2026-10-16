@@ -333,6 +333,19 @@ export function parentPage() {
    const item=document.createElement('li');
    item.textContent='🌟 '+child.child_name+' · '+child.approved_last_30_days+' ολοκληρώσεις · '+child.active_days_last_30_days+
     ' ενεργές ημέρες · '+child.current_streak_days+' ημέρες σερί · '+child.earned_last_30_days+' πόντοι κερδισμένοι';
+   const details=document.createElement('details');
+   const summary=document.createElement('summary');summary.textContent='Πρόσφατες δραστηριότητες';details.append(summary);
+   const history=document.createElement('ul');
+   for(const activity of child.recent_activity){
+    const record=document.createElement('li');
+    const state=activity.status==='approved'?'✅ Εγκρίθηκε':activity.status==='rejected'?'❌ Απορρίφθηκε':'⏳ Αναμονή';
+    record.textContent=activity.habit_name+' · '+state+' · '+activity.occurrence_date;
+    history.append(record);
+   }
+   if(!child.recent_activity.length){
+    const empty=document.createElement('li');empty.textContent='Δεν υπάρχουν καταχωρήσεις.';history.append(empty);
+   }
+   details.append(history);item.append(details);
    list.append(item);
   }
   document.getElementById('progressPanel').hidden=false;
