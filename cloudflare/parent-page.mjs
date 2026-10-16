@@ -301,19 +301,27 @@ export function parentPage() {
   ['community','🌍','Προσφορά','Κάνω κάτι καλό για τη γειτονιά μου',15]
  ];
  const selectedGoals=new Set();
+ try{
+  const saved=JSON.parse(localStorage.getItem('habitHero:goals')||'[]');
+  if(Array.isArray(saved))for(const id of saved)if(parentGoals.some(x=>x[0]===id))selectedGoals.add(id);
+ }catch{}
+
  const goalChoices=document.getElementById('goalChoices');
  for(const [id,emoji,label] of parentGoals){
   const button=document.createElement('button');button.type='button';button.textContent=emoji+' '+label;
-  button.setAttribute('aria-pressed','false');
+  button.setAttribute('aria-pressed',String(selectedGoals.has(id)));
   button.addEventListener('click',()=>{
    if(selectedGoals.has(id))selectedGoals.delete(id);else selectedGoals.add(id);
    button.setAttribute('aria-pressed',String(selectedGoals.has(id)));
+   try{localStorage.setItem('habitHero:goals',JSON.stringify([...selectedGoals]))}catch{}
    document.getElementById('goalCount').textContent=selectedGoals.size?selectedGoals.size+' στόχοι επιλεγμένοι':'Διάλεξε έναν ή περισσότερους στόχους.';
    document.getElementById('suggestGoals').disabled=!selectedGoals.size;
    document.getElementById('goalSuggestions').hidden=true;
   });
   goalChoices.append(button);
  }
+ document.getElementById('goalCount').textContent=selectedGoals.size?selectedGoals.size+' στόχοι επιλεγμένοι':'Διάλεξε έναν ή περισσότερους στόχους.';
+ document.getElementById('suggestGoals').disabled=!selectedGoals.size;
  document.getElementById('suggestGoals').addEventListener('click',()=>{
   const target=document.getElementById('goalSuggestionCards');target.replaceChildren();
   for(const [id,emoji,label,suggestion,points] of parentGoals.filter(g=>selectedGoals.has(g[0]))){
