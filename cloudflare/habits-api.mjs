@@ -100,3 +100,28 @@ export async function archiveHabit(request,env){
   return respond({id,status:'archived'});
  }catch{return respond({detail:'Could not archive habit'},503)}
 }
+
+/** Assign an existing active habit to another child in the same family. */
+export async function assignHabit(request,env){
+ if(request.headers.get('origin')!==origin)return respond({detail:'Forbidden'},403);
+ if(!(request.headers.get('content-type')||'').toLowerCase().startsWith('application/json'))
+  return respond({detail:'JSON required'},415);
+ const actor=await authorizedParent(request,env);
+ if(!actor)return respond({detail:'Not authenticated'},401);
+ let body;
+ try{const raw=await request.text();if(raw.length>512)return respond({detail:'Request too large'},413);body=JSON.parse(raw)}
+ catch{return respond({detail:'Invalid JSON'},400)}
+ const valid=x=>typeof x==='string'&&/^[a-f\d]{8}(-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(x);
+ if(!valid(body?.habit_id)||!valid(body?.child_id))return respond({detail:'Invalid assignment'},400);
+ try{
+  const result=await env.DB.prepare(`INSERT INTO habit_assignments (family_id,habit_id,child_id,assigned_at)
+   SELECT ?,h.id,c.id,? FROM habits h JOIN child_profiles c ON c.family_id=h.family_id
+   WHERE h.family_id=? AND h.id=? AND c.id=? AND h.active=1 AND h.deleted_at IS NULL
+    AND c.deleted_at IS NULL
+    AND NOT EXISTS(SELECT 1 FROM habit_assignments a WHERE a.family_id=h.family_id
+      AND a.habit_id=h.id AND a.child_id=c.id)`)
+   .bind(actor.family_id,new Date().toISOString(),actor.family_id,body.habit_id,body.child_id).run();
+  if(result.meta?.changes!==1)return respond({detail:'Assignment unavailable or already exists'},409);
+  return respond({status:'assigned'},201);
+ }catch{return respond({detail:'Unable to assign habit'},503)}
+}
