@@ -5,14 +5,15 @@ import sqlite3
 import unittest
 from datetime import datetime, timezone
 
-SCHEMA = pathlib.Path(__file__).resolve().parents[1] / "cloudflare/migrations/0001_initial.sql"
+MIGRATIONS = sorted((pathlib.Path(__file__).resolve().parents[1] / "cloudflare/migrations").glob("*.sql"))
 NOW = datetime.now(timezone.utc).isoformat()
 
 class SchemaTests(unittest.TestCase):
     def setUp(self):
         self.db = sqlite3.connect(":memory:")
         self.db.execute("PRAGMA foreign_keys = ON")
-        self.db.executescript(SCHEMA.read_text(encoding="utf-8"))
+        for migration in MIGRATIONS:
+            self.db.executescript(migration.read_text(encoding="utf-8"))
         self.db.execute("INSERT INTO families VALUES (?, ?, ?, ?, NULL)", ("f1", "Family 1", NOW, NOW))
         self.db.execute("INSERT INTO families VALUES (?, ?, ?, ?, NULL)", ("f2", "Family 2", NOW, NOW))
         self.db.execute("INSERT INTO parent_users VALUES (?, ?, ?, ?, ?, NULL)", ("p1", "parent1@example.test", "Parent", NOW, NOW))
@@ -73,11 +74,23 @@ class SchemaTests(unittest.TestCase):
         with self.assertRaises(sqlite3.IntegrityError):
             self.db.execute("INSERT INTO habits (id,family_id,name_el,frequency_type,created_at,updated_at) VALUES (?,?,?,?,?,?)",("h2","f1","Study","hourly",NOW,NOW))
 
+    def test_provider_subject_is_unique(self):
+        self.db.execute("INSERT INTO parent_identities (id,parent_id,issuer,subject,linked_at) VALUES (?,?,?,?,?)", ("i1","p1","https://accounts.google.com","google-sub-1",NOW))
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute("INSERT INTO parent_identities (id,parent_id,issuer,subject,linked_at) VALUES (?,?,?,?,?)", ("i2","p1","https://accounts.google.com","google-sub-1",NOW))
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute("INSERT INTO parent_identities (id,parent_id,issuer,subject,linked_at) VALUES (?,?,?,?,?)", ("i3","p1","https://untrusted.example","sub-2",NOW))
+
+    def test_oidc_state_is_single_use_identifier(self):
+        self.db.execute("INSERT INTO oauth_flows VALUES (?,?,?,?,?,?,?,NULL)", ("flow1","state1","nonce1","verifier1","google",NOW,NOW))
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute("INSERT INTO oauth_flows VALUES (?,?,?,?,?,?,?,NULL)", ("flow2","state1","nonce2","verifier2","google",NOW,NOW))
+
     def test_relational_model_has_expected_tables(self):
         names={r[0] for r in self.db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         self.assertTrue({"families","parent_users","family_memberships","child_profiles","habits","habit_assignments",
                          "completion_submissions","reward_catalog","reward_eligibility","reward_redemptions",
-                         "point_ledger","auth_sessions","auth_challenges","audit_events"}.issubset(names))
+                         "point_ledger","auth_sessions","auth_challenges","audit_events","parent_identities","oauth_flows"}.issubset(names))
 
 if __name__ == "__main__":
     unittest.main()
