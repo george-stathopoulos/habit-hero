@@ -145,8 +145,10 @@ jobs:
           for role in child parent; do
             curl --fail --silent --show-error --retry 4 --retry-delay 3 "$base/habit-hero/v2/$role/" > "/tmp/hero-v2-$role.html"
             grep -q 'HABIT HERO · V2' "/tmp/hero-v2-$role.html"
-            grep -q 'v2-world-adventure.svg' "/tmp/hero-v2-$role.html"
+            grep -q '/habit-hero/app/v2/app.css' "/tmp/hero-v2-$role.html"
           done
+          curl --fail --silent --show-error "$base/habit-hero/app/v2/app.css" | grep -q 'v2-world-adventure.svg'
+          curl --fail --silent --show-error "$base/habit-hero/app/v2/app.js" | grep -q 'openHabitBuilder'
           for art in v2-hero-boy.svg v2-hero-girl.svg v2-world-playful.svg v2-world-adventure.svg v2-world-minimal.svg v2-world-youth.svg; do
             curl --fail --silent --show-error "$base/habit-hero/app/$art" | grep -q '<svg'
           done
