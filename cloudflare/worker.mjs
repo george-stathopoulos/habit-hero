@@ -1,3 +1,4 @@
+import {exportFamily} from './export-api.mjs';
 import {parentProgress,childProgress} from './progress-api.mjs';
 import {parentRewards,createReward,childRewards,childRequestReward,parentRedemptions,reviewReward,editReward,archiveReward} from './rewards-api.mjs';
 import {childPage} from './child-page.mjs';
@@ -118,6 +119,7 @@ export default {
     if (url.pathname === '/api/family/overview' && request.method === 'GET') {
       return familyOverview(request,env);
     }
+    if (url.pathname === '/api/family/export' && request.method === 'GET') return exportFamily(request,env);
     if (url.pathname === '/api/children' && request.method === 'POST') {
       return createChild(request,env);
     }
