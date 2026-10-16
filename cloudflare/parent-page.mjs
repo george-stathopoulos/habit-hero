@@ -98,6 +98,12 @@ export function parentPage() {
   <h2>🎁 Έπαθλα & ανταμοιβές</h2>
   <p class="subtle">Δημιουργήστε έπαθλα για τα παιδιά. Η εξαργύρωση αφαιρεί πόντους μόνο όταν την εγκρίνετε.</p>
   <ul id="rewardsList"></ul><p id="noRewards" class="subtle">Δεν υπάρχουν ακόμη έπαθλα.</p>
+  <div id="rewardTemplates" class="template-grid" aria-label="Ιδέες για έπαθλα">
+   <button type="button" class="secondary" data-name="Διαλέγω οικογενειακή ταινία" data-cost="80">🎬 Ταινία</button>
+   <button type="button" class="secondary" data-name="Μια επίσκεψη στην παιδική χαρά" data-cost="100">🛝 Παιδική χαρά</button>
+   <button type="button" class="secondary" data-name="Επιλέγω το βραδινό μας" data-cost="120">🍕 Βραδινό</button>
+   <button type="button" class="secondary" data-name="Επιλέγω οικογενειακό παιχνίδι" data-cost="70">🎲 Παιχνίδι</button>
+  </div><p class="subtle">Οι προτάσεις είναι ενδεικτικές· προσαρμόστε τους πόντους.</p>
   <form id="rewardForm">
     <label for="rewardName">Όνομα επάθλου</label>
     <input id="rewardName" required maxlength="100" placeholder="π.χ. Μια ώρα στο πάρκο">
@@ -621,6 +627,13 @@ export function parentPage() {
    document.getElementById('pointsDelta').value='';
    await refreshActivityWorkflow();await refreshProgress();
   }catch(e){status.textContent=e.message}finally{button.disabled=false}
+ });
+ document.getElementById('rewardTemplates').addEventListener('click',event=>{
+  const button=event.target.closest('button[data-name]');
+  if(!button)return;
+  document.getElementById('rewardName').value=button.dataset.name;
+  document.getElementById('rewardCost').value=button.dataset.cost;
+  document.getElementById('rewardName').focus();
  });
  document.getElementById('rewardForm').addEventListener('submit',async event=>{
   event.preventDefault();const save=document.getElementById('rewardSave');save.disabled=true;
