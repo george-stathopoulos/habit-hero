@@ -1,0 +1,165 @@
+// Child access via parent-approved pairing, never the parent's authentication cookie.
+// Intended for a separate child device/browser profile; never share a parent session.
+import {authorizedParent} from './family-api.mjs';
+const base='https://habit-hero-cloudflare.george-stathopoulos.workers.dev';
+const cookieName='__Host-hh_child';
+const headers={'cache-control':'no-store','x-content-type-options':'nosniff'};
+const json=(body,status=200,extra={})=>Response.json(body,{status,headers:{...headers,...extra}});
+const random=()=>crypto.getRandomValues(new Uint8Array(24));
+const b64=a=>btoa(String.fromCharCode(...a)).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
+const sha=async text=>b64(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text))));
+const validUUID=value=>typeof value==='string'&&/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(value);
+const childCookie=token=>cookieName+'='+token+'; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800';
+const clearCookie=cookieName+'=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0';
+function cookie(request){
+ const item=(request.headers.get('cookie')||'').split(';').map(x=>x.trim()).find(x=>x.startsWith(cookieName+'='));
+ return item?item.slice(cookieName.length+1):null;
+}
+async function bodyOf(req){
+ if(req.headers.get('origin')!==base)return {error:json({detail:'Forbidden'},403)};
+ if(!(req.headers.get('content-type')||'').toLowerCase().startsWith('application/json'))return {error:json({detail:'JSON required'},415)};
+ try{
+  const raw=await req.text();
+  if(raw.length>512)return {error:json({detail:'Request too large'},413)};
+  const body=JSON.parse(raw);
+  if(!body||typeof body!=='object'||Array.isArray(body))throw Error('Bad input');
+  return {body};
+ }catch{return {error:json({detail:'Invalid JSON'},400)}}
+}
+export async function makePairing(request,env){
+ const parsed=await bodyOf(request);
+ if(parsed.error)return parsed.error;
+ const parent=await authorizedParent(request,env);
+ if(!parent)return json({detail:'Not authenticated'},401);
+ const childId=parsed.body.child_id;
+ if(!validUUID(childId))return json({detail:'Invalid child'},400);
+ try{
+  const child=await env.DB.prepare('SELECT id FROM child_profiles WHERE family_id=? AND id=? AND deleted_at IS NULL')
+   .bind(parent.family_id,childId).first();
+  if(!child)return json({detail:'Child not found'},404);
+  const token=b64(random()),now=new Date(),expires=new Date(now.getTime()+10*60*1000);
+  await env.DB.prepare(`INSERT INTO child_device_pairings
+   (id,family_id,child_id,token_hash,created_by,created_at,expires_at)
+   VALUES (?,?,?,?,?,?,?)`).bind(crypto.randomUUID(),parent.family_id,childId,await sha(token),
+   parent.parent_id,now.toISOString(),expires.toISOString()).run();
+  return json({pairing_code:token,expires_at:expires.toISOString()},201);
+ }catch{return json({detail:'Could not create pairing'},503)}
+}
+export async function pairDevice(request,env){
+ const parsed=await bodyOf(request);
+ if(parsed.error)return parsed.error;
+ const code=parsed.body.code;
+ if(typeof code!=='string'|| !/^[A-Za-z0-9_-]{32}$/.test(code))return json({detail:'Invalid pairing code'},400);
+ const now=new Date(),expires=new Date(now.getTime()+7*86400000);
+ const token=b64(random()),tokenHash=await sha(token),codeHash=await sha(code);
+ try{
+  // Atomically consume code and create a child-only session. D1 batch executes
+  // the dependent INSERT SELECT in a single transaction with no parent privileges.
+  const results=await env.DB.batch([
+   env.DB.prepare(`UPDATE child_device_pairings SET consumed_at=?
+    WHERE token_hash=? AND consumed_at IS NULL AND expires_at>?
+    AND EXISTS(SELECT 1 FROM child_profiles c WHERE c.family_id=child_device_pairings.family_id
+      AND c.id=child_device_pairings.child_id AND c.deleted_at IS NULL)`)
+    .bind(now.toISOString(),codeHash,now.toISOString()),
+   env.DB.prepare(`INSERT INTO auth_sessions
+      (id,child_id,family_id,role,token_hash,created_at,expires_at)
+      SELECT ?,p.child_id,p.family_id,'child',?,?,?
+      FROM child_device_pairings p WHERE p.token_hash=? AND p.consumed_at=?
+      AND p.expires_at>?`)
+    .bind(crypto.randomUUID(),tokenHash,now.toISOString(),expires.toISOString(),
+      codeHash,now.toISOString(),now.toISOString())
+  ]);
+  if(results[0]?.meta?.changes!==1||results[1]?.meta?.changes!==1)
+    return json({detail:'Pairing code invalid, expired, or already used'},401);
+  return json({ok:true,role:'child'},200,{'set-cookie':childCookie(token)});
+ }catch{return json({detail:'Pairing unavailable'},503)}
+}
+export async function authorizedChild(request,env){
+ const token=cookie(request);
+ if(!env.DB||!token|| !/^[A-Za-z0-9_-]{32}$/.test(token))return null;
+ try{
+  return await env.DB.prepare(`SELECT s.id AS session_id,s.family_id,s.child_id,
+    c.display_name AS child_name
+   FROM auth_sessions s JOIN child_profiles c ON c.id=s.child_id AND c.family_id=s.family_id
+   JOIN families f ON f.id=s.family_id
+   WHERE s.token_hash=? AND s.role='child' AND s.parent_id IS NULL
+    AND s.revoked_at IS NULL AND s.expires_at>?
+    AND c.deleted_at IS NULL AND f.deleted_at IS NULL`)
+    .bind(await sha(token),new Date().toISOString()).first();
+ }catch{return null}
+}
+export async function childMe(request,env){
+ const actor=await authorizedChild(request,env);
+ return actor?json({role:'child',name:actor.child_name}):json({detail:'Not authenticated'},401);
+}
+export async function childActivities(request,env){
+ const child=await authorizedChild(request,env);
+ if(!child)return json({detail:'Not authenticated'},401);
+ try{
+  const now=new Date().toISOString().slice(0,10);
+  const rows=await env.DB.prepare(`SELECT h.id AS habit_id,h.name_el AS habit_name,h.points,h.emoji,
+    s.status AS submission_status
+    FROM habit_assignments a JOIN habits h ON h.id=a.habit_id AND h.family_id=a.family_id
+    LEFT JOIN completion_submissions s ON s.id=(
+      SELECT x.id FROM completion_submissions x WHERE x.family_id=a.family_id
+        AND x.child_id=a.child_id AND x.habit_id=a.habit_id
+        AND x.occurrence_date=? LIMIT 1)
+    WHERE a.family_id=? AND a.child_id=? AND h.active=1 AND h.deleted_at IS NULL
+    ORDER BY h.name_el LIMIT 100`).bind(now,child.family_id,child.child_id).all();
+  return json({name:child.child_name,activities:rows.results||[],date:now});
+ }catch{return json({detail:'Could not load habits'},503)}
+}
+export async function childSubmit(request,env){
+ const parsed=await bodyOf(request);
+ if(parsed.error)return parsed.error;
+ const child=await authorizedChild(request,env);
+ if(!child)return json({detail:'Not authenticated'},401);
+ const habitId=parsed.body.habit_id;
+ if(!validUUID(habitId))return json({detail:'Invalid habit'},400);
+ try{
+  const assigned=await env.DB.prepare(`SELECT h.id FROM habit_assignments a
+   JOIN habits h ON h.id=a.habit_id AND h.family_id=a.family_id
+   WHERE a.family_id=? AND a.child_id=? AND a.habit_id=? AND h.active=1 AND h.deleted_at IS NULL`)
+   .bind(child.family_id,child.child_id,habitId).first();
+  if(!assigned)return json({detail:'Habit not assigned'},404);
+  const now=new Date().toISOString(),day=now.slice(0,10);
+  await env.DB.prepare(`INSERT INTO completion_submissions
+    (id,family_id,child_id,habit_id,occurrence_date,status,submitted_at,idempotency_key)
+    VALUES (?,?,?,?,?,'pending',?,?)`)
+    .bind(crypto.randomUUID(),child.family_id,child.child_id,habitId,day,now,
+      'child-'+habitId+'-'+day).run();
+  return json({status:'pending'},201);
+ }catch(e){
+  if(/constraint|UNIQUE/i.test(String(e)))return json({detail:'Already submitted today'},409);
+  return json({detail:'Could not submit habit'},503);
+ }
+}
+export async function childLogout(request,env){
+ if(request.headers.get('origin')!==base)return json({detail:'Forbidden'},403);
+ const token=cookie(request);
+ if(token&&env.DB){
+  try{await env.DB.prepare("UPDATE auth_sessions SET revoked_at=? WHERE token_hash=? AND role='child'")
+     .bind(new Date().toISOString(),await sha(token)).run();}
+  catch{return json({detail:'Logout unavailable'},503)}
+ }
+ return json({ok:true},200,{'set-cookie':clearCookie});
+}
+export async function revokeChildDevices(request,env){
+ const parsed=await bodyOf(request);
+ if(parsed.error)return parsed.error;
+ const parent=await authorizedParent(request,env);
+ if(!parent)return json({detail:'Not authenticated'},401);
+ if(!validUUID(parsed.body.child_id))return json({detail:'Invalid child'},400);
+ try{
+  const now=new Date().toISOString();
+  await env.DB.batch([
+   env.DB.prepare(`UPDATE auth_sessions SET revoked_at=?
+     WHERE family_id=? AND child_id=? AND role='child' AND revoked_at IS NULL`)
+     .bind(now,parent.family_id,parsed.body.child_id),
+   env.DB.prepare(`UPDATE child_device_pairings SET consumed_at=?
+     WHERE family_id=? AND child_id=? AND consumed_at IS NULL`)
+     .bind(now,parent.family_id,parsed.body.child_id)
+  ]);
+  return json({ok:true});
+ }catch{return json({detail:'Could not revoke access'},503)}
+}
