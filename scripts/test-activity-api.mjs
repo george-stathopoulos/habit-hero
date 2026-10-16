@@ -19,7 +19,7 @@ const bindable=(sql)=>({bind:(...args)=>{queries.push({sql,args});return {
  },
  run:async()=>({meta:{changes:1}})
  }}});
-const db={prepare:bindable,batch:async(statements)=>({length:statements.length,0:{meta:{changes:1}},1:{meta:{changes:1}}}})};
+const db={prepare:bindable,batch:async(statements)=>[{meta:{changes:1}},{meta:{changes:1}}]};
 const env={ASSETS:assets,DB:db};
 const get=(p,headers={})=>worker.fetch(new Request(base+p,{headers}),env);
 const post=(p,payload,headers={})=>worker.fetch(new Request(base+p,{method:'POST',headers:{'content-type':'application/json',...headers},body:JSON.stringify(payload)}),env);
