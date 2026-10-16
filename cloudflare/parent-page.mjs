@@ -20,6 +20,17 @@ export function parentPage() {
  <input id="name" maxlength="80" autocomplete="off" required placeholder="π.χ. Αλέξης">
  <label for="age">Ηλικιακή ομάδα (προαιρετική)</label><select id="age"><option value="">Δεν θέλω να δηλώσω</option><option value="6-8">6–8</option><option value="9-11">9–11</option><option value="12-14">12–14</option></select>
  <button id="save" type="submit">Προσθήκη παιδιού</button></form><p id="formStatus" role="status" class="subtle"></p></section>
+ <section class="panel" id="devicesPanel" hidden><h2>📱 Συσκευές παιδιών</h2>
+ <p class="subtle">Ενεργοποιήστε την ανεξάρτητη πρόσβαση του παιδιού από άλλη συσκευή ή ξεχωριστό προφίλ browser, χωρίς να δώσετε πρόσβαση στον λογαριασμό γονέα.</p>
+ <label for="deviceChild">Παιδί</label><select id="deviceChild"></select>
+ <button id="createPair">Δημιουργία κωδικού σύνδεσης (10 λεπτά)</button>
+ <button id="revokeDevice" class="secondary">Ανάκληση πρόσβασης παιδιού</button>
+ <p id="deviceStatus" role="status" class="subtle"></p>
+ <div id="pairResult" hidden><p>Ο κωδικός εμφανίζεται μόνο τώρα. Αντιγράψτε τον στη συσκευή του παιδιού:</p>
+ <input id="pairCode" readonly aria-label="Κωδικός σύνδεσης"><button id="copyPair">Αντιγραφή κωδικού</button>
+ <p><a href="/habit-hero/child/" target="_blank" rel="noopener noreferrer">Άνοιγμα σελίδας παιδιού</a></p></div>
+ <p class="subtle">Προσοχή: αν ο γονέας είναι ήδη συνδεδεμένος στον ίδιο browser, το παιδί θα μπορούσε να ανοίξει τις σελίδες γονέα. Χρησιμοποιήστε ξεχωριστή συσκευή ή προφίλ.</p>
+ </section>
  <section class="panel" id="habitPanel" hidden><h2>✅ Συνήθειες</h2><p class="subtle">Αναθέστε δραστηριότητες στα παιδιά. Οι πόντοι θα ενεργοποιηθούν όταν υλοποιηθούν οι εγκρίσεις.</p>
  <ul id="habits"></ul><p id="noHabits" class="subtle">Δεν υπάρχουν ακόμη συνήθειες.</p>
  <form id="habitForm"><label for="habitName">Όνομα συνήθειας</label><input id="habitName" required maxlength="100" placeholder="π.χ. Βουρτσίζω τα δόντια μου">
@@ -58,6 +69,11 @@ export function parentPage() {
    for(const child of data.children){
     const option=document.createElement('option');option.value=child.id;option.textContent=child.display_name;select.append(option);
    }
+   const deviceSelect=document.getElementById('deviceChild');deviceSelect.replaceChildren();
+   for(const child of data.children){
+    const opt=document.createElement('option');opt.value=child.id;opt.textContent=child.display_name;deviceSelect.append(opt);
+   }
+   document.getElementById('devicesPanel').hidden=data.children.length===0;
    document.getElementById('habitPanel').hidden=data.children.length===0;
    if(data.children.length)await refreshHabits();
    if(data.children.length)await refreshActivityWorkflow();
@@ -166,6 +182,38 @@ export function parentPage() {
    if(!r.ok)throw Error('Δεν αποθηκεύτηκε το προφίλ. Ελέγξτε τα στοιχεία.');
    document.getElementById('form').reset();note.textContent='Το παιδί προστέθηκε!';await refresh();
   }catch(e){note.textContent=e.message}finally{btn.disabled=false}
+ });
+ document.getElementById('createPair').addEventListener('click',async()=>{
+  const btn=document.getElementById('createPair'),note=document.getElementById('deviceStatus');
+  btn.disabled=true;document.getElementById('pairResult').hidden=true;
+  try{
+   const r=await fetch('/api/child/pairing',{method:'POST',credentials:'same-origin',
+     headers:{'content-type':'application/json'},
+     body:JSON.stringify({child_id:document.getElementById('deviceChild').value})});
+   if(!r.ok)throw Error('Δεν δημιουργήθηκε ο κωδικός.');
+   const data=await r.json();
+   document.getElementById('pairCode').value=data.pairing_code;
+   document.getElementById('pairResult').hidden=false;
+   note.textContent='Κωδικός μίας χρήσης. Ισχύει 10 λεπτά.';
+  }catch(e){note.textContent=e.message}finally{btn.disabled=false}
+ });
+ document.getElementById('copyPair').addEventListener('click',async()=>{
+  const input=document.getElementById('pairCode');
+  try{await navigator.clipboard.writeText(input.value);
+   document.getElementById('deviceStatus').textContent='Ο κωδικός αντιγράφηκε.';
+  }catch{input.select();document.getElementById('deviceStatus').textContent='Επιλέχθηκε ο κωδικός. Αντιγράψτε τον.'}
+ });
+ document.getElementById('revokeDevice').addEventListener('click',async()=>{
+  if(!confirm('Να αποσυνδεθούν όλες οι συσκευές αυτού του παιδιού;'))return;
+  const btn=document.getElementById('revokeDevice');btn.disabled=true;
+  try{
+   const r=await fetch('/api/child/revoke',{method:'POST',credentials:'same-origin',
+    headers:{'content-type':'application/json'},
+    body:JSON.stringify({child_id:document.getElementById('deviceChild').value})});
+   if(!r.ok)throw Error('Δεν ολοκληρώθηκε η ανάκληση.');
+   document.getElementById('pairResult').hidden=true;
+   document.getElementById('deviceStatus').textContent='Η πρόσβαση ανακλήθηκε.';
+  }catch(e){document.getElementById('deviceStatus').textContent=e.message}finally{btn.disabled=false}
  });
  document.getElementById('logout').addEventListener('click',async()=>{
   await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
