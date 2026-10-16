@@ -23,13 +23,13 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the authoritative architect
 
 - Cloudflare frontend deployed and manually confirmed accessible.
 - Cloudflare API returns **503** while the native backend has not been implemented. This is intentional; the app must not pretend data is saved.
-- No D1 database, auth implementation, migrations or family-data API deployed yet.
+- EU-jurisdiction D1 database `habit-hero-db` has been created and configured as Worker binding `DB`. No schema, auth implementation, migrations or family-data API is deployed yet.
 - Original Expo/frontend and Python/MongoDB code are retained under `original/` **for reference only**. They are not an approved production backend.
 - The historical MongoDB Atlas free cluster was created during setup but is **not connected to Habit Hero** and is not part of production.
 - No production secrets should ever be committed or exposed as `EXPO_PUBLIC_*` variables.
 
 ## Development and deployment
 
-The GitHub Actions workflow `.github/workflows/cloudflare.yml` builds the web app and deploys when the repository variable `HABIT_HERO_CLOUDFLARE_DEPLOY` is `true`; its Cloudflare token lives in GitHub Actions secrets. No new D1 resources are automatically provisioned by this workflow.
+The GitHub Actions workflow `.github/workflows/cloudflare.yml` builds the web app and deploys when the repository variable `HABIT_HERO_CLOUDFLARE_DEPLOY` is `true`; its Cloudflare token lives in GitHub Actions secrets. D1 provisioning is handled by the separate `.github/workflows/provision-d1.yml` workflow. The Worker configuration includes the existing database binding.
 
 See [cloudflare/DEPLOYMENT.md](cloudflare/DEPLOYMENT.md).
