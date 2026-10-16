@@ -1,10 +1,6 @@
 name: Step 8 - Provision Habit Hero D1
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/provision-d1.yml"
 permissions:
   contents: read
 jobs:
