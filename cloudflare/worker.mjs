@@ -1,3 +1,4 @@
+import {adjustPoints} from './points-api.mjs';
 import {exportFamily} from './export-api.mjs';
 import {parentProgress,childProgress} from './progress-api.mjs';
 import {parentRewards,createReward,childRewards,childRequestReward,parentRedemptions,reviewReward,editReward,archiveReward,assignReward} from './rewards-api.mjs';
@@ -138,6 +139,7 @@ export default {
     if (url.pathname === '/api/approvals' && request.method === 'GET') return listApprovals(request,env);
     if (url.pathname === '/api/approvals/review' && request.method === 'POST') return reviewActivity(request,env);
     if (url.pathname === '/api/points' && request.method === 'GET') return listBalances(request,env);
+    if (url.pathname === '/api/points/adjust' && request.method === 'POST') return adjustPoints(request,env);
     if (url.pathname === '/api/progress' && request.method === 'GET') return parentProgress(request,env);
     if (url.pathname === '/api/child/progress' && request.method === 'GET') return childProgress(request,env);
     if (url.pathname === '/api/child/pairing' && request.method === 'POST') return makePairing(request,env);
