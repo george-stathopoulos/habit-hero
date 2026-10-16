@@ -1,12 +1,6 @@
 name: Verify original Expo web build
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "original/**"
-      - "scripts/prepare-original-assets.py"
-      - ".github/workflows/original-build.yml"
 permissions:
   contents: read
 jobs:
