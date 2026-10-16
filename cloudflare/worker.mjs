@@ -2,7 +2,7 @@ import {parentRewards,createReward,childRewards,childRequestReward,parentRedempt
 import {childPage} from './child-page.mjs';
 import {makePairing,pairDevice,childMe,childActivities,childSubmit,childLogout,revokeChildDevices} from './child-auth.mjs';
 import {listActivities,submitActivity,listApprovals,reviewActivity,listBalances} from './activity-api.mjs';
-import {listHabits,createHabit} from './habits-api.mjs';
+import {listHabits,createHabit,updateHabit,archiveHabit} from './habits-api.mjs';
 import {parentPage} from './parent-page.mjs';
 import {familyOverview,createChild} from './family-api.mjs';
 import {begin,callback,me,logout} from './google-auth.mjs';
@@ -126,6 +126,8 @@ export default {
     if (url.pathname === '/api/habits' && request.method === 'POST') {
       return createHabit(request,env);
     }
+    if (url.pathname === '/api/habits/update' && request.method === 'POST') return updateHabit(request,env);
+    if (url.pathname === '/api/habits/archive' && request.method === 'POST') return archiveHabit(request,env);
     if (url.pathname === '/api/activities' && request.method === 'GET') return listActivities(request,env);
     if (url.pathname === '/api/activities' && request.method === 'POST') return submitActivity(request,env);
     if (url.pathname === '/api/approvals' && request.method === 'GET') return listApprovals(request,env);
