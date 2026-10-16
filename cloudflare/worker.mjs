@@ -1,3 +1,4 @@
+import {listActivities,submitActivity,listApprovals,reviewActivity,listBalances} from './activity-api.mjs';
 import {listHabits,createHabit} from './habits-api.mjs';
 import {parentPage} from './parent-page.mjs';
 import {familyOverview,createChild} from './family-api.mjs';
@@ -118,6 +119,11 @@ export default {
     if (url.pathname === '/api/habits' && request.method === 'POST') {
       return createHabit(request,env);
     }
+    if (url.pathname === '/api/activities' && request.method === 'GET') return listActivities(request,env);
+    if (url.pathname === '/api/activities' && request.method === 'POST') return submitActivity(request,env);
+    if (url.pathname === '/api/approvals' && request.method === 'GET') return listApprovals(request,env);
+    if (url.pathname === '/api/approvals/review' && request.method === 'POST') return reviewActivity(request,env);
+    if (url.pathname === '/api/points' && request.method === 'GET') return listBalances(request,env);
     if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
       return json({ detail: 'Habit Hero API functionality is not available yet.' }, 503);
     }
