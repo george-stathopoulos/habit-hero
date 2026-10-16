@@ -1,3 +1,4 @@
+import {localDay} from './timezone.mjs';
 import {occurrenceKey,occurrenceSql} from './occurrence.mjs';
 // Child access via parent-approved pairing, never the parent's authentication cookie.
 // Intended for a separate child device/browser profile; never share a parent session.
@@ -98,7 +99,7 @@ export async function childActivities(request,env){
  const child=await authorizedChild(request,env);
  if(!child)return json({detail:'Not authenticated'},401);
  try{
-  const now=new Date().toISOString().slice(0,10);
+  const now=localDay(child.timezone);
   const rows=await env.DB.prepare(`SELECT h.id AS habit_id,h.name_el AS habit_name,h.points,h.emoji,
     s.status AS submission_status
     FROM habit_assignments a JOIN habits h ON h.id=a.habit_id AND h.family_id=a.family_id
@@ -124,7 +125,7 @@ export async function childSubmit(request,env){
    WHERE a.family_id=? AND a.child_id=? AND a.habit_id=? AND h.active=1 AND h.deleted_at IS NULL`)
    .bind(child.family_id,child.child_id,habitId).first();
   if(!assigned)return json({detail:'Habit not assigned'},404);
-  const now=new Date().toISOString(),day=occurrenceKey(assigned.frequency_type,now);
+  const now=new Date().toISOString(),day=occurrenceKey(assigned.frequency_type,localDay(child.timezone));
   await env.DB.prepare(`INSERT INTO completion_submissions
     (id,family_id,child_id,habit_id,occurrence_date,status,submitted_at,idempotency_key)
     VALUES (?,?,?,?,?,'pending',?,?)`)
