@@ -45,6 +45,7 @@ try{
    assert(horizontal.scroll<=horizontal.viewport+1,role+' '+width+'px horizontal overflow '+JSON.stringify(horizontal));
    assert.equal(errors.length,0,role+' '+width+'px errors '+errors.join('; '));
    await page.screenshot({path:'v2-layout-shots/'+role+'-'+width+'.png',fullPage:true});
+   if(width===390)await page.screenshot({path:'v2-layout-shots/preview-'+role+'.jpg',type:'jpeg',quality:30});
    if(role==='child'){
     await page.getByRole('button',{name:/Ο ήρωας/}).click();
     for(const theme of ['playful','adventure','minimal','youth']){
