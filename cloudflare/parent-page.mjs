@@ -145,6 +145,30 @@ export function parentPage() {
     }catch(e){document.getElementById('habitStatus').textContent=e.message;edit.disabled=false}
    });
    li.append(edit);
+   const assign=document.createElement('button');assign.className='secondary';assign.textContent='Ανάθεση σε παιδί';
+   assign.addEventListener('click',async()=>{
+     const childOptions=Array.from(document.getElementById('habitChild').options)
+       .filter(option=>!habit.children.some(child=>child.id===option.value));
+     if(!childOptions.length){
+       document.getElementById('habitStatus').textContent='Η συνήθεια έχει ήδη ανατεθεί σε όλα τα παιδιά.';return;
+     }
+     const choices=childOptions.map((option,index)=>(index+1)+'. '+option.textContent).join('\\n');
+     const choice=prompt('Επιλέξτε αριθμό παιδιού:\\n'+choices);
+     if(choice===null)return;
+     const index=Number(choice)-1;
+     if(!Number.isInteger(index)||index<0||index>=childOptions.length){
+       document.getElementById('habitStatus').textContent='Μη έγκυρη επιλογή.';return;
+     }
+     assign.disabled=true;
+     try{
+       const response=await fetch('/api/habits/assign',{method:'POST',credentials:'same-origin',
+        headers:{'content-type':'application/json'},body:JSON.stringify({
+         habit_id:habit.id,child_id:childOptions[index].value})});
+       if(!response.ok)throw Error('Η ανάθεση δεν αποθηκεύτηκε.');
+       document.getElementById('habitStatus').textContent='Η συνήθεια ανατέθηκε και στο παιδί.';
+       await refreshHabits();await refreshActivityWorkflow();
+     }catch(e){document.getElementById('habitStatus').textContent=e.message;assign.disabled=false}
+   });li.append(assign);
    const archive=document.createElement('button');archive.className='secondary';archive.textContent='Αρχειοθέτηση';
    archive.addEventListener('click',async()=>{
     if(!confirm('Αρχειοθέτηση της συνήθειας; Το ιστορικό και οι πόντοι θα διατηρηθούν.'))return;
