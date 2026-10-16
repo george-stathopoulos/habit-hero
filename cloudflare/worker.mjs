@@ -85,6 +85,9 @@ export default {
     if (url.pathname === '/api/household/parent-pin' && request.method === 'POST')return setupParentPin(request,env);
     if (url.pathname === '/api/household/unlock' && request.method === 'POST')return unlockHousehold(request,env);
     if (url.pathname === '/api/household/exit' && request.method === 'POST')return exitToHousehold(request,env);
+    if(url.pathname==='/habit-hero' || url.pathname==='/habit-hero/'){
+      return Response.redirect(new URL('/habit-hero/welcome/',url),302);
+    }
     if (url.pathname === '/') {
       return Response.redirect(new URL('/habit-hero/', url), 302);
     }
