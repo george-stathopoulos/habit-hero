@@ -104,6 +104,23 @@ export default {
       if(request.method!=='GET')return json({detail:'Method not allowed'},405);
       return childPage();
     }
+    if(url.pathname==='/api/version'&&request.method==='GET'){
+      const current=typeof env.APP_VERSION==='string'?env.APP_VERSION:'unknown';
+      let latest=null,updatedAt=null;
+      try{
+        const response=await fetch('https://api.github.com/repos/george-stathopoulos/habit-hero/commits/main',{
+          headers:{'user-agent':'habit-hero-version-check','accept':'application/vnd.github+json'},
+          cf:{cacheTtl:180,cacheEverything:true}
+        });
+        if(response.ok){
+          const data=await response.json();latest=data.sha||null;
+          updatedAt=data.commit?.committer?.date||null;
+        }
+      }catch{}
+      return new Response(JSON.stringify({current,latest,updated_at:updatedAt,
+        update_available:!!(latest&&current!=='unknown'&&latest!==current),
+        check_available:!!latest}),{headers:{'content-type':'application/json','cache-control':'no-store'}});
+    }
     if (url.pathname === '/_health') {
       return json({ service: 'habit-hero-edge', status: 'ok', apiConfigured: false });
     }
