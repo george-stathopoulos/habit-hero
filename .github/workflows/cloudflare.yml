@@ -32,6 +32,8 @@ jobs:
           node scripts/test-family-api.mjs
           node --check cloudflare/habits-api.mjs
           node scripts/test-habits-api.mjs
+          node --check cloudflare/activity-api.mjs
+          node scripts/test-activity-api.mjs
           python3 scripts/generate-icons.py
           python3 scripts/prepare-original-assets.py
       - name: Build original Expo app for Cloudflare
@@ -118,3 +120,16 @@ jobs:
             "https://habit-hero-cloudflare.george-stathopoulos.workers.dev/api/habits")
           test "$status" = "401" || { echo "::error::Habits API must block unauthenticated requests (got $status)"; exit 1; }
           echo "Habits UI deployed and anonymous access denied"
+
+      - name: Verify live supervised workflow protection
+        if: ${{ vars.HABIT_HERO_CLOUDFLARE_DEPLOY == 'true' }}
+        run: |
+          curl --fail --silent --show-error --retry 5 --retry-delay 3 --retry-all-errors \
+            "https://habit-hero-cloudflare.george-stathopoulos.workers.dev/habit-hero/parent/" \
+            | grep -q 'id="approvalsPanel"'
+          for route in activities approvals points; do
+            status=$(curl --silent --show-error -o /dev/null -w '%{http_code}' \
+              "https://habit-hero-cloudflare.george-stathopoulos.workers.dev/api/$route")
+            test "$status" = "401" || { echo "::error::/$route returned HTTP $status to anonymous request"; exit 1; }
+          done
+          echo "Verified private completion, approval and points endpoints"
