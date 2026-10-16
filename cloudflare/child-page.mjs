@@ -83,6 +83,14 @@ export function childPage(){
   const button=event.target.closest('[data-child-tab]');if(button)openChildTab(button.dataset.childTab);
  });
  openChildTab('quests');
+ const inAppMode=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+ if(!inAppMode&&/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){
+  const banner=document.createElement('aside');banner.style.cssText='background:#fff3d8;color:#372e50;border-radius:18px;padding:15px;margin:12px 0';
+  const instruction=document.createElement('p');
+  instruction.textContent='📲 Για εμπειρία χωρίς μπάρες browser, άνοιξε το Habit Hero από το εγκατεστημένο εικονίδιο στην αρχική οθόνη. '+(/iPhone|iPad/i.test(navigator.userAgent)?'Safari → Κοινοποίηση → Προσθήκη στην Αρχική Οθόνη.':'Chrome → ⋮ → Εγκατάσταση εφαρμογής.');
+  const close=document.createElement('button');close.textContent='Εντάξει';close.type='button';close.addEventListener('click',()=>banner.remove());
+  banner.append(instruction,close);document.querySelector('main').prepend(banner);
+ }
  const status=document.getElementById('status');
  async function refresh(){
   const me=await fetch('/api/child/me',{credentials:'same-origin',cache:'no-store'});
