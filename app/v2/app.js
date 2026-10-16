@@ -212,8 +212,10 @@
   const r=await fetch('/api/family/overview',{credentials:'same-origin'});
   if(!r.ok){$('error').textContent='Ξεκλείδωσε πρώτα το προφίλ γονέα.';return}
   const data=await r.json();actor={id:data.parent.id,name:data.parent.name};
-  $('greeting').textContent='Γεια σου, '+actor.name+'!';$('heroArt').src='/habit-hero/app/v2-hero-girl.svg';
+  $('greeting').textContent='Γεια σου, '+actor.name+'!';$('heroArt').src='/habit-hero/app/v2-family.svg';
   try{theme(localStorage.getItem(themeKey())||'minimal')}catch{theme('minimal')}
+  document.querySelector('#homeTab>.heading h2').textContent='Η οικογένειά μου';
+  $('progressLabel').hidden=true;$('progressFill').parentElement.hidden=true;
   $('heroHeading').textContent='Μαζί χτίζουμε καλές συνήθειες.';
   $('heroSubtitle').textContent=(data.children||[]).length+' μικροί ήρωες στην οικογένεια.';
   familyChildren=(data.children||[]).map(c=>({id:c.id,name:c.name||c.display_name}));
