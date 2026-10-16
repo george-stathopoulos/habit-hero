@@ -79,11 +79,11 @@ h1{font-size:29px;margin:10px 0}p{line-height:1.6}a,button{display:inline-block;
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if(['/habit-hero/v2/child','/habit-hero/v2/child/'].includes(url.pathname)){
+    if(['/habit-hero/v2/child','/habit-hero/v2/child/','/habit-hero/welcome/v2/child','/habit-hero/welcome/v2/child/'].includes(url.pathname)){
       if(request.method!=='GET')return json({detail:'Method not allowed'},405);
       return v2Page('child');
     }
-    if(['/habit-hero/v2/parent','/habit-hero/v2/parent/'].includes(url.pathname)){
+    if(['/habit-hero/v2/parent','/habit-hero/v2/parent/','/habit-hero/welcome/v2/parent','/habit-hero/welcome/v2/parent/'].includes(url.pathname)){
       if(request.method!=='GET')return json({detail:'Method not allowed'},405);
       return v2Page('parent');
     }
