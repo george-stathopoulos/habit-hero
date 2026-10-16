@@ -1,3 +1,4 @@
+import {occurrenceKey,occurrenceSql} from './occurrence.mjs';
 // Supervised child activity flow: parent session is required even for submissions.
 // Independent child PIN sessions are deliberately NOT implemented yet.
 import {authorizedParent} from './family-api.mjs';
@@ -31,10 +32,10 @@ export async function listActivities(request,env){
    LEFT JOIN completion_submissions s ON s.id = (
       SELECT x.id FROM completion_submissions x WHERE x.family_id=a.family_id
        AND x.child_id=a.child_id AND x.habit_id=a.habit_id
-       AND x.occurrence_date=? ORDER BY x.submitted_at DESC LIMIT 1)
+       AND x.occurrence_date=${occurrenceSql} ORDER BY x.submitted_at DESC LIMIT 1)
    WHERE a.family_id=? AND c.deleted_at IS NULL AND h.deleted_at IS NULL AND h.active=1
    ORDER BY c.display_name,h.name_el LIMIT 200`)
-    .bind(new Date().toISOString().slice(0,10),actor.family_id).all();
+    .bind(...Array(3).fill(new Date().toISOString().slice(0,10)),actor.family_id).all();
   return reply({date:new Date().toISOString().slice(0,10),mode:'parent_supervised',
     activities:results.results||[]});
  }catch{return reply({detail:'Unable to load activities'},503)}
@@ -43,15 +44,16 @@ export async function submitActivity(request,env){
  const {parent,body,error}=await writeContext(request,env);
  if(error)return error;
  if(!uuid(body.child_id)||!uuid(body.habit_id))return reply({detail:'Invalid habit or child'},400);
- const now=new Date().toISOString(),date=now.slice(0,10),id=crypto.randomUUID();
+ const now=new Date().toISOString(),id=crypto.randomUUID();
  try{
-  const entry=await env.DB.prepare(`SELECT h.id FROM habits h
+  const entry=await env.DB.prepare(`SELECT h.id,h.frequency_type FROM habits h
     JOIN habit_assignments a ON a.habit_id=h.id AND a.family_id=h.family_id
     JOIN child_profiles c ON c.id=a.child_id AND c.family_id=a.family_id
     WHERE h.family_id=? AND h.id=? AND c.id=? AND h.active=1
     AND h.deleted_at IS NULL AND c.deleted_at IS NULL`)
     .bind(parent.family_id,body.habit_id,body.child_id).first();
   if(!entry)return reply({detail:'Activity not assigned to this child'},404);
+  const date=occurrenceKey(entry.frequency_type,now);
   await env.DB.prepare(`INSERT INTO completion_submissions
    (id,family_id,child_id,habit_id,occurrence_date,status,submitted_at,idempotency_key)
    VALUES (?,?,?,?,?,'pending',?,?)`)
@@ -60,7 +62,7 @@ export async function submitActivity(request,env){
   return reply({id,status:'pending',date},201);
  }catch(e){
   // UNIQUE on family/child/habit/date or idempotency key avoids double submission.
-  if(/UNIQUE|constraint/i.test(String(e)))return reply({detail:'Already submitted today'},409);
+  if(/UNIQUE|constraint/i.test(String(e)))return reply({detail:'Already submitted for this period'},409);
   return reply({detail:'Could not submit activity'},503);
  }
 }
