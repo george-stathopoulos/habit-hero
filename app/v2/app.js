@@ -42,7 +42,14 @@
  function detail(m){
   const wrap=node('div');
   const scene=node('div',undefined,'mission-scene');
-  const art=node('img');art.src=$('heroArt').src;art.alt='';
+  const art=node('img');art.alt='';
+  const missionTitle=String(m.habit_name||'').toLowerCase();
+  const artCategory=/δόντι|βουρτσ|teeth|tooth|brush/.test(missionTitle)?'teeth':
+   /κρεβάτι|bed|δωμάτι|room/.test(missionTitle)?'bed':
+   /διαβ|βιβλ|reading|read|book/.test(missionTitle)?'reading':
+   /έξω|πάρκο|βόλτα|outside|outdoor|walk|φύση/.test(missionTitle)?'outdoors':null;
+  art.src=artCategory?'/habit-hero/app/v2-mission-'+artCategory+'.svg':$('heroArt').src;
+  if(artCategory)scene.classList.add('mission-illustration');
   scene.append(art,node('span',m.emoji||'⭐','mission-symbol'));wrap.append(scene);
   const kicker=node('div','✨ ΑΠΟΣΤΟΛΗ '+(m.slot_index||1)+' / '+(m.slot_total||1),'eyebrow');wrap.append(kicker);
   const info=node('p',m.description_el||'Αποστολή: '+m.habit_name);
