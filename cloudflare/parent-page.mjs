@@ -350,6 +350,12 @@ export function parentPage() {
    const item=document.createElement('li');
    item.textContent='🌟 '+child.child_name+' · '+child.approved_last_30_days+' ολοκληρώσεις · '+child.active_days_last_30_days+
     ' ενεργές ημέρες · '+child.current_streak_days+' ημέρες σερί · '+child.earned_last_30_days+' πόντοι κερδισμένοι';
+   const rank=document.createElement('p');rank.className='subtle';
+   rank.textContent='🦸 Επίπεδο '+child.level+' · '+child.lifetime_approved+' συνολικές αποστολές · '+child.lifetime_points_earned+' συνολικοί κερδισμένοι πόντοι';
+   item.append(rank);
+   if(child.badges.length){
+    const badges=document.createElement('p');badges.textContent=child.badges.map(b=>b.emoji+' '+b.name).join(' · ');item.append(badges);
+   }
    const details=document.createElement('details');
    const summary=document.createElement('summary');summary.textContent='Πρόσφατες δραστηριότητες';details.append(summary);
    const history=document.createElement('ul');
