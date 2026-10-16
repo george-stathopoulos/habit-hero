@@ -12,7 +12,20 @@ export function parentPage() {
  input,select{width:100%;padding:12px;border:1px solid #d4ddea;border-radius:9px;font:inherit;margin:7px 0 15px}
  label{font-weight:600}ul{list-style:none;padding:0}li{padding:14px 0;border-bottom:1px solid #e9eef8}
  form{display:grid;gap:6px}.row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+ nav.quick-nav{position:sticky;top:0;z-index:20;display:flex;gap:8px;overflow-x:auto;scrollbar-width:thin;
+  padding:12px;margin:0 0 18px;background:#f3f7fff5;backdrop-filter:blur(12px);border-radius:15px}
+ nav.quick-nav a{flex-shrink:0;display:inline-flex;align-items:center;padding:10px 15px;border-radius:999px;
+  background:white;color:#244c75;text-decoration:none;font-size:14px;font-weight:650;box-shadow:0 2px 10px #1f457811}
+ nav.quick-nav a:focus-visible{outline:3px solid #f5a623}
+ section.panel{scroll-margin-top:90px}
+ @media(max-width:600px){body{padding:12px}main{margin:8px auto}header,.panel{padding:19px;border-radius:17px}
+  h1{font-size:27px}h2{font-size:20px}button{padding:11px 13px}nav.quick-nav{margin:0 0 12px}}
  </style></head><body><main><header><div><h1>🏆 Habit Hero</h1><div class="subtle">Οικογενειακός πίνακας</div></div><button id="logout" class="secondary">Αποσύνδεση</button></header>
+ <nav class="quick-nav" aria-label="Γρήγορη πλοήγηση">
+ <a href="#family">👨‍👩‍👧 Παιδιά</a><a href="#habitPanel">🎯 Συνήθειες</a>
+ <a href="#approvalsPanel">✅ Εγκρίσεις</a><a href="#rewardsPanel">🎁 Έπαθλα</a>
+ <a href="#redemptionsPanel">📩 Αιτήματα</a><a href="#progressPanel">📈 Πρόοδος</a>
+ <a href="#privacyPanel">🔒 Δεδομένα</a></nav>
  <section class="panel"><h2 id="greeting">Φόρτωση...</h2><p id="status" role="status" class="subtle">Έλεγχος σύνδεσης...</p></section>
  <section class="panel" id="family" hidden><h2>👨‍👩‍👧‍👦 Τα παιδιά μου</h2><p class="subtle">Δημιουργήστε το προφίλ κάθε παιδιού. Δεν απαιτείται Google λογαριασμός για τα παιδιά.</p>
  <ul id="children"></ul><p id="empty" class="subtle">Δεν υπάρχουν ακόμη προφίλ παιδιών.</p></section>
