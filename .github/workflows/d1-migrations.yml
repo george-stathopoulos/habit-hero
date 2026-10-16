@@ -1,12 +1,6 @@
 name: Step 9 - Verify and apply D1 schema
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "cloudflare/migrations/**"
-      - "scripts/test-d1-schema.py"
-      - ".github/workflows/d1-migrations.yml"
 permissions:
   contents: read
 jobs:
