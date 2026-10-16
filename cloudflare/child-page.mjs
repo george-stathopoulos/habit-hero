@@ -110,6 +110,12 @@ export function childPage(){
  <div class="quest-meter"><div id="questMeterFill"></div></div>
  <div class="quest-footer"><strong id="questCount">0 από 0</strong><span id="questMotivation">Κάθε προσπάθεια μετράει! ⭐</span></div>
  </section>
+ <section id="allDonePanel" data-tab="quests" hidden style="background:linear-gradient(135deg,#fef5da,#e8e0ff);text-align:center;border:2px solid #f8d98d">
+ <div style="font-size:68px;animation:questFloat 3s ease-in-out infinite" aria-hidden="true">🏆🌈</div>
+ <h2>Όλες οι αποστολές ολοκληρώθηκαν!</h2>
+ <p>Έκανες υπέροχη προσπάθεια σήμερα! Ώρα για παιχνίδι, ξεκούραση και νέες περιπέτειες. 💜</p>
+ <p class="muted">Οι πόντοι από τις προσπάθειές σου προστίθενται όταν τις εγκρίνει ο γονέας σου.</p>
+ </section>
  <section id="activitiesPanel" data-tab="quests" hidden><h2>🌟 Οι δραστηριότητές μου</h2>
  <p class="muted">Πάτησε «Το έκανα!» όταν ολοκληρώσεις μια δραστηριότητα. Οι πόντοι προστίθενται μετά από έγκριση γονέα.</p>
  <ul id="activities"></ul><p id="feedback" role="status"></p></section>
@@ -176,6 +182,7 @@ export function childPage(){
    document.getElementById('childTabTitle').hidden=true;
    document.getElementById('activitiesPanel').hidden=true;
    document.getElementById('questOverview').hidden=true;
+   document.getElementById('allDonePanel').hidden=true;
    document.getElementById('rewardsPanel').hidden=true;
    document.getElementById('progressPanel').hidden=true;
    document.getElementById('rewards').replaceChildren();
@@ -205,7 +212,8 @@ export function childPage(){
   if(!res.ok){status.textContent='Οι δραστηριότητες δεν είναι διαθέσιμες αυτή τη στιγμή.';return}
   const data=await res.json();
   const total=data.activities.length;
-  const completed=data.activities.filter(item=>!!item.submission_status).length;
+  const completed=data.activities.filter(item=>['pending','approved'].includes(item.submission_status)).length;
+  document.getElementById('allDonePanel').hidden=!(total>0&&completed===total);
   document.getElementById('questGreeting').textContent='Πάμε δυνατά, '+profile.name+'! 🌈';
   document.getElementById('questCount').textContent=completed+' από '+total+' αποστολές';
   document.getElementById('questMeterFill').style.width=(total?Math.round(100*completed/total):0)+'%';
