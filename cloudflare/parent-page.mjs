@@ -12,7 +12,9 @@ export function parentPage() {
  input,select{width:100%;padding:12px;border:1px solid #d4ddea;border-radius:9px;font:inherit;margin:7px 0 15px}
  label{font-weight:600}ul{list-style:none;padding:0}li{padding:14px 0;border-bottom:1px solid #e9eef8}
  form{display:grid;gap:6px}.row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
- nav.quick-nav{position:sticky;top:0;z-index:20;display:flex;gap:8px;overflow-x:auto;scrollbar-width:thin;
+ .template-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:9px;margin-bottom:12px}
+ .template-grid button{text-align:left;min-height:49px}
+  nav.quick-nav{position:sticky;top:0;z-index:20;display:flex;gap:8px;overflow-x:auto;scrollbar-width:thin;
   padding:12px;margin:0 0 18px;background:#f3f7fff5;backdrop-filter:blur(12px);border-radius:15px}
  nav.quick-nav a{flex-shrink:0;display:inline-flex;align-items:center;padding:10px 15px;border-radius:999px;
   background:white;color:#244c75;text-decoration:none;font-size:14px;font-weight:650;box-shadow:0 2px 10px #1f457811}
@@ -64,6 +66,14 @@ export function parentPage() {
  </section>
  <section class="panel" id="habitPanel" hidden><h2>✅ Συνήθειες</h2><p class="subtle">Αναθέστε δραστηριότητες στα παιδιά. Οι πόντοι θα ενεργοποιηθούν όταν υλοποιηθούν οι εγκρίσεις.</p>
  <ul id="habits"></ul><p id="noHabits" class="subtle">Δεν υπάρχουν ακόμη συνήθειες.</p>
+ <div id="habitTemplates" class="template-grid" aria-label="Έτοιμες συνήθειες">
+ <button type="button" class="secondary" data-name="Βουρτσίζω τα δόντια μου" data-points="10" data-frequency="daily">🪥 Δόντια</button>
+ <button type="button" class="secondary" data-name="Διαβάζω 15 λεπτά" data-points="15" data-frequency="daily">📚 Διάβασμα</button>
+ <button type="button" class="secondary" data-name="Τακτοποιώ το δωμάτιό μου" data-points="15" data-frequency="daily">🧹 Τακτοποίηση</button>
+ <button type="button" class="secondary" data-name="Ετοιμάζω τη σχολική τσάντα" data-points="10" data-frequency="daily">🎒 Τσάντα</button>
+ <button type="button" class="secondary" data-name="Βοηθάω σε μία δουλειά του σπιτιού" data-points="20" data-frequency="weekly">🏠 Βοήθεια</button>
+ <button type="button" class="secondary" data-name="Κάνω φυσική δραστηριότητα" data-points="15" data-frequency="daily">🚴 Κίνηση</button>
+ </div><p class="subtle">Επίλεξε μια ιδέα και προσαρμόσε όνομα, πόντους και συχνότητα πριν την αποθήκευση.</p>
  <form id="habitForm"><label for="habitName">Όνομα συνήθειας</label><input id="habitName" required maxlength="100" placeholder="π.χ. Βουρτσίζω τα δόντια μου">
  <label for="habitChild">Παιδί</label><select id="habitChild" required></select>
  <label for="habitFrequency">Συχνότητα</label><select id="habitFrequency"><option value="daily">Καθημερινά</option><option value="weekly">Εβδομαδιαία</option><option value="monthly">Μηνιαία</option><option value="once">Μία φορά</option></select>
@@ -335,6 +345,14 @@ export function parentPage() {
    const li=document.createElement('li');li.textContent='🏅 '+child.child_name+': '+child.points+' πόντοι';balanceList.append(li);
   }
  }
+ document.getElementById('habitTemplates').addEventListener('click',event=>{
+  const button=event.target.closest('button[data-name]');
+  if(!button)return;
+  document.getElementById('habitName').value=button.dataset.name;
+  document.getElementById('habitPoints').value=button.dataset.points;
+  document.getElementById('habitFrequency').value=button.dataset.frequency;
+  document.getElementById('habitName').focus();
+ });
  document.getElementById('habitForm').addEventListener('submit',async event=>{
   event.preventDefault();
   const button=document.getElementById('habitSave'),status=document.getElementById('habitStatus');
