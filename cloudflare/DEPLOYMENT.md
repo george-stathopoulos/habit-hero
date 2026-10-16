@@ -1,9 +1,22 @@
-# Habit Hero Cloudflare deployment
+# Habit Hero — Cloudflare deployment
 
-This folder contains the Worker serving Habit Hero's static assets and its optional API gateway.
+**Production architecture:** Cloudflare Workers + Static Assets + D1 (D1 not yet provisioned). See [architecture decision](../docs/ARCHITECTURE.md).
 
-Deployment is controlled by the GitHub Actions repository variable `HABIT_HERO_CLOUDFLARE_DEPLOY=true` and secret `CLOUDFLARE_API_TOKEN`. The account ID defaults to the same non-secret identifier used by the owner's site-analytics project.
+The Worker currently publishes the website and original Expo PWA. Its `/api/*` routes intentionally return **HTTP 503** until authenticated, family-isolated, D1-backed endpoints are implemented. **Do not configure `API_ORIGIN` or a legacy Render/MongoDB backend.** There is no remote proxy.
 
-The Worker serves `/habit-hero/` and proxies `/api/*` to an HTTPS API origin when `API_ORIGIN` is configured. Without that backend configuration, `/api/*` intentionally responds with HTTP 503. This is a static frontend deployment, not full-stack readiness.
+## Deployment controls
 
-The deployment run output is the source of truth for whether Cloudflare actually published this Worker.
+The workflow `.github/workflows/cloudflare.yml` compiles the Expo web app, runs the Cloudflare route tests, stages static assets, and deploys with Wrangler 4 when repository variable `HABIT_HERO_CLOUDFLARE_DEPLOY=true`. The deployment token is stored in the `CLOUDFLARE_API_TOKEN` GitHub Actions secret. The account ID defaults to the same account used for the site's analytics project, but can be overridden with `CLOUDFLARE_ACCOUNT_ID`.
+
+Public Worker: https://habit-hero-cloudflare.george-stathopoulos.workers.dev
+
+- `/`: redirects to `/habit-hero/`
+- `/habit-hero/original-preview/`: source Expo frontend preview
+- `/_health`: checks edge availability; `apiConfigured: false` is expected at Step 7
+- `/api/*`: HTTP 503, no upstream connection
+
+GitHub Actions workflow results verify publication. A successful build does **not** mean the full application is functional.
+
+## Next development gate
+
+D1 creation, binding, schema migrations, auth and CRUD endpoints are **not** part of Step 7 and require separate verification before live rollout. Keep database secrets and identifiers out of public client assets.
