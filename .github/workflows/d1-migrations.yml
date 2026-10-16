@@ -29,7 +29,7 @@ jobs:
           test -n "$CLOUDFLARE_ACCOUNT_ID"
       - name: Apply reviewed migrations to EU remote D1
         working-directory: cloudflare
-        run: npx --yes wrangler@4 d1 migrations apply habit-hero-db --remote --yes
+        run: printf 'y\\n' | npx --yes wrangler@4 d1 migrations apply habit-hero-db --remote
       - name: Verify applied schema (read-only)
         working-directory: cloudflare
         run: |
