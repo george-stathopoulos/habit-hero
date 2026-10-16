@@ -150,7 +150,10 @@ export async function childSubmit(request,env){
   if(slot>1){
    const previous=entries.find(x=>x.slot_index===slot-1);
    if(!previous)return json({detail:'Complete the previous occurrence first'},409);
-   const delay=Number(assigned.retry_delay_minutes)||0;
+   if(['weekly','monthly'].includes(assigned.frequency_type)&&
+      previous.submitted_at.slice(0,10)===now.slice(0,10))
+    return json({detail:'Wait until another day for the next weekly or monthly completion'},429);
+   const delay=Math.max(maximum>1?30:0,Number(assigned.retry_delay_minutes)||0);
    if(delay>0&&Date.now()-Date.parse(previous.submitted_at)<delay*60000)
     return json({detail:'Please wait '+delay+' minutes between repetitions'},429);
   }
