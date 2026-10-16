@@ -33,6 +33,7 @@ jobs:
           node --check cloudflare/export-api.mjs
           node --check cloudflare/points-api.mjs
           node --check cloudflare/timezone.mjs
+          node scripts/test-occurrence.mjs
           node scripts/test-child-auth.mjs
           python3 scripts/generate-icons.py
           python3 scripts/prepare-original-assets.py
