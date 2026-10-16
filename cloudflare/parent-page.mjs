@@ -20,7 +20,14 @@ export function parentPage() {
  <input id="name" maxlength="80" autocomplete="off" required placeholder="π.χ. Αλέξης">
  <label for="age">Ηλικιακή ομάδα (προαιρετική)</label><select id="age"><option value="">Δεν θέλω να δηλώσω</option><option value="6-8">6–8</option><option value="9-11">9–11</option><option value="12-14">12–14</option></select>
  <button id="save" type="submit">Προσθήκη παιδιού</button></form><p id="formStatus" role="status" class="subtle"></p></section>
- <section class="panel"><h2>🚧 Επόμενες λειτουργίες</h2><p class="subtle">Συνήθειες, πόντοι και επιβραβεύσεις θα ενεργοποιηθούν αφού ολοκληρωθούν οι έλεγχοι ασφάλειας.</p></section>
+ <section class="panel" id="habitPanel" hidden><h2>✅ Συνήθειες</h2><p class="subtle">Αναθέστε δραστηριότητες στα παιδιά. Οι πόντοι θα ενεργοποιηθούν όταν υλοποιηθούν οι εγκρίσεις.</p>
+ <ul id="habits"></ul><p id="noHabits" class="subtle">Δεν υπάρχουν ακόμη συνήθειες.</p>
+ <form id="habitForm"><label for="habitName">Όνομα συνήθειας</label><input id="habitName" required maxlength="100" placeholder="π.χ. Βουρτσίζω τα δόντια μου">
+ <label for="habitChild">Παιδί</label><select id="habitChild" required></select>
+ <label for="habitFrequency">Συχνότητα</label><select id="habitFrequency"><option value="daily">Καθημερινά</option><option value="weekly">Εβδομαδιαία</option><option value="monthly">Μηνιαία</option><option value="once">Μία φορά</option></select>
+ <label for="habitPoints">Πόντοι</label><input id="habitPoints" type="number" min="1" max="1000" value="10" required>
+ <button id="habitSave" type="submit">Δημιουργία και ανάθεση</button></form><p id="habitStatus" role="status" class="subtle"></p></section>
+ <section class="panel"><h2>🚧 Επόμενες λειτουργίες</h2><p class="subtle">Η καταχώριση ολοκληρώσεων, οι πόντοι και οι επιβραβεύσεις θα ενεργοποιηθούν σε επόμενο βήμα.</p></section>
  </main><script>
  const status=document.getElementById('status'),greeting=document.getElementById('greeting');
  const list=document.getElementById('children'),empty=document.getElementById('empty');
@@ -37,12 +44,47 @@ export function parentPage() {
     const li=document.createElement('li');li.textContent='🌟 '+child.display_name+(child.age_band?' · '+child.age_band:'');list.append(li);
    }
    empty.hidden=data.children.length>0;
+   const select=document.getElementById('habitChild');select.replaceChildren();
+   for(const child of data.children){
+    const option=document.createElement('option');option.value=child.id;option.textContent=child.display_name;select.append(option);
+   }
+   document.getElementById('habitPanel').hidden=data.children.length===0;
+   if(data.children.length)await refreshHabits();
   }catch(e){
    greeting.textContent='Habit Hero';status.textContent=e.message;
    const a=document.createElement('a');a.href='/api/auth/google/start';a.textContent='Σύνδεση με Google';
    status.append(' · ',a);
   }
  }
+ async function refreshHabits(){
+  const r=await fetch('/api/habits',{credentials:'same-origin',cache:'no-store'});
+  if(!r.ok)throw Error('Δεν ήταν δυνατή η φόρτωση των συνηθειών.');
+  const data=await r.json(),items=document.getElementById('habits');
+  items.replaceChildren();
+  for(const habit of data.habits){
+   const li=document.createElement('li');
+   li.textContent=(habit.emoji||'⭐')+' '+habit.name+' · '+habit.points+' πόντοι · '+habit.children.map(c=>c.name).join(', ');
+   items.append(li);
+  }
+  document.getElementById('noHabits').hidden=data.habits.length>0;
+ }
+ document.getElementById('habitForm').addEventListener('submit',async event=>{
+  event.preventDefault();
+  const button=document.getElementById('habitSave'),status=document.getElementById('habitStatus');
+  button.disabled=true;
+  try{
+   const payload={name:document.getElementById('habitName').value,
+    child_id:document.getElementById('habitChild').value,
+    frequency:document.getElementById('habitFrequency').value,
+    points:Number(document.getElementById('habitPoints').value)};
+   const response=await fetch('/api/habits',{method:'POST',credentials:'same-origin',
+    headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
+   if(!response.ok)throw Error('Η αποθήκευση απέτυχε. Παρακαλώ δοκιμάστε ξανά.');
+   status.textContent='Η συνήθεια δημιουργήθηκε και ανατέθηκε!';
+   document.getElementById('habitName').value='';
+   await refreshHabits();
+  }catch(e){status.textContent=e.message}finally{button.disabled=false}
+ });
  document.getElementById('form').addEventListener('submit',async ev=>{
   ev.preventDefault();const btn=document.getElementById('save'),note=document.getElementById('formStatus');btn.disabled=true;
   try{
