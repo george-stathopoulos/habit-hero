@@ -69,6 +69,9 @@ export function parentPage() {
   <p id="noRedemptions" class="subtle">Δεν υπάρχουν ακόμη αιτήματα.</p>
   <p id="redemptionStatus" role="status" class="subtle"></p>
  </section>
+ <section class="panel" id="progressPanel" hidden><h2>📈 Η πρόοδός μας</h2>
+ <p class="subtle">Οι τελευταίες 30 ημέρες · οι συνεχόμενες ημέρες βασίζονται σε εγκεκριμένες δραστηριότητες.</p>
+ <ul id="progressList"></ul><p id="progressMessage" role="status" class="subtle"></p></section>
  <section class="panel"><h2>🚧 Επόμενες λειτουργίες</h2><p class="subtle">Επεξεργασία συνηθειών, υπενθυμίσεις, αναλυτικά στατιστικά και πλήρης σχεδίαση εφαρμογής βρίσκονται υπό ανάπτυξη.</p></section>
  </main><script>
  const status=document.getElementById('status'),greeting=document.getElementById('greeting');
@@ -103,6 +106,7 @@ export function parentPage() {
    document.getElementById('rewardsPanel').hidden=data.children.length===0;
    document.getElementById('redemptionsPanel').hidden=data.children.length===0;
    if(data.children.length)await refreshRewards();
+   if(data.children.length)await refreshProgress();
   }catch(e){
    greeting.textContent='Habit Hero';status.textContent=e.message;
    const a=document.createElement('a');a.href='/api/auth/google/start';a.textContent='Σύνδεση με Google';
@@ -278,6 +282,18 @@ export function parentPage() {
    document.getElementById('deviceStatus').textContent='Η πρόσβαση ανακλήθηκε.';
   }catch(e){document.getElementById('deviceStatus').textContent=e.message}finally{btn.disabled=false}
  });
+ async function refreshProgress(){
+  const response=await fetch('/api/progress',{credentials:'same-origin',cache:'no-store'});
+  if(!response.ok){document.getElementById('progressMessage').textContent='Η πρόοδος δεν είναι διαθέσιμη.';return}
+  const data=await response.json(),list=document.getElementById('progressList');list.replaceChildren();
+  for(const child of data.children){
+   const item=document.createElement('li');
+   item.textContent='🌟 '+child.child_name+' · '+child.approved_last_30_days+' ολοκληρώσεις · '+child.active_days_last_30_days+
+    ' ενεργές ημέρες · '+child.current_streak_days+' ημέρες σερί · '+child.earned_last_30_days+' πόντοι κερδισμένοι';
+   list.append(item);
+  }
+  document.getElementById('progressPanel').hidden=false;
+ }
  async function refreshRewards(){
   const [catalogResponse,requestsResponse]=await Promise.all([
     fetch('/api/rewards',{credentials:'same-origin',cache:'no-store'}),
