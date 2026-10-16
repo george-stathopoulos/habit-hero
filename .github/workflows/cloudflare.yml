@@ -74,7 +74,12 @@ jobs:
         run: |
           test -n "$CLOUDFLARE_API_TOKEN"
           npx --yes wrangler@4 d1 execute habit-hero-db --remote --file ./migrations/0002_family_timezone.sql
-          npx --yes wrangler@4 d1 execute habit-hero-db --remote --file ./migrations/0003_child_pin.sql
+          npx --yes wrangler@4 d1 execute habit-hero-db --remote --command "SELECT name FROM pragma_table_info('auth_sessions') WHERE name='pin_verified_at';" --json > ../pin-column-check.json
+          if node -e 'const r=require("../pin-column-check.json");process.exit(JSON.stringify(r).includes("pin_verified_at")?0:1)'; then
+            echo "PIN session column already installed"
+          else
+            npx --yes wrangler@4 d1 execute habit-hero-db --remote --file ./migrations/0003_child_pin.sql
+          fi
       - name: Deploy using existing Cloudflare account
         if: ${{ vars.HABIT_HERO_CLOUDFLARE_DEPLOY == 'true' }}
         working-directory: cloudflare
