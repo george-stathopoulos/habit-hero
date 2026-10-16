@@ -22,8 +22,8 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the authoritative architect
 ## Current state
 
 - Cloudflare frontend deployed and manually confirmed accessible.
-- Cloudflare API returns **503** while the native backend has not been implemented. This is intentional; the app must not pretend data is saved.
-- EU-jurisdiction D1 database `habit-hero-db` has been created and configured as Worker binding `DB`. No schema, auth implementation, migrations or family-data API is deployed yet.
+- Unimplemented Cloudflare API routes return **503**. The read-only **/api/health** route verifies live D1 connectivity. This is intentional; the app must not pretend data is saved.
+- EU-jurisdiction D1 database `habit-hero-db` has been created and configured as Worker binding `DB`. Initial D1 schema migration is applied and integrity-tested; authenticated family-data API is not implemented yet.
 - Original Expo/frontend and Python/MongoDB code are retained under `original/` **for reference only**. They are not an approved production backend.
 - The historical MongoDB Atlas free cluster was created during setup but is **not connected to Habit Hero** and is not part of production.
 - No production secrets should ever be committed or exposed as `EXPO_PUBLIC_*` variables.
