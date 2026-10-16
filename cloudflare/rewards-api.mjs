@@ -250,3 +250,18 @@ export async function assignReward(req,env){
   return json({status:'assigned'},201);
  }catch{return json({detail:'Could not assign reward'},503)}
 }
+
+export async function unassignReward(req,env){
+ const input=await readBody(req);if(input.error)return input.error;
+ const actor=await authorizedParent(req,env);
+ if(!actor)return json({detail:'Not authenticated'},401);
+ const rewardId=input.body.reward_id,childId=input.body.child_id;
+ if(!uuid(rewardId)||!uuid(childId))return json({detail:'Invalid assignment'},400);
+ try{
+  const result=await env.DB.prepare(`DELETE FROM reward_eligibility
+    WHERE family_id=? AND reward_id=? AND child_id=?`)
+   .bind(actor.family_id,rewardId,childId).run();
+  if(result.meta?.changes!==1)return json({detail:'Assignment not found'},404);
+  return json({status:'unassigned'});
+ }catch{return json({detail:'Could not remove reward assignment'},503)}
+}
