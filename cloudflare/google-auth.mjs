@@ -112,9 +112,9 @@ async function callback(request,env) {
    await env.DB.prepare('UPDATE parent_identities SET last_login_at=? WHERE issuer=? AND subject=?')
       .bind(new Date().toISOString(),issuer,profile.sub).run();
   }
-  const token=b64(random()),now=new Date(),expires=new Date(now.getTime()+7*86400000);
+  const token=b64(random()),sessionNow=new Date(),expires=new Date(sessionNow.getTime()+7*86400000);
   await env.DB.prepare(`INSERT INTO auth_sessions (id,parent_id,role,token_hash,created_at,expires_at)
-      VALUES (?,?,'parent',?,?,?)`).bind(crypto.randomUUID(),parentId,await hash(token),now.toISOString(),expires.toISOString()).run();
+      VALUES (?,?,'parent',?,?,?)`).bind(crypto.randomUUID(),parentId,await hash(token),sessionNow.toISOString(),expires.toISOString()).run();
   const headers=new Headers({'location':appCallback,'cache-control':'no-store','referrer-policy':'no-referrer'});
   headers.append('set-cookie',sessionCookie+'='+token+sessionFlags+'; Max-Age=604800');
   headers.append('set-cookie',clearFlow);
