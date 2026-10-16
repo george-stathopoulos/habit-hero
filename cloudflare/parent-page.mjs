@@ -385,6 +385,29 @@ export function parentPage() {
           await refreshRewards();
         }catch(e){document.getElementById('rewardStatus').textContent=e.message;edit.disabled=false}
       });item.append(edit);
+      const assign=document.createElement('button');assign.className='secondary';assign.textContent='Ανάθεση σε παιδί';
+      assign.addEventListener('click',async()=>{
+        const choices=Array.from(document.getElementById('rewardChild').options)
+          .filter(option=>!reward.children.some(child=>child.id===option.value));
+        if(!choices.length){
+          document.getElementById('rewardStatus').textContent='Το έπαθλο έχει ανατεθεί σε όλα τα παιδιά.';return;
+        }
+        const selection=prompt('Επιλέξτε αριθμό παιδιού:\\n'+choices.map((option,i)=>(i+1)+'. '+option.textContent).join('\\n'));
+        if(selection===null)return;
+        const index=Number(selection)-1;
+        if(!Number.isInteger(index)||index<0||index>=choices.length){
+         document.getElementById('rewardStatus').textContent='Μη έγκυρη επιλογή.';return;
+        }
+        assign.disabled=true;
+        try{
+          const response=await fetch('/api/rewards/assign',{method:'POST',credentials:'same-origin',
+           headers:{'content-type':'application/json'},body:JSON.stringify({
+            reward_id:reward.id,child_id:choices[index].value})});
+          if(!response.ok)throw Error('Η ανάθεση απέτυχε.');
+          document.getElementById('rewardStatus').textContent='Το έπαθλο ανατέθηκε.';
+          await refreshRewards();
+        }catch(e){document.getElementById('rewardStatus').textContent=e.message;assign.disabled=false}
+      });item.append(assign);
       const archive=document.createElement('button');archive.className='secondary';archive.textContent='Αρχειοθέτηση';
       archive.addEventListener('click',async()=>{
         if(!confirm('Να κρυφτεί το έπαθλο από τα παιδιά; Οι παλιές αιτήσεις παραμένουν.'))return;
