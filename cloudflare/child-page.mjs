@@ -10,9 +10,20 @@ export function childPage(){
  button{background:#448ce7;border:0;color:white;border-radius:10px;padding:11px 17px;margin:6px;font:inherit;cursor:pointer}
  button:disabled{opacity:.45}.secondary{background:#e8eff9;color:#173e68}
  li{list-style:none;padding:14px 0;border-bottom:1px solid #e5eafa}ul{padding:0}
- .muted{color:#5d728e}.hidden{display:none}</style></head><body>
+ .muted{color:#5d728e}.hidden{display:none}
+ nav.quick-nav{position:sticky;top:0;z-index:20;display:flex;gap:8px;overflow-x:auto;
+ padding:10px 0;background:#f3f6fff2;backdrop-filter:blur(10px)}
+ nav.quick-nav a{display:inline-flex;white-space:nowrap;background:white;color:#1c548b;
+ padding:11px 16px;border-radius:999px;text-decoration:none;font-weight:700;box-shadow:0 2px 10px #21396513}
+ nav.quick-nav a:focus-visible{outline:3px solid #f5a623}
+ section{scroll-margin-top:80px}
+ @media(max-width:600px){body{padding:10px}main{margin:10px auto}section{padding:19px}h1{font-size:27px}}
+ </style></head><body>
  <main><section><h1>🏆 Habit Hero</h1><p id="status" role="status">Έλεγχος προφίλ...</p>
  <button id="logout" class="secondary" hidden>Αποσύνδεση παιδιού</button></section>
+ <nav id="quickNav" class="quick-nav" aria-label="Πλοήγηση παιδιού" hidden>
+ <a href="#activitiesPanel">🌟 Συνήθειες</a><a href="#rewardsPanel">🎁 Έπαθλα</a>
+ <a href="#progressPanel">📈 Πρόοδος</a></nav>
  <section id="pairPanel" hidden><h2>🔑 Σύνδεση με οικογενειακό κωδικό</h2>
  <p class="muted">Ζήτησε από τον γονέα σου έναν νέο κωδικό σύνδεσης. Ο κωδικός λειτουργεί μόνο μία φορά και λήγει σε 10 λεπτά.</p>
  <form id="pairForm"><label for="code">Κωδικός συσκευής</label><input id="code" required maxlength="32" minlength="32" autocomplete="off" spellcheck="false" placeholder="Επικόλλησε τον κωδικό">
@@ -30,6 +41,7 @@ export function childPage(){
  async function refresh(){
   const me=await fetch('/api/child/me',{credentials:'same-origin',cache:'no-store'});
   if(!me.ok){document.getElementById('pairPanel').hidden=false;
+   document.getElementById('quickNav').hidden=true;
    document.getElementById('activitiesPanel').hidden=true;
    document.getElementById('rewardsPanel').hidden=true;
    document.getElementById('progressPanel').hidden=true;
@@ -44,6 +56,7 @@ export function childPage(){
   const profile=await me.json();
   status.textContent='Γεια σου, '+profile.name+'!';
   document.getElementById('pairPanel').hidden=true;
+  document.getElementById('quickNav').hidden=false;
   document.getElementById('logout').hidden=false;
   const res=await fetch('/api/child/activities',{credentials:'same-origin',cache:'no-store'});
   if(!res.ok){status.textContent='Οι δραστηριότητες δεν είναι διαθέσιμες αυτή τη στιγμή.';return}
