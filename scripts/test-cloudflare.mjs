@@ -29,4 +29,20 @@ r=await worker.fetch(new Request(url+'/api/health'),{ASSETS:assets,DB:dbOk,API_O
 assert.equal(r.status,200);
 r=await worker.fetch(new Request(url+'/api/auth/me'),{ASSETS:assets,DB:dbOk});
 assert.equal(r.status,401);
+
+// The Google callback landing URL must be handled by the Worker rather than
+// falling through to Expo static asset paths (404 on direct navigation).
+r=await worker.fetch(new Request(url+'/habit-hero/original-preview/auth/google-callback'),{ASSETS:assets});
+assert.equal(r.status,200);
+assert.match(r.headers.get('content-type'),/text\/html/);
+assert.match(r.headers.get('cache-control'),/no-store/);
+let landing=await r.text();
+assert.ok(landing.includes("fetch('/api/auth/me'"),'landing checks the HttpOnly session through a same-origin request');
+assert.ok(landing.includes('textContent'),'untrusted profile data is rendered as text');
+assert.ok(!landing.includes('session_token='));
+r=await worker.fetch(new Request(url+'/habit-hero/original-preview/auth/google-callback/'),{ASSETS:assets});
+assert.equal(r.status,200);
+r=await worker.fetch(new Request(url+'/habit-hero/original-preview/auth/google-callback',{method:'POST'}),{ASSETS:assets});
+assert.equal(r.status,405);
+
 console.log('PASS Cloudflare Worker routing, D1 probe and safe-unconfigured API behavior');
