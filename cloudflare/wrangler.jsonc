@@ -12,6 +12,8 @@
       "/",
       "/api",
       "/api/*",
+      "/habit-hero/v2/*",
+      "/habit-hero/v2",
       "/_health"
     ],
     "not_found_handling": "single-page-application"
