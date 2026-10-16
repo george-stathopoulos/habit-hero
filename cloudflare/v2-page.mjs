@@ -46,7 +46,7 @@ export function v2Page(role='child'){
  @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
  </style></head><body data-theme="minimal"><main class="shell">
  <header class="top"><div><div class="eyebrow">HABIT HERO · V2</div><h1 id="greeting">Η περιπέτειά σου</h1></div><div class="controls"><button id="bell" class="iconbtn" aria-label="Μηνύματα">🔔<span id="bellCount" class="count" hidden></span></button><button id="switchUser" class="iconbtn" aria-label="Αλλαγή χρήστη">⇄</button></div></header>
- <section id="homeTab"><div class="stage"><div id="worldCaption" class="world-caption">✦ YOUR WORLD</div><img id="heroArt" class="hero-art" src="/habit-hero/app/v2-hero-boy.svg" alt="Ο ήρωάς μου"><div style="position:relative;max-width:66%"><div class="eyebrow">TODAY'S ADVENTURE</div><h2 id="heroHeading">Κάθε μικρή νίκη μετράει.</h2><p id="heroSubtitle">Ο κόσμος σου μεγαλώνει μαζί σου.</p></div><div class="progress"><div id="progressFill" class="fill"></div></div><div id="progressLabel" style="margin-top:10px;font-weight:700">—</div></div><div class="heading"><h2>Οι αποστολές μου</h2><span id="missionTotal" class="muted"></span></div><div id="missionList"></div><div id="parentQuickActions" hidden class="panel"><h2>Δημιούργησε κάτι σπουδαίο</h2><button id="newHabit" class="primary">＋ Νέα αποστολή</button></div><div class="egg"><span class="egg-icon" id="eggArt">🥚</span><div><h3 id="eggTitle">Το μυστηριώδες αυγό</h3><p id="eggProgress">Ο σύντροφός σου μεγαλώνει με την προσπάθειά σου.</p></div></div></section>
+ <section id="homeTab"><div class="stage"><div id="worldCaption" class="world-caption">✦ YOUR WORLD</div><img id="heroArt" class="hero-art" src="/habit-hero/app/v2-hero-boy.svg" alt="Ο ήρωάς μου"><div style="position:relative;max-width:66%"><div class="eyebrow">TODAY'S ADVENTURE</div><h2 id="heroHeading">Κάθε μικρή νίκη μετράει.</h2><p id="heroSubtitle">Ο κόσμος σου μεγαλώνει μαζί σου.</p></div><div class="progress"><div id="progressFill" class="fill"></div></div><div id="progressLabel" style="margin-top:10px;font-weight:700">—</div></div><div class="heading"><h2>Οι αποστολές μου</h2><span id="missionTotal" class="muted"></span></div><div id="missionList"></div><div id="parentQuickActions" hidden class="panel"><h2>Δημιούργησε κάτι σπουδαίο</h2><div class="actions"><button id="newHabit" class="primary">＋ Νέα αποστολή</button><button id="newChild" class="secondary">🦸 Νέο παιδί</button></div></div><div class="egg"><span class="egg-icon" id="eggArt">🥚</span><div><h3 id="eggTitle">Το μυστηριώδες αυγό</h3><p id="eggProgress">Ο σύντροφός σου μεγαλώνει με την προσπάθειά σου.</p></div></div></section>
  <section id="messagesTab" hidden><h2>🔔 Μηνύματα</h2><div id="messagesList"></div></section>
  <section id="rewardsTab" hidden><h2>🎁 Θησαυροφυλάκιο</h2><p id="balanceTitle" class="notice">⭐ 0 διαθέσιμοι πόντοι</p><div id="rewardsList" class="reward-grid"></div></section>
  <section id="profileTab" hidden><div class="panel"><h2>🦸 Διάλεξε ήρωα</h2><p class="muted">Όλοι μπορούν να επιλέξουν τον ήρωα που τους εκφράζει.</p><div id="heroChoices" class="hero-select"></div></div><div class="panel"><h2>🎨 Διάλεξε τον κόσμο σου</h2><div id="themeChoices" class="themes"></div></div><div id="profileInfo" class="panel"></div></section>
@@ -123,7 +123,7 @@ export function v2Page(role='child'){
  }
  async function loadChild(){
   const me=await fetch('/api/child/me',{credentials:'same-origin',cache:'no-store'});if(!me.ok){$('error').textContent='Χρειάζεται σύνδεση παιδιού από την οικογενειακή αρχική.';return}
-  actor=await me.json();$('greeting').textContent='Γεια σου, '+actor.name+'!';try{pickHero(localStorage.getItem(heroKey())||'boy')}catch{pickHero('boy')}
+  actor=await me.json();$('greeting').textContent='Γεια σου, '+actor.name+'!';try{pickHero(localStorage.getItem(heroKey())|| (actor.avatar_id==='hero-girl'?'girl':'boy'))}catch{pickHero('boy')}
   try{theme(localStorage.getItem(themeKey())||'playful')}catch{theme('playful')}
   const [a,h,r]=await Promise.all([fetch('/api/child/activities',{credentials:'same-origin'}),fetch('/api/child/help',{credentials:'same-origin'}),fetch('/api/child/rewards',{credentials:'same-origin'})]);
   if(a.ok)activities=(await a.json()).activities||[];
@@ -166,6 +166,33 @@ export function v2Page(role='child'){
   if(type!=='select')input.value=value;
   wrap.append(input);return {wrap,input};
  }
+ function openChildBuilder(){
+  const form=node('form');
+  const name=field('Όνομα παιδιού'),age=field('Ηλικία','select'),pin=field('Προσωπικό PIN (4 ψηφία)','text'),repeat=field('Επιβεβαίωση PIN','text');
+  const hero=field('Εμφάνιση ήρωα','select'),world=field('Αρχικός κόσμος','select');
+  name.input.required=true;name.input.maxLength=80;
+  pin.input.required=true;pin.input.inputMode='numeric';pin.input.maxLength=4;pin.input.pattern='[0-9]{4}';
+  repeat.input.required=true;repeat.input.inputMode='numeric';repeat.input.maxLength=4;repeat.input.pattern='[0-9]{4}';
+  for(const [id,label] of [['6-8','6–8 ετών'],['9-11','9–11 ετών'],['12-14','12–14 ετών']]){const option=node('option',label);option.value=id;age.input.append(option)}
+  for(const [id,label] of heroTypes){const option=node('option',label);option.value=id;hero.input.append(option)}
+  for(const [id,label] of themeList){const option=node('option',label);option.value=id;world.input.append(option)}
+  for(const x of [name,age,pin,repeat,hero,world])form.append(x.wrap);
+  const preview=node('img');preview.src='/habit-hero/app/v2-hero-boy.svg';preview.alt='Προεπισκόπηση ήρωα';preview.style.cssText='height:160px;width:100%;object-fit:contain';
+  hero.input.onchange=()=>{preview.src='/habit-hero/app/v2-hero-'+hero.input.value+'.svg'};form.append(preview);
+  const submit=node('button','Δημιουργία προφίλ','primary');submit.type='submit';form.append(submit);
+  form.onsubmit=async event=>{
+   event.preventDefault();if(pin.input.value!==repeat.input.value){form.append(node('p','Τα PIN δεν ταιριάζουν.'));return}
+   submit.disabled=true;
+   try{
+    const child=await api('/api/children','POST',{name:name.input.value,age_band:age.input.value,pin:pin.input.value});
+    await api('/api/children/update','POST',{child_id:child.id,name:name.input.value,age_band:age.input.value,avatar_id:'hero-'+hero.input.value});
+    try{localStorage.setItem('hh2-theme-child-'+child.id,world.input.value);
+        localStorage.setItem('hh2-hero-'+child.id,hero.input.value)}catch{}
+    $('modal').hidden=true;await loadParent();showModal('🌟 Καλώς ήρθες!',node('p','Ο νέος ήρωας απέκτησε το δικό του προφίλ!'));
+   }catch(error){submit.disabled=false;form.append(node('p',error.message))}
+  };
+  showModal('🦸 Δημιουργία μικρού ήρωα',form);
+ }
  function openHabitBuilder(){
   const form=node('form');
   const title=field('Όνομα αποστολής'),child=field('Ανάθεση σε παιδί','select');
@@ -193,7 +220,7 @@ export function v2Page(role='child'){
   $('heroHeading').textContent='Μαζί χτίζουμε καλές συνήθειες.';
   $('heroSubtitle').textContent=(data.children||[]).length+' μικροί ήρωες στην οικογένεια.';
   familyChildren=(data.children||[]).map(c=>({id:c.id,name:c.name||c.display_name}));
-  $('parentQuickActions').hidden=false;$('newHabit').onclick=openHabitBuilder;
+  $('parentQuickActions').hidden=false;$('newHabit').onclick=openHabitBuilder;$('newChild').onclick=openChildBuilder;
   $('missionList').replaceChildren();
   for(const child of familyChildren){const card=node('div',undefined,'mission');card.append(node('span','🦸','emoji'),node('strong',child.name));$('missionList').append(card)}
   $('profileInfo').replaceChildren(node('h2','Ο προσωπικός σου χώρος'),node('p','Άλλαξε εμφάνιση ανεξάρτητα από τα παιδιά.'));
