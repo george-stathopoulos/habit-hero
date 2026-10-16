@@ -134,6 +134,19 @@ jobs:
           test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "::error::Set repository variable CLOUDFLARE_ACCOUNT_ID"; exit 1; }
           node -e 'const fs=require("fs"); const p="wrangler.jsonc"; const d=JSON.parse(fs.readFileSync(p,"utf8")); d.vars={...d.vars,APP_VERSION:process.env.GITHUB_SHA}; fs.writeFileSync(p,JSON.stringify(d,null,2));'
           npx --yes wrangler@4 deploy --config wrangler.jsonc
+      - name: Verify illustrated Habit Hero v2 routes and assets
+        if: ${{ vars.HABIT_HERO_CLOUDFLARE_DEPLOY == 'true' }}
+        run: |
+          set -eu
+          base=https://habit-hero-cloudflare.george-stathopoulos.workers.dev
+          for role in child parent; do
+            curl --fail --silent --show-error --retry 4 --retry-delay 3 "$base/habit-hero/v2/$role/" > "/tmp/hero-v2-$role.html"
+            grep -q 'HABIT HERO · V2' "/tmp/hero-v2-$role.html"
+            grep -q 'v2-world-adventure.svg' "/tmp/hero-v2-$role.html"
+          done
+          for art in v2-hero-boy.svg v2-hero-girl.svg v2-world-playful.svg v2-world-adventure.svg v2-world-minimal.svg v2-world-youth.svg; do
+            curl --fail --silent --show-error "$base/habit-hero/app/$art" | grep -q '<svg'
+          done
       - name: Verify live D1-backed API health
         if: ${{ vars.HABIT_HERO_CLOUDFLARE_DEPLOY == 'true' }}
         run: |
