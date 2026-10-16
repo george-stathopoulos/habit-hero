@@ -170,6 +170,11 @@ export function parentPage() {
  <h2>🌟 Ολοκλήρωση δραστηριοτήτων</h2>
  <p class="subtle">Οι δραστηριότητες μπορούν να ολοκληρωθούν από τη συσκευή του παιδιού ή με επίβλεψη γονέα. Χρειάζεται έγκριση για να αποδοθούν πόντοι.</p>
  <ul id="activities"></ul><p id="activityNote" class="subtle" role="status"></p></section>
+ <section class="panel" id="helpRequestsPanel" data-tab="approvals" hidden>
+ <h2>🙋 Αιτήματα βοήθειας</h2>
+ <p class="subtle">Όταν ένα παιδί ζητά βοήθεια, μπορείς να το στηρίξεις ή να το ενθαρρύνεις να προσπαθήσει ξανά.</p>
+ <ul id="helpRequests"></ul><p id="helpStatus" class="subtle" role="status"></p>
+ </section>
  <section class="panel" id="approvalsPanel" data-tab="approvals" hidden>
  <h2>🛡️ Εγκρίσεις γονέα</h2><ul id="approvals"></ul>
  <p id="noApprovals" class="subtle">Δεν υπάρχουν εκκρεμείς εγκρίσεις.</p>
@@ -536,7 +541,36 @@ export function parentPage() {
   }
   document.getElementById('noHabits').hidden=data.habits.length>0;
  }
+ async function refreshHelpRequests(){
+  const response=await fetch('/api/parent/help',{credentials:'same-origin',cache:'no-store'});
+  if(!response.ok)return;
+  const data=await response.json(),list=document.getElementById('helpRequests');
+  const panel=document.getElementById('helpRequestsPanel');list.replaceChildren();
+  panel.hidden=false;
+  if(!(data.requests||[]).length){
+   const li=document.createElement('li');li.textContent='Δεν υπάρχουν νέα αιτήματα βοήθειας. 🌈';list.append(li);
+  }
+  for(const item of data.requests||[]){
+   const li=document.createElement('li');
+   const title=document.createElement('strong');title.textContent='🙋 '+item.child_name+' · '+item.habit_name;li.append(title);
+   for(const [action,label] of [['helping','💜 Θα βοηθήσω'],['try_again','💪 Δοκίμασε ξανά']]){
+    const button=document.createElement('button');button.type='button';button.className='secondary';button.textContent=label;
+    button.addEventListener('click',async()=>{
+     button.disabled=true;
+     try{
+      const response=await fetch('/api/parent/help/reply',{method:'POST',credentials:'same-origin',
+       headers:{'content-type':'application/json'},body:JSON.stringify({request_id:item.id,status:action})});
+      if(!response.ok)throw Error('Η απάντηση δεν στάλθηκε.');
+      document.getElementById('helpStatus').textContent='Το μήνυμά σου στάλθηκε στο παιδί! 💌';
+      await refreshHelpRequests();
+     }catch(error){button.disabled=false;document.getElementById('helpStatus').textContent=error.message}
+    });li.append(button);
+   }
+   list.append(li);
+  }
+ }
  async function refreshActivityWorkflow(){
+  await refreshHelpRequests();
   const [a,p,b]=await Promise.all([
     fetch('/api/activities',{credentials:'same-origin',cache:'no-store'}),
     fetch('/api/approvals',{credentials:'same-origin',cache:'no-store'}),
