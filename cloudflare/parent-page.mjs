@@ -86,7 +86,26 @@ export function parentPage() {
    document.getElementById('family').hidden=false;document.getElementById('create').hidden=false;
    list.replaceChildren();
    for(const child of data.children) {
-    const li=document.createElement('li');li.textContent='🌟 '+child.display_name+(child.age_band?' · '+child.age_band:'');list.append(li);
+    const li=document.createElement('li'),label=document.createElement('span');
+    label.textContent='🌟 '+child.display_name+(child.age_band?' · '+child.age_band:'')+' ';
+    li.append(label);
+    const edit=document.createElement('button');edit.className='secondary';edit.textContent='Επεξεργασία';
+    edit.addEventListener('click',async()=>{
+     const name=prompt('Όνομα παιδιού',child.display_name);if(name===null)return;
+     const age=prompt('Ηλικιακή ομάδα: 6-8, 9-11, 12-14 ή κενό',child.age_band||'');if(age===null)return;
+     if(!name.trim()||name.length>80||!['','6-8','9-11','12-14'].includes(age)){
+      document.getElementById('formStatus').textContent='Μη έγκυρα στοιχεία παιδιού.';return;
+     }
+     edit.disabled=true;
+     try{
+      const response=await fetch('/api/children/update',{method:'POST',credentials:'same-origin',
+       headers:{'content-type':'application/json'},body:JSON.stringify({
+        child_id:child.id,name,age_band:age||null})});
+      if(!response.ok)throw Error('Δεν αποθηκεύτηκε το προφίλ.');
+      document.getElementById('formStatus').textContent='Το προφίλ ενημερώθηκε.';
+      await refresh();
+     }catch(e){document.getElementById('formStatus').textContent=e.message;edit.disabled=false}
+    });li.append(edit);list.append(li);
    }
    empty.hidden=data.children.length>0;
    const select=document.getElementById('habitChild');select.replaceChildren();
