@@ -1,3 +1,4 @@
+import {familyOverview,createChild} from './family-api.mjs';
 import {begin,callback,me,logout} from './google-auth.mjs';
 // Habit Hero Cloudflare Worker: static PWA + protected API foundation.
 // Never expose family data until a fully authenticated, tenant-scoped API is implemented.
@@ -96,6 +97,12 @@ export default {
     }
     if (url.pathname === '/api/auth/logout' && request.method === 'POST') {
       return logout(request,env);
+    }
+    if (url.pathname === '/api/family/overview' && request.method === 'GET') {
+      return familyOverview(request,env);
+    }
+    if (url.pathname === '/api/children' && request.method === 'POST') {
+      return createChild(request,env);
     }
     if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
       return json({ detail: 'Habit Hero API functionality is not available yet.' }, 503);
