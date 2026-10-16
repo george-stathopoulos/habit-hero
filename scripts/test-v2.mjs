@@ -10,6 +10,7 @@ for(const required of ['hh2-theme','mission-scene','heroChoices','messagesList',
 assert(css.includes('env(safe-area-inset-bottom)'));
 assert(css.includes('prefers-reduced-motion'));
 assert(js.includes('v2-hero-'),'App should construct theme-specific hero URLs');
+for(const scene of ['teeth','bed','reading','outdoors'])assert(existsSync(new URL('../app/v2-mission-'+scene+'.svg',import.meta.url)),'Missing mission illustration '+scene);
 for(const stage of ['dormant','cracking','hatched'])assert(existsSync(new URL('../app/v2-egg-'+stage+'.svg',import.meta.url)),'Missing egg illustration '+stage);
 for(const gender of ['boy','girl'])for(const theme of ['playful','adventure','minimal','youth'])assert(existsSync(new URL('../app/v2-hero-'+gender+'-'+theme+'.svg',import.meta.url)),'Missing themed hero art: '+gender+'/'+theme);
 for(const asset of ['v2-world-playful.svg','v2-world-adventure.svg','v2-world-minimal.svg','v2-world-youth.svg']){
