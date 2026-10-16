@@ -19,14 +19,14 @@ The original Expo frontend has been compiled for the browser and deployed. It is
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the authoritative architecture, security requirements, migration constraints and implementation stages.
 
-## Current state
+## Current state (2026-10-16)
 
-- Cloudflare frontend deployed and manually confirmed accessible.
-- Unimplemented Cloudflare API routes return **503**. The read-only **/api/health** route verifies live D1 connectivity. This is intentional; the app must not pretend data is saved.
-- EU-jurisdiction D1 database `habit-hero-db` has been created and configured as Worker binding `DB`. Initial D1 schema migration is applied and integrity-tested; authenticated family-data API is not implemented yet.
-- Original Expo/frontend and Python/MongoDB code are retained under `original/` **for reference only**. They are not an approved production backend.
-- The historical MongoDB Atlas free cluster was created during setup but is **not connected to Habit Hero** and is not part of production.
-- No production secrets should ever be committed or exposed as `EXPO_PUBLIC_*` variables.
+- Cloudflare Worker and D1 host authenticated parent and child flows, including parent-approved child pairing.
+- Users have confirmed habit creation/assignment, child submissions, approvals, points and persistence.
+- Repository code now includes habit and reward editing/archiving, multi-child assignments, reward redemption, profiles, progress, histories and frequency-aware occurrence keys.
+- Newly committed changes require deployment and consolidated end-to-end verification before being described as live.
+- The original Expo and historical backend sources remain under `original/`; Cloudflare/D1 is the supported application backend.
+- See [development status](docs/DEVELOPMENT-STATUS.md) for planned work and verification gaps.
 
 ## Development and deployment
 
