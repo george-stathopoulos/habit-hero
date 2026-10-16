@@ -54,7 +54,7 @@ export function v2Page(role='child'){
  <script>
  const ROLE=${JSON.stringify(role)},$=id=>document.getElementById(id);
  const tabs=ROLE==='child'?[['home','🏠','Αρχική'],['rewards','🎁','Έπαθλα'],['profile','🦸','Ο ήρωας'],['messages','🔔','Μηνύματα']]:[['home','🏠','Αρχική'],['rewards','🎁','Έπαθλα'],['profile','⚙️','Εμφάνιση'],['messages','🔔','Μηνύματα']];
- let actor=null,activities=[],messages=[],rewards=[],balance=0;
+ let actor=null,activities=[],messages=[],rewards=[],balance=0,progressData=null;
  const esc=s=>String(s??'');
  const themeList=[['playful','🌈 Playful'],['adventure','⚔️ Hero Adventure'],['minimal','✦ Minimal'],['youth','⚡ Pro Youth']];
  const themeKey=()=> 'hh2-theme-'+ROLE+'-'+(actor?.id||'default');
@@ -118,8 +118,8 @@ export function v2Page(role='child'){
  function renderMessages(){
   const list=$('messagesList');list.replaceChildren();
   if(!messages.length){list.append(node('div','💌 Δεν έχεις νέα μηνύματα. Όταν οι γονείς σου απαντήσουν, θα τα δεις εδώ.','panel'));return}
-  for(const m of messages){const card=node('article',undefined,'message');card.append(node('span','💌','message-icon'));
-   const content=node('div');content.append(node('strong',m.status==='try_again'?'💪 Μπορείς να το κάνεις!':'💜 Μήνυμα από γονέα'),node('p',m.parent_message));card.append(content);list.append(card)}
+  for(const m of messages){const card=node('article',undefined,'message');card.append(node('span',m.kind==='approval'?'🏆':m.kind==='reward'?'🎁':'💌','message-icon'));
+   const content=node('div');content.append(node('strong',m.kind==='approval'?'Αποστολή εγκρίθηκε':m.kind==='reward'?'Νέο για το έπαθλό σου':m.status==='try_again'?'💪 Μπορείς να το κάνεις!':'💜 Μήνυμα από γονέα'),node('p',m.text));card.append(content);list.append(card)}
  }
  async function loadChild(){
   const me=await fetch('/api/child/me',{credentials:'same-origin',cache:'no-store'});if(!me.ok){$('error').textContent='Χρειάζεται σύνδεση παιδιού από την οικογενειακή αρχική.';return}
@@ -127,8 +127,13 @@ export function v2Page(role='child'){
   try{theme(localStorage.getItem(themeKey())||'playful')}catch{theme('playful')}
   const [a,h,r]=await Promise.all([fetch('/api/child/activities',{credentials:'same-origin'}),fetch('/api/child/help',{credentials:'same-origin'}),fetch('/api/child/rewards',{credentials:'same-origin'})]);
   if(a.ok)activities=(await a.json()).activities||[];
-  if(h.ok)messages=((await h.json()).requests||[]).filter(x=>x.parent_message);
-  if(r.ok){const v=await r.json();rewards=v.rewards||[];balance=v.balance||0}
+  if(h.ok)messages=((await h.json()).requests||[]).filter(x=>x.parent_message).map(x=>({id:x.id,status:x.status,text:x.parent_message,kind:'help',created:x.created_at}));
+  if(r.ok){const v=await r.json();rewards=v.rewards||[];balance=v.balance||0;
+   for(const event of v.redemption_history||[]){if(event.status==='approved'||event.status==='fulfilled')messages.push({id:'reward-'+event.id,status:event.status,kind:'reward',text:'Το έπαθλο «'+event.reward_name+'» '+(event.status==='fulfilled'?'παραδόθηκε!':'εγκρίθηκε!'),created:event.resolved_at||event.requested_at})}}
+  try{const rp=await fetch('/api/child/progress',{credentials:'same-origin',cache:'no-store'});if(rp.ok){progressData=(await rp.json()).progress;
+   for(const event of progressData?.recent_activity||[]){if(event.status==='approved')messages.push({id:'approved-'+event.id,kind:'approval',text:'Μπράβο! Η αποστολή «'+(event.habit_name||'')+'» εγκρίθηκε! ⭐',created:event.reviewed_at||event.submitted_at})}}
+  }catch{}
+  messages.sort((a,b)=>String(b.created||'').localeCompare(String(a.created||'')));
   renderMissions();renderMessages();updateBell();$('balanceTitle').textContent='⭐ '+balance+' διαθέσιμοι πόντοι';$('rewardsList').replaceChildren();
   for(const reward of rewards){
    const card=node('div',undefined,'reward-item');card.append(node('span',reward.emoji||'🎁','big'),node('strong',reward.name),node('p','⭐ '+reward.points_cost+' πόντοι'));
@@ -139,13 +144,13 @@ export function v2Page(role='child'){
    }catch(e){redeem.disabled=false;showModal('Δοκίμασε ξανά',node('p',e.message))}};card.append(redeem);$('rewardsList').append(card)}
   if(!rewards.length)$('rewardsList').append(node('p','Οι θησαυροί σου θα εμφανιστούν εδώ!'));
   $('profileInfo').replaceChildren(node('h2','Ο δικός σου κόσμος'),node('p','Μικρά βήματα, μεγάλη περιπέτεια.'));
-  try{const progressResponse=await fetch('/api/child/progress',{credentials:'same-origin',cache:'no-store'});
-   if(progressResponse.ok){const progress=(await progressResponse.json()).progress;
+  try{const progress=progressData;
+   if(progress){
     if(progress){const streak=Number(progress.current_streak_days)||0;
      $('eggArt').textContent=streak>=30?'🐲':streak>=21?'🐣':streak>=10?'🥚✨':'🥚';
      $('eggProgress').textContent=streak+' / 30 ημέρες συνέπειας για να εκκολαφθεί!';
      $('profileInfo').append(node('div','🏅 Επίπεδο '+progress.level+'  ·  🔥 '+streak+' ημέρες σερί','notice'));
-    }}
+    }
   }catch{}
  }
  async function api(path,method='GET',payload){
