@@ -17,7 +17,7 @@ const env={ASSETS:assets,DB:{
     if(sql.includes('FROM auth_sessions s') && sql.includes("s.role='child'"))
       return {family_id:'f1',child_id:childId,child_name:'Kid',session_id:'s1'};
     if(sql.includes('SELECT id FROM child_profiles'))return {id:childId};
-    if(sql.includes('SELECT h.id FROM habit_assignments'))return {id:habitId};
+    if(sql.includes('SELECT h.id,h.frequency_type FROM habit_assignments'))return {id:habitId,frequency_type:'daily'};
     return null;
    },
    all:async()=>({results:[{habit_id:habitId,habit_name:'Reading',points:10}]}),
