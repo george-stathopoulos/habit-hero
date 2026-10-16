@@ -28,6 +28,11 @@ async function metrics(env,familyId,childId=null){
    WHERE family_id=? AND child_id=? AND status='approved' AND occurrence_date>=?
    GROUP BY occurrence_date ORDER BY occurrence_date DESC`)
     .bind(familyId,child.id,since).all();
+  const history=await env.DB.prepare(`SELECT s.id,s.occurrence_date,s.status,
+   h.name_el AS habit_name,s.points_awarded,s.submitted_at,s.reviewed_at
+   FROM completion_submissions s JOIN habits h ON h.id=s.habit_id AND h.family_id=s.family_id
+   WHERE s.family_id=? AND s.child_id=? ORDER BY s.submitted_at DESC LIMIT 20`)
+    .bind(familyId,child.id).all();
   const balance=await env.DB.prepare(`SELECT COALESCE(SUM(delta),0) AS balance
    FROM point_ledger WHERE family_id=? AND child_id=?`).bind(familyId,child.id).first();
   const calendar=completed.results||[];
@@ -37,6 +42,7 @@ async function metrics(env,familyId,childId=null){
    active_days_last_30_days:calendar.length,
    current_streak_days:streak(calendar.map(r=>r.occurrence_date),today),
    points_balance:balance?.balance??0,
+   recent_activity:history.results||[],
    activity_by_day:calendar.map(r=>({date:r.occurrence_date,completed:r.total}))});
  }
  return {as_of:today,window_days:30,children:data};
