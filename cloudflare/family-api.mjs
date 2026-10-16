@@ -31,7 +31,7 @@ export async function familyOverview(req,env) {
  const parent=await authorizedParent(req,env);
  if(!parent)return deny();
  try {
-  const children=await env.DB.prepare(`SELECT id,display_name,age_band,avatar_id,avatar_level,created_at
+  const children=await env.DB.prepare(`SELECT id,display_name,age_band,avatar_id,avatar_level,(pin_hash IS NOT NULL) AS pin_configured,created_at
     FROM child_profiles WHERE family_id=? AND deleted_at IS NULL ORDER BY created_at,id LIMIT 100`)
     .bind(parent.family_id).all();
   return out({family:{id:parent.family_id,name:parent.family_name,timezone:parent.timezone},parent:{name:parent.display_name},
