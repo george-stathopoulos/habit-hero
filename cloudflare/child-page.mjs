@@ -11,7 +11,7 @@ export function childPage(){
  button:disabled{opacity:.45}.secondary{background:#e8eff9;color:#173e68}
  li{list-style:none;padding:14px 0;border-bottom:1px solid #e5eafa}ul{padding:0}
  .muted{color:#5d728e}.hidden{display:none}
- nav.quick-nav{position:sticky;top:0;z-index:20;display:flex;gap:8px;overflow-x:auto;
+ nav.quick-nav{display:none!important;position:sticky;top:0;z-index:20;display:flex;gap:8px;overflow-x:auto;
  padding:10px 0;background:#f3f6fff2;backdrop-filter:blur(10px)}
  nav.quick-nav a{display:inline-flex;white-space:nowrap;background:white;color:#1c548b;
  padding:11px 16px;border-radius:999px;text-decoration:none;font-weight:700;box-shadow:0 2px 10px #21396513}
