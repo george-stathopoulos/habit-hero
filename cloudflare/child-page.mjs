@@ -44,6 +44,14 @@ export function childPage(){
  @keyframes heroPop{from{transform:scale(.4) rotate(-15deg);opacity:0}to{transform:scale(1);opacity:1}}
  @keyframes fadeHero{from{opacity:0}to{opacity:1}}
  @media(prefers-reduced-motion:reduce){.mission-toast,.mission-toast-emoji{animation:none}}
+ .reward-tile{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;
+  border:2px solid #f3deff!important;border-radius:25px;background:linear-gradient(135deg,#fff4fc,#f2f0ff)!important;
+  padding:24px 16px!important;margin-bottom:15px;box-shadow:0 10px 23px #603c8915}
+ .reward-gift{font-size:62px;display:block;animation:giftWiggle 4s ease-in-out infinite}
+ .reward-tile strong{font-size:22px}.reward-cost{font-size:14px;font-weight:800;background:#fff;border-radius:99px;padding:9px 15px;color:#6251b3}
+ .reward-tile button{width:90%;border-radius:15px}
+ @keyframes giftWiggle{0%,83%,100%{transform:rotate(0) scale(1)}88%{transform:rotate(-9deg) scale(1.07)}93%{transform:rotate(9deg) scale(1.07)}}
+ @media(prefers-reduced-motion:reduce){.reward-gift{animation:none}}
  .quest-card{perspective:1000px;position:relative;min-height:245px;border:0!important;background:transparent!important;padding:0!important;margin:14px 0}
  .quest-card-inner{position:relative;width:100%;min-height:245px;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.2,.8,.2,1)}
  .quest-card.flipped .quest-card-inner{transform:rotateY(180deg)}
@@ -285,9 +293,11 @@ export function childPage(){
     const item=document.createElement('li');item.textContent='Δεν υπάρχουν ακόμη έπαθλα.';list.append(item);
   }
   for(const reward of data.rewards){
-    const item=document.createElement('li'),label=document.createElement('span');
-    label.textContent=(reward.emoji||'🎁')+' '+reward.name+' · '+reward.points_cost+' πόντοι ';
-    item.append(label);
+    const item=document.createElement('li');item.className='reward-tile';
+    const gift=document.createElement('span');gift.className='reward-gift';gift.textContent=reward.emoji||'🎁';
+    const label=document.createElement('strong');label.textContent=reward.name;
+    const cost=document.createElement('span');cost.className='reward-cost';cost.textContent='⭐ '+reward.points_cost+' πόντοι';
+    item.append(gift,label,cost);
     if(data.balance<reward.points_cost){
       const needed=document.createElement('small');
       needed.textContent=' 🔒 Χρειάζεσαι '+(reward.points_cost-data.balance)+' ακόμη πόντους';
