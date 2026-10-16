@@ -212,10 +212,10 @@ export function parentPage() {
  <p class="subtle">Οι τελευταίες 30 ημέρες · οι συνεχόμενες ημέρες βασίζονται σε εγκεκριμένες δραστηριότητες.</p>
  <ul id="progressList"></ul><p id="progressMessage" role="status" class="subtle"></p></section>
  <section class="panel" id="releaseInfo" data-tab="settings" hidden>
- <h2>🛠️ Έκδοση εφαρμογής</h2><p class="subtle">Habit Hero · Family Adventure beta · Δεν υπάρχει ακόμη αυτόματος έλεγχος έκδοσης</p>
- <p id="buildDate">Ενημέρωση: 16 Οκτωβρίου 2026</p>
+ <h2>🛠️ Έκδοση εφαρμογής</h2><p class="subtle">Habit Hero · Family Adventure beta</p>
+ <p id="buildDate">Έλεγχος έκδοσης διαθέσιμος</p><p id="versionResult" role="status" class="subtle">Πάτησε για έλεγχο της τελευταίας έκδοσης στο GitHub.</p>
  <p class="subtle">Οι ενημερώσεις εγκαθίστανται μετά την ανάπτυξη της νέας έκδοσης στο Cloudflare. Κλείσε και άνοιξε ξανά την εφαρμογή για να ελέγξεις νέες αλλαγές.</p>
- <button type="button" class="secondary" id="refreshAppVersion">🔄 Ανανέωση εφαρμογής</button>
+ <button type="button" class="secondary" id="refreshAppVersion">🔄 Έλεγχος τελευταίας έκδοσης</button>
  </section>
  <section class="panel" id="privacyPanel" data-tab="settings" hidden><h2>🔒 Τα δεδομένα της οικογένειας</h2>
  <p class="subtle">Μπορείτε να κατεβάσετε τα προφίλ, τις συνήθειες, τις εγκρίσεις, τους πόντους και τα έπαθλα της οικογένειάς σας ως αρχείο JSON. Το αρχείο περιέχει προσωπικά δεδομένα και πρέπει να φυλάσσεται με ασφάλεια.</p>
@@ -330,7 +330,24 @@ export function parentPage() {
   document.getElementById('goalSuggestions').hidden=false;
   document.getElementById('goalSuggestions').scrollIntoView({behavior:'smooth',block:'nearest'});
  });
- document.getElementById('refreshAppVersion').addEventListener('click',()=>location.reload());
+ document.getElementById('refreshAppVersion').addEventListener('click',async()=>{
+  const button=document.getElementById('refreshAppVersion'),note=document.getElementById('versionResult');
+  button.disabled=true;note.textContent='Ελέγχουμε την τελευταία έκδοση…';
+  try{
+   const response=await fetch('/api/version',{cache:'no-store'});
+   if(!response.ok)throw Error('Ο έλεγχος δεν ήταν διαθέσιμος.');
+   const info=await response.json();
+   document.getElementById('buildDate').textContent='Εγκατεστημένη έκδοση: '+String(info.current).slice(0,8);
+   if(!info.check_available||info.current==='unknown')note.textContent='Δεν ήταν δυνατή η επαλήθευση της τελευταίας έκδοσης. Προσπάθησε ξανά.';
+   else if(info.update_available){
+    note.textContent='🚀 Υπάρχει νεότερη έκδοση στο GitHub ('+info.latest.slice(0,8)+'). Μπορεί να μην έχει αναπτυχθεί ακόμη στο Cloudflare.';
+    const link=document.createElement('a');link.href='https://github.com/george-stathopoulos/habit-hero/actions/workflows/cloudflare.yml';
+    link.textContent='Δες την ανάπτυξη στο GitHub';link.target='_blank';link.rel='noopener noreferrer';
+    note.append(document.createElement('br'),link);
+   }else note.textContent='✅ Έχεις την τελευταία έκδοση!';
+  }catch(error){note.textContent=error.message}
+  finally{button.disabled=false}
+ });
  const status=document.getElementById('status'),greeting=document.getElementById('greeting');
  const list=document.getElementById('children'),empty=document.getElementById('empty');
  async function refresh() {
