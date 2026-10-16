@@ -1,5 +1,5 @@
 import {parentProgress,childProgress} from './progress-api.mjs';
-import {parentRewards,createReward,childRewards,childRequestReward,parentRedemptions,reviewReward} from './rewards-api.mjs';
+import {parentRewards,createReward,childRewards,childRequestReward,parentRedemptions,reviewReward,editReward,archiveReward} from './rewards-api.mjs';
 import {childPage} from './child-page.mjs';
 import {makePairing,pairDevice,childMe,childActivities,childSubmit,childLogout,revokeChildDevices} from './child-auth.mjs';
 import {listActivities,submitActivity,listApprovals,reviewActivity,listBalances} from './activity-api.mjs';
@@ -145,6 +145,8 @@ export default {
     if (url.pathname === '/api/child/logout' && request.method === 'POST') return childLogout(request,env);
     if (url.pathname === '/api/rewards' && request.method === 'GET') return parentRewards(request,env);
     if (url.pathname === '/api/rewards' && request.method === 'POST') return createReward(request,env);
+    if (url.pathname === '/api/rewards/update' && request.method === 'POST') return editReward(request,env);
+    if (url.pathname === '/api/rewards/archive' && request.method === 'POST') return archiveReward(request,env);
     if (url.pathname === '/api/rewards/redemptions' && request.method === 'GET') return parentRedemptions(request,env);
     if (url.pathname === '/api/rewards/review' && request.method === 'POST') return reviewReward(request,env);
     if (url.pathname === '/api/child/rewards' && request.method === 'GET') return childRewards(request,env);
