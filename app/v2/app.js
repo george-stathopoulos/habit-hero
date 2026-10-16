@@ -95,7 +95,7 @@
   $('profileInfo').replaceChildren(node('h2','Ο δικός σου κόσμος'),node('p','Μικρά βήματα, μεγάλη περιπέτεια.'));
   try{const progress=progressData;
    if(progress){const streak=Number(progress.current_streak_days)||0;
-     $('eggArt').textContent=streak>=30?'🐲':streak>=21?'🐣':streak>=10?'🥚✨':'🥚';
+     $('eggArt').src='/habit-hero/app/v2-egg-'+(streak>=30?'hatched':streak>=10?'cracking':'dormant')+'.svg';
      $('eggProgress').textContent=streak+' / 30 ημέρες συνέπειας για να εκκολαφθεί!';
      $('profileInfo').append(node('div','🏅 Επίπεδο '+progress.level+'  ·  🔥 '+streak+' ημέρες σερί','notice'));
     }
@@ -253,5 +253,9 @@
   }catch(error){$('messagesList').append(node('p',error.message))}
   $('balanceTitle').textContent='Προσπάθειες προς έγκριση';
  }
+ document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible') (ROLE==='child'?loadChild():loadParent()).catch(()=>{});
+ });
+ setInterval(()=>{if(document.visibilityState==='visible'&&actor)(ROLE==='child'?loadChild():loadParent()).catch(()=>{})},60000);
  (ROLE==='child'?loadChild():loadParent()).catch(e=>{$('error').textContent='Προσωρινό πρόβλημα: '+e.message});
  
