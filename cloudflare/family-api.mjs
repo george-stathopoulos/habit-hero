@@ -1,3 +1,4 @@
+import {createPinVerifier} from './pin-hash.mjs';
 // Parent-only family API. Every query derives the family from a verified session.
 // Never trust a client-supplied family_id or parent_id.
 const origin = 'https://habit-hero-cloudflare.george-stathopoulos.workers.dev';
@@ -53,15 +54,21 @@ export async function createChild(req,env) {
  if(!body||typeof body!=='object'||Array.isArray(body))return out({detail:'Invalid child data'},400);
  const name=typeof body.name==='string'?body.name.trim():'';
  const age=body.age_band===null||body.age_band===undefined?null:body.age_band;
+ const pin=body.pin??null;
  if(name.length<1||name.length>80||/[\u0000-\u001f\u007f]/.test(name) ||
-    (age!==null&&!['6-8','9-11','12-14'].includes(age)) ||
-  (avatar!==null&&!['hero','unicorn','robot','dragon','astronaut','cat','ninja','wizard'].includes(avatar)))return out({detail:'Invalid child name or age group'},400);
+   (age!==null&&!['6-8','9-11','12-14'].includes(age)) ||
+   (pin!==null&&(typeof pin!=='string'||!/^\\d{4}$/.test(pin))))
+   return out({detail:'Invalid name, age group or 4-digit PIN'},400);
  const id=crypto.randomUUID(),now=new Date().toISOString();
  try{
-  await env.DB.prepare(`INSERT INTO child_profiles (id,family_id,display_name,age_band,created_at,updated_at)
-    SELECT ?,family_id,?,?,?,? FROM family_memberships WHERE family_id=? AND parent_id=?`)
-   .bind(id,name,age,now,now,parent.family_id,parent.parent_id).run();
-  return out({id,name,age_band:age},201);
+  const verifier=pin===null?null:await createPinVerifier(pin);
+  const result=await env.DB.prepare(`INSERT INTO child_profiles
+    (id,family_id,display_name,age_band,pin_hash,created_at,updated_at)
+    SELECT ?,family_id,?,?,?,?,? FROM family_memberships
+    WHERE family_id=? AND parent_id=?`)
+   .bind(id,name,age,verifier,now,now,parent.family_id,parent.parent_id).run();
+  if(result.meta?.changes!==1)return out({detail:'Could not create child'},503);
+  return out({id,name,age_band:age,pin_configured:!!verifier},201);
  }catch{return out({detail:'Could not create child'},503)}
 }
 
