@@ -38,6 +38,8 @@ export function v2Page(role='child'){
  .message{border:1px solid color-mix(in srgb,var(--accent),transparent 77%);display:flex;align-items:flex-start;gap:13px}.message-icon{width:47px;height:47px;flex:none;border-radius:14px;background:color-mix(in srgb,var(--accent),transparent 72%);display:grid;place-items:center;font-size:24px}
  .celebrate{text-align:center;padding:26px 10px}.celebrate-icon{display:block;font-size:95px;animation:float 1.5s ease-in-out infinite}
  .nav{position:fixed;bottom:0;left:0;right:0;padding:10px 12px calc(env(safe-area-inset-bottom) + 10px);display:flex;justify-content:space-evenly;gap:6px;max-width:940px;margin:auto;background:color-mix(in srgb,var(--surface),transparent 5%);backdrop-filter:blur(18px);border-radius:22px 22px 0 0;z-index:20}.nav button{flex:1;color:var(--muted);background:transparent;padding:8px 1px;border-radius:14px;font-size:11px;min-width:0}.nav button span{display:block;font-size:21px;margin-bottom:4px}.nav button[aria-selected="true"]{color:var(--accent);background:color-mix(in srgb,var(--accent),transparent 89%)}
+ #goalList button{border-radius:16px;text-align:left;white-space:normal;min-height:64px}#goalList button[aria-pressed="true"]{background:var(--accent);color:#162039}
+ #goalSuggestions .mission{grid-template-columns:1fr;font-size:14px;padding:15px}
  .themes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.theme{border-radius:20px;padding:22px 10px;color:white;font-weight:800;min-height:85px}.theme[aria-pressed="true"]{outline:3px solid var(--accent);outline-offset:3px}.theme[data-value="adventure"]{background:linear-gradient(140deg,#1f214e,#6c437c)}.theme[data-value="playful"]{background:linear-gradient(140deg,#aa79e6,#8ad9cf)}.theme[data-value="minimal"]{background:linear-gradient(140deg,#8bb3a7,#647f7b)}.theme[data-value="youth"]{background:linear-gradient(140deg,#0a172a,#2c558b)}
  .dialog{position:fixed;inset:0;z-index:40;background:#050b23ba;display:grid;place-items:center;padding:16px}.sheet{background:var(--surface);color:var(--ink);padding:24px;border-radius:26px;width:min(100%,520px);max-height:88dvh;overflow:auto}.sheet h2{margin:0 0 14px}.sheet p{line-height:1.65}.sheet .actions{display:flex;flex-wrap:wrap;gap:9px}.message{padding:15px;border-radius:18px;background:color-mix(in srgb,var(--accent),transparent 88%);margin:10px 0}
  .field{display:grid;gap:6px;margin:10px 0}.field input,.field select,.field textarea{width:100%;padding:13px;border:1px solid #8885;border-radius:13px;color:var(--ink);background:var(--surface)}
@@ -46,7 +48,7 @@ export function v2Page(role='child'){
  @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
  </style></head><body data-theme="minimal"><main class="shell">
  <header class="top"><div><div class="eyebrow">HABIT HERO · V2</div><h1 id="greeting">Η περιπέτειά σου</h1></div><div class="controls"><button id="bell" class="iconbtn" aria-label="Μηνύματα">🔔<span id="bellCount" class="count" hidden></span></button><button id="switchUser" class="iconbtn" aria-label="Αλλαγή χρήστη">⇄</button></div></header>
- <section id="homeTab"><div class="stage"><div id="worldCaption" class="world-caption">✦ YOUR WORLD</div><img id="heroArt" class="hero-art" src="/habit-hero/app/v2-hero-boy.svg" alt="Ο ήρωάς μου"><div style="position:relative;max-width:66%"><div class="eyebrow">TODAY'S ADVENTURE</div><h2 id="heroHeading">Κάθε μικρή νίκη μετράει.</h2><p id="heroSubtitle">Ο κόσμος σου μεγαλώνει μαζί σου.</p></div><div class="progress"><div id="progressFill" class="fill"></div></div><div id="progressLabel" style="margin-top:10px;font-weight:700">—</div></div><div class="heading"><h2>Οι αποστολές μου</h2><span id="missionTotal" class="muted"></span></div><div id="missionList"></div><div id="parentQuickActions" hidden class="panel"><h2>Δημιούργησε κάτι σπουδαίο</h2><div class="actions"><button id="newHabit" class="primary">＋ Νέα αποστολή</button><button id="newChild" class="secondary">🦸 Νέο παιδί</button></div></div><div class="egg"><span class="egg-icon" id="eggArt">🥚</span><div><h3 id="eggTitle">Το μυστηριώδες αυγό</h3><p id="eggProgress">Ο σύντροφός σου μεγαλώνει με την προσπάθειά σου.</p></div></div></section>
+ <section id="homeTab"><div class="stage"><div id="worldCaption" class="world-caption">✦ YOUR WORLD</div><img id="heroArt" class="hero-art" src="/habit-hero/app/v2-hero-boy.svg" alt="Ο ήρωάς μου"><div style="position:relative;max-width:66%"><div class="eyebrow">TODAY'S ADVENTURE</div><h2 id="heroHeading">Κάθε μικρή νίκη μετράει.</h2><p id="heroSubtitle">Ο κόσμος σου μεγαλώνει μαζί σου.</p></div><div class="progress"><div id="progressFill" class="fill"></div></div><div id="progressLabel" style="margin-top:10px;font-weight:700">—</div></div><div class="heading"><h2>Οι αποστολές μου</h2><span id="missionTotal" class="muted"></span></div><div id="missionList"></div><div id="goalPicker" hidden class="panel"><div class="eyebrow">START YOUR FAMILY ADVENTURE</div><h2>Τι θέλεις να αναπτύξει το παιδί σου;</h2><p class="muted">Διάλεξε στόχους και δημιούργησε εξατομικευμένες αποστολές.</p><div id="goalList" class="themes"></div><div id="goalSuggestions"></div></div><div id="parentQuickActions" hidden class="panel"><h2>Δημιούργησε κάτι σπουδαίο</h2><div class="actions"><button id="newHabit" class="primary">＋ Νέα αποστολή</button><button id="newChild" class="secondary">🦸 Νέο παιδί</button></div></div><div class="egg"><span class="egg-icon" id="eggArt">🥚</span><div><h3 id="eggTitle">Το μυστηριώδες αυγό</h3><p id="eggProgress">Ο σύντροφός σου μεγαλώνει με την προσπάθειά σου.</p></div></div></section>
  <section id="messagesTab" hidden><h2>🔔 Μηνύματα</h2><div id="messagesList"></div></section>
  <section id="rewardsTab" hidden><h2>🎁 Θησαυροφυλάκιο</h2><p id="balanceTitle" class="notice">⭐ 0 διαθέσιμοι πόντοι</p><div id="rewardsList" class="reward-grid"></div></section>
  <section id="profileTab" hidden><div class="panel"><h2>🦸 Διάλεξε ήρωα</h2><p class="muted">Όλοι μπορούν να επιλέξουν τον ήρωα που τους εκφράζει.</p><div id="heroChoices" class="hero-select"></div></div><div class="panel"><h2>🎨 Διάλεξε τον κόσμο σου</h2><div id="themeChoices" class="themes"></div></div><div id="profileInfo" class="panel"></div></section>
@@ -166,6 +168,47 @@ export function v2Page(role='child'){
   if(type!=='select')input.value=value;
   wrap.append(input);return {wrap,input};
  }
+ const parentGoals=[
+  ['outdoor','🌳','Παιχνίδι έξω','Παίζω έξω για 20 λεπτά'],
+  ['habits','🌟','Καθημερινές συνήθειες','Στρώνω το κρεβάτι μου'],
+  ['responsibility','🎒','Υπευθυνότητα','Ετοιμάζω την τσάντα μου'],
+  ['autonomy','🦸','Αυτονομία','Ετοιμάζω τα ρούχα μου'],
+  ['skills','🧩','Νέες δεξιότητες','Μαθαίνω κάτι καινούριο'],
+  ['reading','📚','Διάβασμα','Διαβάζω για 15 λεπτά'],
+  ['creativity','🎨','Δημιουργικότητα','Δημιουργώ κάτι με τα χέρια μου'],
+  ['sports','⚽','Άθληση','Κινούμαι για 20 λεπτά'],
+  ['nature','🦋','Φύση','Παρατηρώ τη φύση'],
+  ['kindness','💗','Καλοσύνη','Κάνω μια καλή πράξη'],
+  ['teamwork','🤝','Συνεργασία','Βοηθώ στο σπίτι'],
+  ['hygiene','🪥','Υγιεινή','Βουρτσίζω τα δόντια μου'],
+  ['sleep','🌙','Ύπνος','Ετοιμάζομαι για ύπνο'],
+  ['nutrition','🍎','Διατροφή','Τρώω ένα υγιεινό σνακ'],
+  ['confidence','💪','Αυτοπεποίθηση','Δοκιμάζω κάτι δύσκολο'],
+  ['emotions','🧠','Συναισθήματα','Μιλάω για το πώς νιώθω'],
+  ['focus','🎯','Συγκέντρωση','Εξασκούμαι χωρίς περισπασμούς'],
+  ['screens','📵','Λιγότερες οθόνες','Παίζω χωρίς οθόνη'],
+  ['money','🐷','Χρήματα','Αναγνωρίζω ανάγκες και επιθυμίες'],
+  ['community','🌍','Κοινότητα','Κάνω κάτι καλό για τη γειτονιά']
+ ];
+ const selectedGoals=new Set();
+ try{for(const value of JSON.parse(localStorage.getItem('hh2-family-goals')||'[]'))selectedGoals.add(value)}catch{}
+ function goalPicker(){
+  const list=$('goalList');list.replaceChildren();
+  for(const [id,emoji,label] of parentGoals){
+   const button=node('button',emoji+' '+label,'secondary');button.type='button';
+   button.setAttribute('aria-pressed',String(selectedGoals.has(id)));
+   button.onclick=()=>{selectedGoals.has(id)?selectedGoals.delete(id):selectedGoals.add(id);
+    try{localStorage.setItem('hh2-family-goals',JSON.stringify([...selectedGoals]))}catch{}
+    goalPicker()};
+   list.append(button);
+  }
+  const suggestions=$('goalSuggestions');suggestions.replaceChildren();
+  if(selectedGoals.size)suggestions.append(node('h3','✨ Προτάσεις για την οικογένειά σου'));
+  for(const [id,emoji,label,habit] of parentGoals.filter(x=>selectedGoals.has(x[0]))){
+   const b=node('button',emoji+' '+habit+' →','mission');b.onclick=()=>openHabitBuilder(habit);
+   suggestions.append(b)
+  }
+ }
  function openChildBuilder(){
   const form=node('form');
   const name=field('Όνομα παιδιού'),age=field('Ηλικία','select'),pin=field('Προσωπικό PIN (4 ψηφία)','text'),repeat=field('Επιβεβαίωση PIN','text');
@@ -193,12 +236,12 @@ export function v2Page(role='child'){
   };
   showModal('🦸 Δημιουργία μικρού ήρωα',form);
  }
- function openHabitBuilder(){
+ function openHabitBuilder(suggestedName=''){
   const form=node('form');
   const title=field('Όνομα αποστολής'),child=field('Ανάθεση σε παιδί','select');
   const frequency=field('Πότε;','select'),count=field('Πόσες φορές ανά περίοδο;','number','1'),delay=field('Διάλειμμα σε λεπτά','number','30');
   const points=field('Πόντοι','number','10'),steps=field('Τι πρέπει να κάνει το παιδί;','textarea'),benefits=field('Γιατί είναι σημαντικό;','textarea');
-  title.input.required=true;title.input.maxLength=100;count.input.min=1;count.input.max=5;delay.input.min=0;delay.input.max=1440;points.input.min=1;points.input.max=1000;
+  title.input.required=true;title.input.maxLength=100;title.input.value=suggestedName;count.input.min=1;count.input.max=5;delay.input.min=0;delay.input.max=1440;points.input.min=1;points.input.max=1000;
   for(const person of familyChildren){const option=node('option',person.name);option.value=person.id;child.input.append(option)}
   for(const [id,label] of [['daily','Κάθε μέρα'],['weekly','Κάθε εβδομάδα'],['monthly','Κάθε μήνα'],['once','Μία φορά']]){const option=node('option',label);option.value=id;frequency.input.append(option)}
   for(const x of [title,child,frequency,count,delay,points,steps,benefits])form.append(x.wrap);
@@ -220,7 +263,7 @@ export function v2Page(role='child'){
   $('heroHeading').textContent='Μαζί χτίζουμε καλές συνήθειες.';
   $('heroSubtitle').textContent=(data.children||[]).length+' μικροί ήρωες στην οικογένεια.';
   familyChildren=(data.children||[]).map(c=>({id:c.id,name:c.name||c.display_name}));
-  $('parentQuickActions').hidden=false;$('newHabit').onclick=openHabitBuilder;$('newChild').onclick=openChildBuilder;
+  $('parentQuickActions').hidden=false;$('goalPicker').hidden=false;goalPicker();$('newHabit').onclick=()=>openHabitBuilder();$('newChild').onclick=openChildBuilder;
   $('missionList').replaceChildren();
   for(const child of familyChildren){const card=node('div',undefined,'mission');card.append(node('span','🦸','emoji'),node('strong',child.name));$('missionList').append(card)}
   $('profileInfo').replaceChildren(node('h2','Ο προσωπικός σου χώρος'),node('p','Άλλαξε εμφάνιση ανεξάρτητα από τα παιδιά.'));
