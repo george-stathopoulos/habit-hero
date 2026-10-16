@@ -305,6 +305,41 @@ export function parentPage() {
   for(const reward of catalog){
     const item=document.createElement('li');
     item.textContent=(reward.emoji||'🎁')+' '+reward.name+' · '+reward.points_cost+' πόντοι · '+reward.children.map(child=>child.name).join(', ');
+    if(reward.active){
+      const edit=document.createElement('button');edit.className='secondary';edit.textContent='Επεξεργασία';
+      edit.addEventListener('click',async()=>{
+        const name=prompt('Όνομα επάθλου',reward.name);if(name===null)return;
+        const description=prompt('Περιγραφή',reward.description||'');if(description===null)return;
+        const costRaw=prompt('Κόστος πόντων',String(reward.points_cost));if(costRaw===null)return;
+        const points_cost=Number(costRaw);
+        if(!name.trim()||!Number.isInteger(points_cost)||points_cost<1||points_cost>100000){
+          document.getElementById('rewardStatus').textContent='Ελέγξτε το όνομα και τους πόντους.';return;
+        }
+        edit.disabled=true;
+        try{
+          const response=await fetch('/api/rewards/update',{method:'POST',credentials:'same-origin',
+            headers:{'content-type':'application/json'},body:JSON.stringify({
+              reward_id:reward.id,name,description,points_cost,recurring:reward.recurring})});
+          if(!response.ok)throw Error('Δεν ενημερώθηκε το έπαθλο.');
+          document.getElementById('rewardStatus').textContent='Το έπαθλο ενημερώθηκε.';
+          await refreshRewards();
+        }catch(e){document.getElementById('rewardStatus').textContent=e.message;edit.disabled=false}
+      });item.append(edit);
+      const archive=document.createElement('button');archive.className='secondary';archive.textContent='Αρχειοθέτηση';
+      archive.addEventListener('click',async()=>{
+        if(!confirm('Να κρυφτεί το έπαθλο από τα παιδιά; Οι παλιές αιτήσεις παραμένουν.'))return;
+        archive.disabled=true;
+        try{
+          const response=await fetch('/api/rewards/archive',{method:'POST',credentials:'same-origin',
+            headers:{'content-type':'application/json'},body:JSON.stringify({reward_id:reward.id})});
+          if(!response.ok)throw Error('Δεν αρχειοθετήθηκε το έπαθλο.');
+          document.getElementById('rewardStatus').textContent='Το έπαθλο αρχειοθετήθηκε.';
+          await refreshRewards();
+        }catch(e){document.getElementById('rewardStatus').textContent=e.message;archive.disabled=false}
+      });item.append(archive);
+    }else{
+      const archived=document.createElement('small');archived.textContent=' · Αρχειοθετημένο';item.append(archived);
+    }
     catalogList.append(item);
   }
   document.getElementById('noRewards').hidden=catalog.length>0;
