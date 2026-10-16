@@ -12,7 +12,14 @@ export function parentPage() {
  input,select{width:100%;padding:12px;border:1px solid #d4ddea;border-radius:9px;font:inherit;margin:7px 0 15px}
  label{font-weight:600}ul{list-style:none;padding:0}li{padding:14px 0;border-bottom:1px solid #e9eef8}
  form{display:grid;gap:6px}.row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
- .template-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:9px;margin-bottom:12px}
+ .hero-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ .hero-actions button{min-height:94px;border-radius:19px;font-size:16px;text-align:left;padding:16px;
+  background:linear-gradient(135deg,#6155db,#8976f6)}
+ .hero-actions button:nth-child(2){background:linear-gradient(135deg,#168cb4,#39b2d0)}
+ .hero-actions button:nth-child(3){background:linear-gradient(135deg,#eb8f42,#ffbd60);color:#362641}
+ .hero-actions button:nth-child(4){background:linear-gradient(135deg,#dd63a0,#ff91ba)}
+ @media(min-width:800px){.hero-actions{grid-template-columns:repeat(4,minmax(0,1fr))}}
+  .template-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:9px;margin-bottom:12px}
  .template-grid button{text-align:left;min-height:49px}
   nav.quick-nav{position:sticky;top:0;z-index:20;display:flex;gap:8px;overflow-x:auto;scrollbar-width:thin;
   padding:12px;margin:0 0 18px;background:#f3f7fff5;backdrop-filter:blur(12px);border-radius:15px}
@@ -59,6 +66,15 @@ export function parentPage() {
  <section class="panel"><h2 id="greeting">Φόρτωση...</h2><p id="status" role="status" class="subtle">Έλεγχος σύνδεσης...</p>
  <div class="row"><a href="#approvalsPanel" id="pendingApprovalSummary">✅ Εγκρίσεις: —</a>
  <a href="#redemptionsPanel" id="pendingRedemptionSummary">🎁 Αιτήματα: —</a></div></section>
+ <section class="panel" data-tab="home" data-active="true" id="homeActions" hidden>
+  <h2>✨ Τι θέλεις να κάνεις σήμερα;</h2>
+  <div class="hero-actions">
+   <button type="button" data-action-tab="home" data-action-section="create">➕ Πρόσθεσε παιδί</button>
+   <button type="button" data-action-tab="habits" data-action-section="habitPanel">🎯 Νέα αποστολή</button>
+   <button type="button" data-action-tab="approvals" data-action-section="approvalsPanel">✅ Δες εγκρίσεις</button>
+   <button type="button" data-action-tab="rewards" data-action-section="rewardsPanel">🎁 Νέο έπαθλο</button>
+  </div>
+ </section>
  <section class="panel" id="familySettingsPanel" data-tab="settings" hidden><h2>🕒 Ώρα οικογένειας</h2>
  <p class="subtle">Η ημέρα και οι εβδομαδιαίες συνήθειες ακολουθούν αυτή τη ζώνη ώρας.</p>
  <form id="timezoneForm"><label for="familyTimezone">Ζώνη ώρας (IANA)</label>
@@ -184,6 +200,10 @@ export function parentPage() {
   if(section)requestAnimationFrame(()=>document.getElementById(section)?.scrollIntoView({behavior:'smooth',block:'start'}));
   else window.scrollTo({top:0,behavior:'instant'});
  }
+ document.getElementById('homeActions').addEventListener('click',event=>{
+  const btn=event.target.closest('[data-action-tab]');if(!btn)return;
+  openTab(btn.dataset.actionTab,btn.dataset.actionSection);
+ });
  document.querySelector('.app-tabs').addEventListener('click',event=>{
    const btn=event.target.closest('[data-open-tab]');if(btn)openTab(btn.dataset.openTab);
  });
@@ -198,6 +218,7 @@ export function parentPage() {
    greeting.textContent='Καλώς ήρθατε, '+data.parent.name+'!';
    status.textContent='Οικογένεια: '+data.family.name;
    document.getElementById('family').hidden=false;document.getElementById('create').hidden=false;
+   document.getElementById('homeActions').hidden=false;
    document.getElementById('privacyPanel').hidden=false;
    document.getElementById('familySettingsPanel').hidden=false;
    document.getElementById('familyTimezone').value=data.family.timezone||'UTC';
