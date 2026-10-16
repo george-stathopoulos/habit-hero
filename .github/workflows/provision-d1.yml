@@ -1,0 +1,39 @@
+name: Step 8 - Provision Habit Hero D1
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/provision-d1.yml"
+permissions:
+  contents: read
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID || '3fc2c10ca86a2322b58f7daa16c77c6d' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify deployment authorization
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "::error::Missing CLOUDFLARE_API_TOKEN"; exit 1; }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "::error::Missing CLOUDFLARE_ACCOUNT_ID"; exit 1; }
+      - name: Create D1 if not present (EU jurisdiction)
+        working-directory: cloudflare
+        run: |
+          npx --yes wrangler@4 d1 list --json > ../d1-list.json
+          if node -e 'const l=require("../d1-list.json");process.exit(l.some(x=>x.name==="habit-hero-db")?0:1)'; then
+            echo "Habit Hero D1 database already exists; reusing it."
+          else
+            npx --yes wrangler@4 d1 create habit-hero-db --jurisdiction eu
+          fi
+      - name: Verify D1 metadata and read-only SQL
+        working-directory: cloudflare
+        run: |
+          npx --yes wrangler@4 d1 info habit-hero-db --json
+          npx --yes wrangler@4 d1 execute habit-hero-db --remote --command "SELECT 1 AS ready;"
