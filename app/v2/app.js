@@ -1,7 +1,7 @@
 // Habit Hero v2 — independent client app; protected APIs remain authoritative.
 
  const ROLE=document.body.dataset.role,$=id=>document.getElementById(id);
- const tabs=ROLE==='child'?[['home','🏠','Αρχική'],['rewards','🎁','Έπαθλα'],['profile','🦸','Ο ήρωας'],['messages','🔔','Μηνύματα']]:[['home','🏠','Αρχική'],['rewards','🎁','Έπαθλα'],['profile','⚙️','Εμφάνιση'],['messages','🔔','Μηνύματα']];
+ const tabs=ROLE==='child'?[['home','🏠','Αρχική'],['rewards','🎁','Έπαθλα'],['profile','🦸','Ο ήρωας'],['messages','🔔','Μηνύματα']]:[['home','🏠','Αρχική'],['rewards','✅','Εγκρίσεις'],['profile','⚙️','Εμφάνιση'],['messages','🔔','Βοήθεια']];
  let actor=null,activities=[],messages=[],rewards=[],balance=0,progressData=null;
  const esc=s=>String(s??'');
  const themeList=[['playful','🌈 Playful'],['adventure','⚔️ Hero Adventure'],['minimal','✦ Minimal'],['youth','⚡ Pro Youth']];
@@ -224,6 +224,7 @@
   const approvalTitle=node('h2','✅ Εγκρίσεις');$('rewardsList').append(approvalTitle);
   try{
    const approvals=(await api('/api/approvals')).pending||[];
+   messages=approvals.map(item=>({id:'approval-'+item.id,kind:'approval',created:item.submitted_at,text:'Για έγκριση: '+item.child_name+' · '+item.habit_name}));
    if(!approvals.length)$('rewardsList').append(node('div','Όλες οι προσπάθειες έχουν εξεταστεί. 🌟','notice'));
    for(const item of approvals){
     const row=node('div',undefined,'panel');row.append(node('strong',item.child_name+' · '+item.habit_name),node('p','⭐ '+item.points+' πόντοι'));
@@ -237,6 +238,9 @@
   $('messagesList').replaceChildren(node('h2','🙋 Αιτήματα βοήθειας'));
   try{
    const requests=(await api('/api/parent/help')).requests||[];
+   for(const item of requests)messages.push({id:'help-'+item.id,kind:'help',created:item.created_at,text:'Χρειάζεται βοήθεια: '+item.child_name+' · '+item.habit_name});
+   messages.sort((a,b)=>String(b.created||'').localeCompare(String(a.created||'')));
+   updateBell();
    if(!requests.length)$('messagesList').append(node('div','Κανένα νέο αίτημα. 💜','panel'));
    for(const item of requests){
     const row=node('div',undefined,'panel');row.append(node('strong',item.child_name+' · '+item.habit_name));
