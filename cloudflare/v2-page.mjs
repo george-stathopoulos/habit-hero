@@ -46,7 +46,7 @@ export function v2Page(role='child'){
  @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
  </style></head><body data-theme="minimal"><main class="shell">
  <header class="top"><div><div class="eyebrow">HABIT HERO · V2</div><h1 id="greeting">Η περιπέτειά σου</h1></div><div class="controls"><button id="bell" class="iconbtn" aria-label="Μηνύματα">🔔<span id="bellCount" class="count" hidden></span></button><button id="switchUser" class="iconbtn" aria-label="Αλλαγή χρήστη">⇄</button></div></header>
- <section id="homeTab"><div class="stage"><div id="worldCaption" class="world-caption">✦ YOUR WORLD</div><img id="heroArt" class="hero-art" src="/habit-hero/app/v2-hero-boy.svg" alt="Ο ήρωάς μου"><div style="position:relative;max-width:66%"><div class="eyebrow">TODAY'S ADVENTURE</div><h2 id="heroHeading">Κάθε μικρή νίκη μετράει.</h2><p id="heroSubtitle">Ο κόσμος σου μεγαλώνει μαζί σου.</p></div><div class="progress"><div id="progressFill" class="fill"></div></div><div id="progressLabel" style="margin-top:10px;font-weight:700">—</div></div><div class="heading"><h2>Οι αποστολές μου</h2><span id="missionTotal" class="muted"></span></div><div id="missionList"></div><div class="egg"><span class="egg-icon" id="eggArt">🥚</span><div><h3 id="eggTitle">Το μυστηριώδες αυγό</h3><p id="eggProgress">Ο σύντροφός σου μεγαλώνει με την προσπάθειά σου.</p></div></div></section>
+ <section id="homeTab"><div class="stage"><div id="worldCaption" class="world-caption">✦ YOUR WORLD</div><img id="heroArt" class="hero-art" src="/habit-hero/app/v2-hero-boy.svg" alt="Ο ήρωάς μου"><div style="position:relative;max-width:66%"><div class="eyebrow">TODAY'S ADVENTURE</div><h2 id="heroHeading">Κάθε μικρή νίκη μετράει.</h2><p id="heroSubtitle">Ο κόσμος σου μεγαλώνει μαζί σου.</p></div><div class="progress"><div id="progressFill" class="fill"></div></div><div id="progressLabel" style="margin-top:10px;font-weight:700">—</div></div><div class="heading"><h2>Οι αποστολές μου</h2><span id="missionTotal" class="muted"></span></div><div id="missionList"></div><div id="parentQuickActions" hidden class="panel"><h2>Δημιούργησε κάτι σπουδαίο</h2><button id="newHabit" class="primary">＋ Νέα αποστολή</button></div><div class="egg"><span class="egg-icon" id="eggArt">🥚</span><div><h3 id="eggTitle">Το μυστηριώδες αυγό</h3><p id="eggProgress">Ο σύντροφός σου μεγαλώνει με την προσπάθειά σου.</p></div></div></section>
  <section id="messagesTab" hidden><h2>🔔 Μηνύματα</h2><div id="messagesList"></div></section>
  <section id="rewardsTab" hidden><h2>🎁 Θησαυροφυλάκιο</h2><p id="balanceTitle" class="notice">⭐ 0 διαθέσιμοι πόντοι</p><div id="rewardsList" class="reward-grid"></div></section>
  <section id="profileTab" hidden><div class="panel"><h2>🦸 Διάλεξε ήρωα</h2><p class="muted">Όλοι μπορούν να επιλέξουν τον ήρωα που τους εκφράζει.</p><div id="heroChoices" class="hero-select"></div></div><div class="panel"><h2>🎨 Διάλεξε τον κόσμο σου</h2><div id="themeChoices" class="themes"></div></div><div id="profileInfo" class="panel"></div></section>
@@ -148,13 +148,77 @@ export function v2Page(role='child'){
     }}
   }catch{}
  }
+ async function api(path,method='GET',payload){
+  const response=await fetch(path,{method,credentials:'same-origin',cache:'no-store',
+   ...(payload?{headers:{'content-type':'application/json'},body:JSON.stringify(payload)}:{})});
+  if(!response.ok){const result=await response.json().catch(()=>({}));throw Error(result.detail||'Προσωρινό πρόβλημα')}
+  return response.json();
+ }
+ let familyChildren=[];
+ function field(label,type='text',value=''){
+  const wrap=node('label',undefined,'field');wrap.append(node('span',label));
+  const input=node(type==='textarea'?'textarea':type==='select'?'select':'input');
+  if(type!=='textarea'&&type!=='select')input.type=type;
+  if(type!=='select')input.value=value;
+  wrap.append(input);return {wrap,input};
+ }
+ function openHabitBuilder(){
+  const form=node('form');
+  const title=field('Όνομα αποστολής'),child=field('Ανάθεση σε παιδί','select');
+  const frequency=field('Πότε;','select'),count=field('Πόσες φορές ανά περίοδο;','number','1'),delay=field('Διάλειμμα σε λεπτά','number','30');
+  const points=field('Πόντοι','number','10'),steps=field('Τι πρέπει να κάνει το παιδί;','textarea'),benefits=field('Γιατί είναι σημαντικό;','textarea');
+  title.input.required=true;title.input.maxLength=100;count.input.min=1;count.input.max=5;delay.input.min=0;delay.input.max=1440;points.input.min=1;points.input.max=1000;
+  for(const person of familyChildren){const option=node('option',person.name);option.value=person.id;child.input.append(option)}
+  for(const [id,label] of [['daily','Κάθε μέρα'],['weekly','Κάθε εβδομάδα'],['monthly','Κάθε μήνα'],['once','Μία φορά']]){const option=node('option',label);option.value=id;frequency.input.append(option)}
+  for(const x of [title,child,frequency,count,delay,points,steps,benefits])form.append(x.wrap);
+  const submit=node('button','Δημιουργία αποστολής','primary');submit.type='submit';form.append(submit);
+  form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;try{
+   await api('/api/habits','POST',{name:title.input.value,child_id:child.input.value,frequency:frequency.input.value,
+    frequency_count:Number(count.input.value),retry_delay_minutes:Number(delay.input.value),points:Number(points.input.value),
+    description:steps.input.value,benefit:benefits.input.value});
+   $('modal').hidden=true;await loadParent();showModal('✨ Νέα αποστολή!',node('p','Η αποστολή δημιουργήθηκε με επιτυχία.'));
+  }catch(error){form.append(node('p',error.message));submit.disabled=false}};
+  showModal('✍️ Δημιουργία δικής σου αποστολής',form);
+ }
  async function loadParent(){
-  const r=await fetch('/api/family/overview',{credentials:'same-origin'});if(!r.ok){$('error').textContent='Ξεκλείδωσε πρώτα το προφίλ γονέα.';return}
-  const data=await r.json();actor={id:data.parent.id,name:data.parent.name};$('greeting').textContent='Η οικογένειά μου';$('heroArt').src='/habit-hero/app/v2-hero-girl.svg';theme('minimal');
-  $('heroHeading').textContent='Μαζί χτίζουμε καλές συνήθειες.';$('heroSubtitle').textContent=(data.children||[]).length+' μικροί ήρωες στην οικογένεια.';
-  $('missionList').replaceChildren();for(const child of data.children||[]){const b=node('button',undefined,'mission');b.append(node('span','🦸','emoji'),node('strong',child.display_name||child.name));$('missionList').append(b)}
-  $('profileInfo').append(node('p','Πλήρης διαχείριση προτύπων και προσαρμοσμένων συνηθειών:'));const link=node('a','Άνοιγμα εργαλείων γονέα →');link.href='/habit-hero/welcome/parent/';$('profileInfo').append(link);
-  $('rewardsList').append(node('p','Οι επιβραβεύσεις βρίσκονται στο εργαλείο γονέα.'));$('messagesList').append(node('p','Τα αιτήματα βοήθειας βρίσκονται στο εργαλείο γονέα.'));
+  const r=await fetch('/api/family/overview',{credentials:'same-origin'});
+  if(!r.ok){$('error').textContent='Ξεκλείδωσε πρώτα το προφίλ γονέα.';return}
+  const data=await r.json();actor={id:data.parent.id,name:data.parent.name};
+  $('greeting').textContent='Γεια σου, '+actor.name+'!';$('heroArt').src='/habit-hero/app/v2-hero-girl.svg';
+  try{theme(localStorage.getItem(themeKey())||'minimal')}catch{theme('minimal')}
+  $('heroHeading').textContent='Μαζί χτίζουμε καλές συνήθειες.';
+  $('heroSubtitle').textContent=(data.children||[]).length+' μικροί ήρωες στην οικογένεια.';
+  familyChildren=(data.children||[]).map(c=>({id:c.id,name:c.name||c.display_name}));
+  $('parentQuickActions').hidden=false;$('newHabit').onclick=openHabitBuilder;
+  $('missionList').replaceChildren();
+  for(const child of familyChildren){const card=node('div',undefined,'mission');card.append(node('span','🦸','emoji'),node('strong',child.name));$('missionList').append(card)}
+  $('profileInfo').replaceChildren(node('h2','Ο προσωπικός σου χώρος'),node('p','Άλλαξε εμφάνιση ανεξάρτητα από τα παιδιά.'));
+  $('rewardsList').classList.remove('reward-grid');$('rewardsList').replaceChildren();
+  const approvalTitle=node('h2','✅ Εγκρίσεις');$('rewardsList').append(approvalTitle);
+  try{
+   const approvals=(await api('/api/approvals')).pending||[];
+   if(!approvals.length)$('rewardsList').append(node('div','Όλες οι προσπάθειες έχουν εξεταστεί. 🌟','notice'));
+   for(const item of approvals){
+    const row=node('div',undefined,'panel');row.append(node('strong',item.child_name+' · '+item.habit_name),node('p','⭐ '+item.points+' πόντοι'));
+    const actions=node('div',undefined,'actions');
+    for(const [decision,label] of [['approved','✓ Έγκριση'],['rejected','Δοκίμασε ξανά']]){
+     const button=node('button',label,decision==='approved'?'primary':'secondary');
+     button.onclick=async()=>{button.disabled=true;try{await api('/api/approvals/review','POST',{completion_id:item.id,decision});await loadParent()}catch(error){row.append(node('p',error.message));button.disabled=false}};
+     actions.append(button);
+    }row.append(actions);$('rewardsList').append(row)}
+  }catch(error){$('rewardsList').append(node('p',error.message))}
+  $('messagesList').replaceChildren(node('h2','🙋 Αιτήματα βοήθειας'));
+  try{
+   const requests=(await api('/api/parent/help')).requests||[];
+   if(!requests.length)$('messagesList').append(node('div','Κανένα νέο αίτημα. 💜','panel'));
+   for(const item of requests){
+    const row=node('div',undefined,'panel');row.append(node('strong',item.child_name+' · '+item.habit_name));
+    for(const [status,label] of [['helping','💜 Θα σε βοηθήσω'],['try_again','💪 Δοκίμασε ξανά']]){
+     const b=node('button',label,status==='helping'?'primary':'secondary');
+     b.onclick=async()=>{b.disabled=true;try{await api('/api/parent/help/reply','POST',{request_id:item.id,status});await loadParent()}catch(e){row.append(node('p',e.message));b.disabled=false}};row.append(b)
+    }$('messagesList').append(row)}
+  }catch(error){$('messagesList').append(node('p',error.message))}
+  $('balanceTitle').textContent='Προσπάθειες προς έγκριση';
  }
  (ROLE==='child'?loadChild():loadParent()).catch(e=>{$('error').textContent='Προσωρινό πρόβλημα: '+e.message});
  </script></body></html>`;
