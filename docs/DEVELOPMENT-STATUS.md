@@ -13,8 +13,9 @@ Updated 2026-10-16.
 ## Not yet verified in this development batch
 
 - Live deployment and complete browser journeys.
-- Recurrence correctness for weekly, monthly and one-time habits.
-- Rewards and progress integration, tenant isolation and concurrency cases.
+- Verify recurrence boundaries for weekly, monthly and one-time habits (source now implements period-specific keys).
+- Rewards and progress integration, tenant isolation and concurrency cases; repeat reward requests are now blocked while pending or approved.
 - Data export/deletion, privacy review, reminder system and visual polish.
+- Child reward request history and completion history have now been implemented in source.
 
 Committed source is not proof of deployed functionality. Consolidate tests after feature development.
