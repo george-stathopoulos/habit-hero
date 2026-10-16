@@ -52,6 +52,19 @@ jobs:
           node scripts/test-v2.mjs
           python3 scripts/generate-icons.py
           python3 scripts/prepare-original-assets.py
+      - name: Validate v2 mobile layouts in Chromium
+        timeout-minutes: 10
+        run: |
+          npm install --no-save --no-package-lock playwright@1.57.0
+          npx playwright install chromium
+          node scripts/test-v2-layout.mjs
+      - name: Upload v2 visual QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: habit-hero-v2-mobile-layouts
+          path: v2-layout-shots/
+          if-no-files-found: ignore
       - name: Build original Expo app for Cloudflare
         working-directory: original/frontend
         env:
