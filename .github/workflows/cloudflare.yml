@@ -62,3 +62,9 @@ jobs:
           test -n "$CLOUDFLARE_API_TOKEN" || { echo "::error::Set repository secret CLOUDFLARE_API_TOKEN"; exit 1; }
           test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "::error::Set repository variable CLOUDFLARE_ACCOUNT_ID"; exit 1; }
           npx --yes wrangler@4 deploy --config wrangler.jsonc
+      - name: Verify live D1-backed API health
+        if: ${{ vars.HABIT_HERO_CLOUDFLARE_DEPLOY == 'true' }}
+        run: |
+          curl --fail --silent --show-error --retry 6 --retry-delay 3 --retry-all-errors \
+            https://habit-hero-cloudflare.george-stathopoulos.workers.dev/api/health \
+            | node -e 'const assert=require("node:assert/strict");let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{const x=JSON.parse(s);assert.equal(x.status,"ok");assert.equal(x.database,"connected");assert.equal(x.featuresEnabled,false);console.log("Verified remote D1 connectivity without enabling customer API");});'
