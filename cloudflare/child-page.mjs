@@ -32,7 +32,9 @@ export function childPage(){
  <p class="muted">Πάτησε «Το έκανα!» όταν ολοκληρώσεις μια δραστηριότητα. Οι πόντοι προστίθενται μετά από έγκριση γονέα.</p>
  <ul id="activities"></ul><p id="feedback" role="status"></p></section>
  <section id="progressPanel" hidden><h2>📈 Η πρόοδός μου</h2>
- <p id="progressStats" class="muted"></p><h3>Οι πρόσφατες προσπάθειές μου</h3><ul id="activityHistory"></ul></section>
+ <p id="progressStats" class="muted"></p>
+ <p id="heroLevel" class="muted"></p><div id="levelBar" style="height:14px;border-radius:20px;background:#e8eff9;overflow:hidden"><div id="levelFill" style="height:100%;width:0;background:#f5a623;transition:width .3s"></div></div>
+ <h3>🏅 Τα επιτεύγματά μου</h3><ul id="heroBadges"></ul><h3>Οι πρόσφατες προσπάθειές μου</h3><ul id="activityHistory"></ul></section>
  <section id="rewardsPanel" hidden><h2>🎁 Τα έπαθλά μου</h2>
  <p id="balance" class="muted"></p><ul id="rewards"></ul>
  <p id="rewardMessage" role="status"></p><h3>Τα αιτήματά μου</h3><ul id="redemptionHistory"></ul></section>
@@ -49,6 +51,7 @@ export function childPage(){
    document.getElementById('redemptionHistory').replaceChildren();
    document.getElementById('progressStats').textContent='';
    document.getElementById('activityHistory').replaceChildren();
+   document.getElementById('heroBadges').replaceChildren();
    document.getElementById('logout').hidden=true;
    status.textContent='Χρειάζεται σύνδεση με κωδικό γονέα.';
    return;
@@ -97,6 +100,15 @@ export function childPage(){
   document.getElementById('progressStats').textContent=
    '🔥 '+progress.current_streak_days+' ημέρες σερί · ✅ '+progress.approved_last_30_days+
    ' ολοκληρώσεις τον τελευταίο μήνα · ⭐ '+progress.earned_last_30_days+' πόντοι κερδισμένοι';
+  document.getElementById('heroLevel').textContent='🦸 Επίπεδο '+progress.level+' · '+progress.level_points+'/100 πόντοι μέχρι το επόμενο επίπεδο';
+  document.getElementById('levelFill').style.width=progress.level_points+'%';
+  const badges=document.getElementById('heroBadges');badges.replaceChildren();
+  if(!progress.badges.length){
+    const item=document.createElement('li');item.textContent='Ο πρώτος σου στόχος: ολοκλήρωσε μία αποστολή!';badges.append(item);
+  }
+  for(const badge of progress.badges){
+    const item=document.createElement('li');item.textContent=badge.emoji+' '+badge.name;badges.append(item);
+  }
   const history=document.getElementById('activityHistory');history.replaceChildren();
   for(const event of progress.recent_activity){
    const item=document.createElement('li');
