@@ -262,13 +262,13 @@ export function childPage(){
    const back=document.createElement('div');back.className='quest-card-face quest-back';
    const emoji=document.createElement('span');emoji.className='quest-card-emoji';emoji.textContent=item.emoji||'⭐';
    const title=document.createElement('strong');title.className='quest-card-title';title.textContent=item.habit_name;
-   const points=document.createElement('span');points.className='quest-card-points';points.textContent='✨ +'+item.points+' πόντοι';
+   const points=document.createElement('span');points.className='quest-card-points';points.textContent='✨ +'+item.points+' πόντοι · '+item.slot_index+'/'+item.slot_total;
    const turn=document.createElement('button');turn.type='button';turn.className='quest-flip';turn.textContent='✨ Δες την αποστολή';
    turn.setAttribute('aria-label','Άνοιξε την αποστολή '+item.habit_name);
    turn.addEventListener('click',()=>{li.classList.add('flipped');li.dataset.open='true'});
    front.append(emoji,title,points,turn);
    const backTitle=document.createElement('strong');backTitle.className='quest-card-title';backTitle.textContent='Η αποστολή σου 🎯';
-   const backDesc=document.createElement('p');backDesc.textContent='Ολοκλήρωσε: '+item.habit_name+'. Οι πόντοι σου απονέμονται μετά την έγκριση του γονέα.';
+   const backDesc=document.createElement('p');backDesc.textContent=(item.description_el||'Ολοκλήρωσε: '+item.habit_name)+'. '+(item.why_important_el?'Γιατί αξίζει: '+item.why_important_el+'. ':'')+'Οι πόντοι σου απονέμονται μετά την έγκριση του γονέα.';
    back.append(backTitle,backDesc);
    const backButton=document.createElement('button');backButton.className='secondary';backButton.type='button';backButton.textContent='↩ Πίσω';
    backButton.addEventListener('click',()=>{li.classList.remove('flipped');li.dataset.open='false'});
@@ -278,7 +278,7 @@ export function childPage(){
    help.addEventListener('click',async()=>{
     help.disabled=true;
     try{
-     const response=await fetch('/api/child/help',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({habit_id:item.habit_id})});
+     const response=await fetch('/api/child/help',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({habit_id:item.habit_id,slot_index:item.slot_index})});
      if(!response.ok&&response.status!==409)throw Error('Δεν στάλθηκε το αίτημα.');
      help.textContent='💌 Ο γονέας ενημερώθηκε!';
      document.getElementById('feedback').textContent='Ζήτησες βοήθεια. Ο γονέας σου θα δει το μήνυμά σου! 🌟';
