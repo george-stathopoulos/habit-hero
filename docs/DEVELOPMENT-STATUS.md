@@ -19,3 +19,13 @@ Updated 2026-10-16.
 - Child reward request history and completion history have now been implemented in source.
 
 Committed source is not proof of deployed functionality. Consolidate tests after feature development.
+
+## Latest additions
+
+- Family-local dates, IANA timezone setting and additive migration applied before Worker deployment.
+- Parent and child home-screen PWA manifests, mobile navigation and avatar display.
+- Lifetime hero levels and milestone badges, along with recent history.
+- Point corrections through immutable parent-only ledger entries.
+- Parent family export and multi-child reward sharing.
+- Rewards show their affordability and how many points remain for the child.
+- The GitHub workflow now runs recurrence boundary checks; a successful deployment and family/browser checks remain to be confirmed.
