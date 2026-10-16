@@ -35,6 +35,18 @@ export function childPage(){
  @keyframes heroPop{from{transform:scale(.4) rotate(-15deg);opacity:0}to{transform:scale(1);opacity:1}}
  @keyframes fadeHero{from{opacity:0}to{opacity:1}}
  @media(prefers-reduced-motion:reduce){.mission-toast,.mission-toast-emoji{animation:none}}
+ .quest-card{perspective:1000px;position:relative;min-height:245px;border:0!important;background:transparent!important;padding:0!important;margin:14px 0}
+ .quest-card-inner{position:relative;width:100%;min-height:245px;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+ .quest-card.flipped .quest-card-inner{transform:rotateY(180deg)}
+ .quest-card-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:25px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:20px;text-align:center}
+ .quest-front{background:linear-gradient(145deg,#fff,#eceaff);border:2px solid #e2dcff;box-shadow:0 14px 25px #29236a17}
+ .quest-back{background:linear-gradient(145deg,#5448bf,#8c69ed);color:white;transform:rotateY(180deg)}
+ .quest-card-title{font-size:22px}.quest-card-emoji{font-size:57px;filter:drop-shadow(0 9px 9px #2c1c6029);animation:questFloat 3s ease-in-out infinite}
+ .quest-card-points{background:#ffeac1;color:#8a540d;font-weight:800;padding:7px 15px;border-radius:22px}
+ .quest-flip{background:#6955db;min-height:42px}.quest-back .secondary{background:#ffffff30;color:white}
+ .quest-done{background:linear-gradient(140deg,#e8fff3,#d7f8e7)}
+ @keyframes questFloat{50%{transform:translateY(-8px) rotate(5deg)}}
+ @media(prefers-reduced-motion:reduce){.quest-card-inner{transition:none}.quest-card-emoji{animation:none}}
  #questOverview{background:linear-gradient(135deg,#5144bc,#8b6ef4);color:white;border:0}
  .quest-head{display:flex;align-items:center;gap:14px}.quest-emoji{font-size:46px}
  .quest-kicker{font-size:11px;letter-spacing:1.1px;font-weight:850;opacity:.78;margin:0}
@@ -175,9 +187,24 @@ export function childPage(){
   const list=document.getElementById('activities');list.replaceChildren();
   if(!data.activities.length){const li=document.createElement('li');li.textContent='Δεν υπάρχουν ακόμη δραστηριότητες.';list.append(li)}
   for(const item of data.activities){
-   const li=document.createElement('li'),span=document.createElement('span');
-   span.textContent=(item.emoji||'⭐')+' '+item.habit_name+' · '+item.points+' πόντοι ';
-   li.append(span);
+   const li=document.createElement('li');li.className='quest-card';
+   const inner=document.createElement('div');inner.className='quest-card-inner';
+   const front=document.createElement('div');front.className='quest-card-face quest-front';
+   const back=document.createElement('div');back.className='quest-card-face quest-back';
+   const emoji=document.createElement('span');emoji.className='quest-card-emoji';emoji.textContent=item.emoji||'⭐';
+   const title=document.createElement('strong');title.className='quest-card-title';title.textContent=item.habit_name;
+   const points=document.createElement('span');points.className='quest-card-points';points.textContent='✨ +'+item.points+' πόντοι';
+   const turn=document.createElement('button');turn.type='button';turn.className='quest-flip';turn.textContent='✨ Δες την αποστολή';
+   turn.setAttribute('aria-label','Άνοιξε την αποστολή '+item.habit_name);
+   turn.addEventListener('click',()=>{li.classList.add('flipped');li.dataset.open='true'});
+   front.append(emoji,title,points,turn);
+   const backTitle=document.createElement('strong');backTitle.className='quest-card-title';backTitle.textContent='Η αποστολή σου 🎯';
+   const backDesc=document.createElement('p');backDesc.textContent='Ολοκλήρωσε: '+item.habit_name+'. Οι πόντοι σου απονέμονται μετά την έγκριση του γονέα.';
+   back.append(backTitle,backDesc);
+   const backButton=document.createElement('button');backButton.className='secondary';backButton.type='button';backButton.textContent='↩ Πίσω';
+   backButton.addEventListener('click',()=>{li.classList.remove('flipped');li.dataset.open='false'});
+   inner.append(front,back);li.append(inner);
+   back.append(backButton);
    if(!item.submission_status){
     const button=document.createElement('button');button.textContent='Το έκανα!';
     button.addEventListener('click',async()=>{
@@ -190,10 +217,10 @@ export function childPage(){
       document.getElementById('feedback').textContent='Μπράβο! Περιμένουμε την έγκριση του γονέα.';
       await refresh();
      }catch(e){document.getElementById('feedback').textContent=e.message;button.disabled=false}
-    });li.append(button);
+    });back.append(button);
    }else{const label=document.createElement('small');
     label.textContent=item.submission_status==='pending'?'⏳ Σε αναμονή':item.submission_status==='approved'?'✅ Εγκρίθηκε':'❌ Απορρίφθηκε';
-    li.append(label);
+    back.append(label);front.classList.add('quest-done');
    }
    list.append(li);
   }
