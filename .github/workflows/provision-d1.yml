@@ -23,6 +23,7 @@ jobs:
         run: |
           test -n "$CLOUDFLARE_API_TOKEN" || { echo "::error::Missing CLOUDFLARE_API_TOKEN"; exit 1; }
           test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "::error::Missing CLOUDFLARE_ACCOUNT_ID"; exit 1; }
+      # Re-run on changes to verify D1 permissions and ensure idempotent creation.
       - name: Create D1 if not present (EU jurisdiction)
         working-directory: cloudflare
         run: |
