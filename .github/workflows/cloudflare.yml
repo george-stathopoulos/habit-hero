@@ -27,6 +27,9 @@ jobs:
           node --check cloudflare/google-auth.mjs
           node scripts/test-cloudflare.mjs
           node scripts/test-google-auth.mjs
+          node --check cloudflare/family-api.mjs
+          node --check cloudflare/parent-page.mjs
+          node scripts/test-family-api.mjs
           python3 scripts/generate-icons.py
           python3 scripts/prepare-original-assets.py
       - name: Build original Expo app for Cloudflare
@@ -91,3 +94,14 @@ jobs:
           grep -q "Επαλήθευση σύνδεσης" /tmp/hero-callback.html
           grep -q "/api/auth/me" /tmp/hero-callback.html
           echo "Verified live SSO landing HTML (unauthenticated browser will prompt re-login)"
+
+      - name: Verify deployed parent dashboard and protected family API
+        if: ${{ vars.HABIT_HERO_CLOUDFLARE_DEPLOY == 'true' }}
+        run: |
+          curl --fail --silent --show-error --retry 5 --retry-delay 3 --retry-all-errors \
+            "https://habit-hero-cloudflare.george-stathopoulos.workers.dev/habit-hero/parent/" \
+            | grep -q "/api/family/overview"
+          status=$(curl --silent --show-error -o /dev/null -w '%{http_code}' \
+            "https://habit-hero-cloudflare.george-stathopoulos.workers.dev/api/family/overview")
+          test "$status" = "401" || { echo "::error::Unauthenticated family API returned HTTP $status"; exit 1; }
+          echo "Parent page accessible; private API rejects anonymous requests"
