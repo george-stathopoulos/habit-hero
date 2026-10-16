@@ -53,6 +53,12 @@ export function childPage(){
  .theme-choices button[aria-pressed="true"]{border-color:#f5c651;box-shadow:0 0 0 3px #7161aa44}
  .egg-stage{font-size:76px;display:grid;place-items:center;min-height:140px;border-radius:25px;background:#ffffffb8;animation:questFloat 3.5s ease-in-out infinite}
  @media(prefers-reduced-motion:reduce){.egg-stage{animation:none}}
+ body[data-world="noir"]{background:#151925;color:#e9edf9;--purple:#303848;--violet:#1c2637}body[data-world="noir"] section:not(#questOverview){background:#252d3e;color:#f2f4ff}
+ body[data-world="paper"]{background:#faf9f5;color:#293442;--purple:#475569;--violet:#26354a}body[data-world="paper"] section{box-shadow:0 2px 12px #17283a12}
+ body[data-world="neon"]{background:linear-gradient(140deg,#120b36,#25134d);color:#f4efff;--purple:#ae37dc;--violet:#43219a}body[data-world="neon"] section:not(#questOverview){background:#28204d;color:#fff}
+ #notificationBell{position:relative;background:#ffffff25;font-size:25px;min-width:46px;min-height:46px}#unreadCount{position:absolute;right:-4px;top:-5px;background:#f14a7e;color:white;border-radius:999px;font-size:11px;padding:2px 6px}
+ #notificationBell.ringing{animation:bellWiggle 1.5s ease-in-out infinite}@keyframes bellWiggle{0%,70%,100%{transform:rotate(0)}78%{transform:rotate(-13deg)}87%{transform:rotate(11deg)}94%{transform:rotate(-6deg)}}@media(prefers-reduced-motion:reduce){#notificationBell.ringing{animation:none}}
+ #switchFamily{font-size:25px;min-width:46px;min-height:46px}
  .reward-tile{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;
   border:2px solid #f3deff!important;border-radius:25px;background:linear-gradient(135deg,#fff4fc,#f2f0ff)!important;
   padding:24px 16px!important;margin-bottom:15px;box-shadow:0 10px 23px #603c8915}
@@ -100,7 +106,7 @@ export function childPage(){
  @media(max-width:600px){body{padding:10px}main{margin:0 auto}section{padding:20px;border-radius:24px}}
  </style></head><body>
  <main><section><h1>🏆 Habit Hero</h1><p id="status" role="status">Έλεγχος προφίλ...</p>
- <button id="lockProfile" class="secondary" hidden>🔒 Κλείδωμα</button> <button id="switchFamily" class="secondary" hidden>🚪 Αλλαγή χρήστη</button> <button id="logout" class="secondary" hidden>Αποσύνδεση παιδιού</button></section>
+ <button id="lockProfile" class="secondary" hidden>🔒 Κλείδωμα</button> <button id="switchFamily" class="secondary" hidden aria-label="Αλλαγή χρήστη" title="Αλλαγή χρήστη">⇄</button> <button id="logout" class="secondary" hidden>Αποσύνδεση παιδιού</button> <button id="notificationBell" type="button" aria-label="Μηνύματα" title="Μηνύματα" hidden>🔔<span id="unreadCount" hidden></span></button></section>
  <nav id="quickNav" class="quick-nav" aria-label="Πλοήγηση παιδιού" hidden>
  <a href="#activitiesPanel">🌟 Συνήθειες</a><a href="#rewardsPanel">🎁 Έπαθλα</a>
  <a href="#progressPanel">📈 Πρόοδος</a></nav>
@@ -128,7 +134,7 @@ export function childPage(){
  <section id="activitiesPanel" data-tab="quests" hidden><h2>🌟 Οι δραστηριότητές μου</h2>
  <p class="muted">Πάτησε «Το έκανα!» όταν ολοκληρώσεις μια δραστηριότητα. Οι πόντοι προστίθενται μετά από έγκριση γονέα.</p>
  <ul id="activities"></ul><p id="feedback" role="status"></p></section>
- <section id="parentMessages" data-tab="quests" hidden><h2>💌 Μηνύματα από τους γονείς</h2><ul id="helpReplies"></ul></section>
+ <section id="parentMessages" data-tab="messages" hidden><h2>💌 Μηνύματα από τους γονείς</h2><ul id="helpReplies"></ul></section>
  <section id="heroThemes" data-tab="hero" hidden><h2>🎨 Ο κόσμος του ήρωά μου</h2><p class="muted">Διάλεξε τον κόσμο που σου αρέσει!</p>
  <div id="themeChoices" class="theme-choices"></div>
  <h3>🥚 Το μαγικό μου αυγό</h3><div id="companionEgg" class="egg-stage" aria-live="polite">🥚</div>
@@ -145,9 +151,10 @@ export function childPage(){
  <button type="button" data-child-tab="quests" role="tab" aria-selected="true"><span>🎯</span><span>Αποστολές</span></button>
  <button type="button" data-child-tab="rewards" role="tab" aria-selected="false"><span>🎁</span><span>Έπαθλα</span></button>
  <button type="button" data-child-tab="hero" role="tab" aria-selected="false"><span>🦸</span><span>Ο ήρωάς μου</span></button>
+ <button type="button" data-child-tab="messages" role="tab" aria-selected="false"><span>🔔</span><span>Μηνύματα</span></button>
  </nav>
  </main><script>
- const childTitles={quests:'Οι αποστολές μου 🎯',rewards:'Τα έπαθλά μου 🎁',hero:'Ο ήρωάς μου 🦸'};
+ const childTitles={quests:'Οι αποστολές μου 🎯',rewards:'Τα έπαθλά μου 🎁',hero:'Ο ήρωάς μου 🦸',messages:'Τα μηνύματά μου 🔔'};
  function openChildTab(name){
   if(!childTitles[name])name='quests';
   for(const panel of document.querySelectorAll('[data-tab]'))panel.dataset.active=String(panel.dataset.tab===name);
@@ -184,7 +191,7 @@ export function childPage(){
   }
   overlay.append(particles,card);document.body.append(overlay);close.focus();
  }
- const worlds=[['space','🌌','Διάστημα'],['forest','🌳','Μαγικό δάσος'],['ocean','🐬','Βυθός'],['sunset','🌅','Ηλιοβασίλεμα']];
+ const worlds=[['space','🌌','Διάστημα'],['forest','🌳','Μαγικό δάσος'],['ocean','🐬','Βυθός'],['sunset','🌅','Ηλιοβασίλεμα'],['noir','◼','Studio Noir'],['paper','✦','Minimal'],['neon','⚡','Neon Arcade']];
  const themeChoices=document.getElementById('themeChoices');
  let activeWorld='space';
  try{activeWorld=localStorage.getItem('habitHero:world')||'space'}catch{}
@@ -198,6 +205,7 @@ export function childPage(){
   button.addEventListener('click',()=>chooseWorld(id));themeChoices.append(button);
  }
  chooseWorld(activeWorld);
+ document.getElementById('notificationBell').addEventListener('click',()=>openChildTab('messages'));
  const status=document.getElementById('status');
  async function refresh(){
   const me=await fetch('/api/child/me',{credentials:'same-origin',cache:'no-store'});
@@ -236,9 +244,11 @@ export function childPage(){
   document.getElementById('questOverview').hidden=false;
   document.getElementById('heroThemes').hidden=false;
   document.getElementById('childTabTitle').hidden=false;
-  document.getElementById('logout').hidden=false;
+  document.getElementById('logout').hidden=true;
   document.getElementById('switchFamily').hidden=false;
-  document.getElementById('lockProfile').hidden=!profile.pin_enabled;
+  document.getElementById('lockProfile').hidden=true;
+  document.getElementById('logout').hidden=true;
+  document.getElementById('notificationBell').hidden=false;
   const res=await fetch('/api/child/activities',{credentials:'same-origin',cache:'no-store'});
   if(!res.ok){status.textContent='Οι δραστηριότητες δεν είναι διαθέσιμες αυτή τη στιγμή.';return}
   const data=await res.json();
@@ -311,6 +321,9 @@ export function childPage(){
   const result=await response.json(),box=document.getElementById('parentMessages'),list=document.getElementById('helpReplies');
   list.replaceChildren();
   const requests=(result.requests||[]).filter(r=>r.parent_message);
+  document.getElementById('unreadCount').hidden=!requests.length;
+  document.getElementById('unreadCount').textContent=String(requests.length);
+  document.getElementById('notificationBell').classList.toggle('ringing',requests.length>0);
   box.hidden=!requests.length;
   for(const item of requests){
    const li=document.createElement('li');li.textContent='💜 '+item.parent_message;list.append(li);
