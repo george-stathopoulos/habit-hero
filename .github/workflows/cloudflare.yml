@@ -28,6 +28,7 @@ jobs:
           node --check cloudflare/activity-api.mjs
           node scripts/test-activity-api.mjs
           node --check cloudflare/child-auth.mjs
+          node --check cloudflare/child-pin.mjs
           node --check cloudflare/child-page.mjs
           node --check cloudflare/rewards-api.mjs
           node --check cloudflare/progress-api.mjs
@@ -73,6 +74,7 @@ jobs:
         run: |
           test -n "$CLOUDFLARE_API_TOKEN"
           npx --yes wrangler@4 d1 execute habit-hero-db --remote --file ./migrations/0002_family_timezone.sql
+          npx --yes wrangler@4 d1 execute habit-hero-db --remote --file ./migrations/0003_child_pin.sql
       - name: Deploy using existing Cloudflare account
         if: ${{ vars.HABIT_HERO_CLOUDFLARE_DEPLOY == 'true' }}
         working-directory: cloudflare
