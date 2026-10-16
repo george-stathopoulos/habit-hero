@@ -7,6 +7,7 @@
  const themeList=[['playful','🌈 Playful'],['adventure','⚔️ Hero Adventure'],['minimal','✦ Minimal'],['youth','⚡ Pro Youth']];
  const themeKey=()=> 'hh2-theme-'+ROLE+'-'+(actor?.id||'default');
  function theme(v){if(!themeList.some(x=>x[0]===v))v='minimal';document.body.dataset.theme=v;
+  if(ROLE==='child')try{pickHero(localStorage.getItem(heroKey())||(actor?.avatar_id==='hero-girl'?'girl':'boy'))}catch{}
   $('worldCaption').textContent=({playful:'🌈 DREAM GARDEN',adventure:'⚔️ SKY KINGDOM',minimal:'✦ CALM STUDIO',youth:'⚡ NEON ACADEMY'})[v];
   for(const b of document.querySelectorAll('.theme'))b.setAttribute('aria-pressed',String(b.dataset.value===v));
   try{localStorage.setItem(themeKey(),v)}catch{}}
@@ -14,13 +15,13 @@
  const heroKey=()=> 'hh2-hero-'+(actor?.id||'default');
  function pickHero(choice){
   if(!heroTypes.some(x=>x[0]===choice))choice='boy';
-  $('heroArt').src='/habit-hero/app/v2-hero-'+choice+'.svg';
-  for(const b of $('heroChoices').querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.hero===choice));
+  $('heroArt').src='/habit-hero/app/v2-hero-'+choice+'-'+document.body.dataset.theme+'.svg';
+  for(const b of $('heroChoices').querySelectorAll('button')){b.setAttribute('aria-pressed',String(b.dataset.hero===choice));b.querySelector('img').src='/habit-hero/app/v2-hero-'+b.dataset.hero+'-'+document.body.dataset.theme+'.svg'}
   try{localStorage.setItem(heroKey(),choice)}catch{}
  }
  for(const [kind,label] of heroTypes){
   const button=document.createElement('button');button.type='button';button.className='hero-choice';button.dataset.hero=kind;
-  const picture=document.createElement('img');picture.src='/habit-hero/app/v2-hero-'+kind+'.svg';picture.alt='';
+  const picture=document.createElement('img');picture.src='/habit-hero/app/v2-hero-'+kind+'-'+document.body.dataset.theme+'.svg';picture.alt='';
   const name=document.createElement('strong');name.textContent=label;button.append(picture,name);
   button.onclick=()=>pickHero(kind);$('heroChoices').append(button);
  }
@@ -166,8 +167,8 @@
   for(const [id,label] of heroTypes){const option=node('option',label);option.value=id;hero.input.append(option)}
   for(const [id,label] of themeList){const option=node('option',label);option.value=id;world.input.append(option)}
   for(const x of [name,age,pin,repeat,hero,world])form.append(x.wrap);
-  const preview=node('img');preview.src='/habit-hero/app/v2-hero-boy.svg';preview.alt='Προεπισκόπηση ήρωα';preview.style.cssText='height:160px;width:100%;object-fit:contain';
-  hero.input.onchange=()=>{preview.src='/habit-hero/app/v2-hero-'+hero.input.value+'.svg'};form.append(preview);
+  const preview=node('img');preview.src='/habit-hero/app/v2-hero-boy-'+document.body.dataset.theme+'.svg';preview.alt='Προεπισκόπηση ήρωα';preview.style.cssText='height:160px;width:100%;object-fit:contain';
+  hero.input.onchange=()=>{preview.src='/habit-hero/app/v2-hero-'+hero.input.value+'-'+document.body.dataset.theme+'.svg'};form.append(preview);
   const submit=node('button','Δημιουργία προφίλ','primary');submit.type='submit';form.append(submit);
   form.onsubmit=async event=>{
    event.preventDefault();if(pin.input.value!==repeat.input.value){form.append(node('p','Τα PIN δεν ταιριάζουν.'));return}
