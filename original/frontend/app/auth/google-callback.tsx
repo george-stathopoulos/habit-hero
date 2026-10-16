@@ -1,142 +1,51 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Alert, Platform } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS } from '../../src/constants/colors';
-import { authAPI } from '../../src/services/api';
-import { useAuthStore } from '../../src/store/authStore';
+import React, {useEffect, useState} from 'react';
+import {View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Platform} from 'react-native';
+import {useRouter} from 'expo-router';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {COLORS} from '../../src/constants/colors';
 
 export default function GoogleCallback() {
-  const router = useRouter();
-  const params = useLocalSearchParams();
-  const { setParentAuth, setFamilyInfo } = useAuthStore();
-  const [status, setStatus] = useState('Επεξεργασία...');
-
-  useEffect(() => {
-    const handleCallback = async () => {
-      let sessionId: string | null = null;
-      
-      // First try to get from expo router params
-      if (params.session_id) {
-        sessionId = params.session_id as string;
-        console.log('Session ID from params:', sessionId);
-      }
-      
-      // For web, also check URL directly
-      if (!sessionId && Platform.OS === 'web') {
-        const fullUrl = window.location.href;
-        console.log('Full URL:', fullUrl);
-        
-        // Check hash fragment (e.g., #session_id=xxx)
-        const hash = window.location.hash;
-        if (hash.includes('session_id=')) {
-          sessionId = hash.split('session_id=')[1]?.split('&')[0];
-          console.log('Session ID from hash:', sessionId);
+  const router=useRouter();
+  const [status,setStatus]=useState('Επαλήθευση σύνδεσης...');
+  const [signedIn,setSignedIn]=useState(false);
+  useEffect(()=>{
+    let active=true;
+    if(Platform.OS!=='web') {setStatus('Η σύνδεση είναι διαθέσιμη στο web.');return;}
+    fetch('/api/auth/me',{credentials:'include',cache:'no-store'})
+      .then(async r=>{if(!r.ok)throw Error('Unauthenticated');return r.json();})
+      .then(me=>{
+        if(active){
+          setSignedIn(true);
+          setStatus('Καλώς ήρθατε, '+me.name+'! Ο λογαριασμός Google συνδέθηκε με ασφάλεια. Η διαχείριση οικογένειας δεν είναι ακόμη διαθέσιμη.');
         }
-        
-        // Check query string (e.g., ?session_id=xxx)
-        const query = window.location.search;
-        if (query.includes('session_id=')) {
-          sessionId = new URLSearchParams(query).get('session_id');
-          console.log('Session ID from query:', sessionId);
-        }
-      }
-
-      if (!sessionId) {
-        console.error('No session_id found');
-        Alert.alert('Σφάλμα', 'Δεν βρέθηκε session. Παρακαλώ δοκιμάστε ξανά.');
-        router.replace('/welcome');
-        return;
-      }
-      
-      console.log('Using session ID:', sessionId);
-
-      setStatus('Σύνδεση...');
-      
-      try {
-        const result = await authAPI.exchangeSession(sessionId);
-        
-        if (result.needs_pin_setup) {
-          // New user - go to PIN setup
-          setStatus('Νέος λογαριασμός! Ρύθμιση PIN...');
-          router.replace({
-            pathname: '/auth/setup-pin',
-            params: {
-              tempSessionId: sessionId,
-              name: result.name,
-              email: result.email,
-            }
-          });
-        } else if (result.needs_pin_verification) {
-          // Existing user - go to PIN verification
-          setStatus('Υπάρχων λογαριασμός! Επαλήθευση...');
-          
-          // Always store/update family info with correct parent_id
-          setFamilyInfo({
-            parentId: result.user_id,
-            parentName: result.name,
-            children: result.children || [],
-          });
-          
-          router.replace('/auth/role-select');
-        } else {
-          // Already authenticated
-          router.replace('/parent/(tabs)');
-        }
-      } catch (error: any) {
-        console.error('Auth error:', error);
-        Alert.alert('Σφάλμα', 'Αποτυχία σύνδεσης. Παρακαλώ δοκιμάστε ξανά.');
-        router.replace('/welcome');
-      } finally {
-        // Clear URL params
-        if (Platform.OS === 'web') {
-          window.history.replaceState({}, document.title, window.location.pathname);
-        }
-      }
-    };
-
-    handleCallback();
-  }, []);
-
+      })
+      .catch(()=>{if(active)setStatus('Δεν ολοκληρώθηκε η σύνδεση. Δοκιμάστε ξανά.');});
+    return()=>{active=false;};
+  },[]);
+  const onExit=async()=>{
+    if(Platform.OS==='web' && signedIn)await fetch('/api/auth/logout',{method:'POST',credentials:'include'}).catch(()=>{});
+    router.replace('/welcome');
+  };
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.root}>
       <View style={styles.content}>
         <Text style={styles.emoji}>🔐</Text>
-        <Text style={styles.title}>HabitHero</Text>
+        <Text style={styles.title}>Habit Hero</Text>
         <Text style={styles.status}>{status}</Text>
-        <ActivityIndicator size="large" color={COLORS.softBlue} style={styles.loader} />
+        {!signedIn && status.startsWith('Επαλήθευση') && <ActivityIndicator size="large" color={COLORS.softBlue}/>}
+        <TouchableOpacity accessibilityRole="button" onPress={onExit} style={styles.button}>
+          <Text style={styles.buttonText}>{signedIn?'Αποσύνδεση':'Επιστροφή'}</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.lightGray,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  emoji: {
-    fontSize: 64,
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: COLORS.softBlue,
-    marginBottom: 24,
-  },
-  status: {
-    fontSize: 18,
-    color: COLORS.darkGray,
-    marginBottom: 16,
-  },
-  loader: {
-    marginTop: 16,
-  },
+const styles=StyleSheet.create({
+  root:{flex:1,backgroundColor:COLORS.lightGray},
+  content:{flex:1,justifyContent:'center',alignItems:'center',padding:24},
+  emoji:{fontSize:64,marginBottom:16},
+  title:{fontSize:32,fontWeight:'bold',color:COLORS.softBlue,marginBottom:20},
+  status:{fontSize:17,textAlign:'center',color:COLORS.darkGray,marginBottom:24},
+  button:{backgroundColor:COLORS.softBlue,borderRadius:10,paddingHorizontal:24,paddingVertical:12},
+  buttonText:{fontWeight:'bold',color:'white'}
 });
