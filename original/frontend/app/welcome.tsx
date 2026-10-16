@@ -163,35 +163,13 @@ export default function Welcome() {
   };
 
   const handleGoogleLogin = async () => {
-    // Mark welcome as seen since user is taking action
     await AsyncStorage.setItem('welcome_seen', 'true');
-    
-    // For native apps, use the web-based OAuth callback endpoint
-    // This redirects through the server which then redirects to the app
-    const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
-    const redirectUrl = Platform.OS === 'web'
-      ? `${window.location.origin}/auth/google-callback`
-      : `${BACKEND_URL}/api/oauth-callback`;
-
-    const authUrl = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
-
     if (Platform.OS === 'web') {
-      window.location.href = authUrl;
-    } else {
-      const result = await WebBrowser.openAuthSessionAsync(authUrl, Linking.createURL('/auth/google-callback'));
-      if (result.type === 'success' && result.url) {
-        // Extract session_id and navigate to callback
-        const url = new URL(result.url);
-        const sessionId = url.searchParams.get('session_id') || url.hash.split('session_id=')[1]?.split('&')[0];
-        if (sessionId) {
-          router.replace(`/auth/google-callback?session_id=${sessionId}`);
-        } else {
-          Alert.alert('Σφάλμα', 'Δεν ολοκληρώθηκε η σύνδεση. Παρακαλώ δοκιμάστε ξανά.');
-        }
-      } else if (result.type === 'cancel') {
-        // User cancelled - do nothing
-      }
+      // OAuth and sessions are managed in Cloudflare; no browser-readable bearer tokens.
+      window.location.assign('/api/auth/google/start');
+      return;
     }
+    Alert.alert('Habit Hero', 'Η σύνδεση Google είναι προς το παρόν διαθέσιμη στην web εφαρμογή.');
   };
 
   const handleSkip = async () => {
@@ -389,27 +367,27 @@ export default function Welcome() {
                 <Text style={styles.startButtonText}>Σύνδεση με Google</Text>
               </TouchableOpacity>
               
-              <TouchableOpacity 
+              {Platform.OS !== 'web' && <TouchableOpacity 
                 style={styles.emailSignupButton} 
                 onPress={() => setShowEmailSignup(true)}
               >
                 <Ionicons name="mail-outline" size={24} color={slide.color} />
                 <Text style={[styles.emailSignupText, { color: slide.color }]}>Εγγραφή με Email</Text>
-              </TouchableOpacity>
+              </TouchableOpacity>}
               
-              <View style={styles.dividerRow}>
+              {Platform.OS !== 'web' && <View style={styles.dividerRow}>
                 <View style={styles.dividerLine} />
                 <Text style={styles.dividerText}>ή</Text>
                 <View style={styles.dividerLine} />
-              </View>
+              </View>}
               
-              <TouchableOpacity 
+              {Platform.OS !== 'web' && <TouchableOpacity 
                 style={styles.existingAccountButton} 
                 onPress={() => setShowEmailLogin(true)}
               >
                 <Text style={styles.existingAccountText}>Έχω ήδη λογαριασμό</Text>
                 <Ionicons name="arrow-forward" size={16} color={COLORS.mediumGray} />
-              </TouchableOpacity>
+              </TouchableOpacity>}
             </View>
           )}
         </View>
