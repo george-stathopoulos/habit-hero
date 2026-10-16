@@ -32,7 +32,7 @@ h1{font-size:29px;margin:10px 0}p{line-height:1.6}a,button{display:inline-block;
 </style></head><body><main><div style="font-size:54px">🏆</div><h1>Habit Hero</h1>
 <p id="message" role="status">Επαλήθευση σύνδεσης...</p>
 <p id="actions"><a class="secondary" href="/habit-hero/original-preview/">Επιστροφή στην εφαρμογή</a></p>
-<small>Η διαχείριση οικογένειας θα ενεργοποιηθεί σε επόμενο βήμα.</small></main>
+<small>Η οικογένειά σας είναι διαθέσιμη μέσα από τον πίνακα γονέα.</small></main>
 <script>
 (async()=>{
  const message=document.getElementById('message'),actions=document.getElementById('actions');
