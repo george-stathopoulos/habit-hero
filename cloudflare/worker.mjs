@@ -39,7 +39,9 @@ h1{font-size:29px;margin:10px 0}p{line-height:1.6}a,button{display:inline-block;
    await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
    window.location.assign('/habit-hero/original-preview/');
   });
-  actions.replaceChildren(logout);
+  const enter=document.createElement('a');
+  enter.href='/habit-hero/parent/';enter.textContent='Μετάβαση στην οικογένειά μου';
+  actions.replaceChildren(enter,logout);
  }catch{
   message.textContent='Δεν βρέθηκε ενεργή σύνδεση. Παρακαλώ δοκιμάστε ξανά.';
   const retry=document.createElement('a');
