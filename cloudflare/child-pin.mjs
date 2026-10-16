@@ -11,7 +11,7 @@ const decode=x=>Uint8Array.from(atob(x.replaceAll('-','+').replaceAll('_','/')),
 async function digest(text){return b64(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text))))}
 async function hash(pin,salt){
  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(pin),'PBKDF2',false,['deriveBits']);
- return b64(new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:decode(salt),iterations:160000,hash:'SHA-256'},key,256)));
+ return b64(new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:decode(salt),iterations:100000,hash:'SHA-256'},key,256)));
 }
 async function body(req){
  if(req.headers.get('origin')!==origin)return {error:json({detail:'Forbidden'},403)};
@@ -27,7 +27,7 @@ export async function configureChildPin(req,env){
  const {child_id,pin}=input.v;
  if(!uuid(child_id)||!pinValid(pin))return json({detail:'PIN must be four digits'},400);
  const salt=b64(crypto.getRandomValues(new Uint8Array(16)));
- const verifier='pbkdf2-sha256-160000$'+salt+'$'+await hash(pin,salt);
+ const verifier='pbkdf2-sha256-100000$'+salt+'$'+await hash(pin,salt);
  try{
  const now=new Date().toISOString();
  const changes=await env.DB.batch([
@@ -64,7 +64,7 @@ export async function unlockChildPin(req,env){
  if(!session.pin_hash)return json({detail:'PIN not configured'},409);
  if(session.pin_locked_until&&session.pin_locked_until>now)return json({detail:'PIN locked. Ask a parent to reset it, or retry later.'},429);
  const [alg,salt,expected]=session.pin_hash.split('$');
- const actual=alg==='pbkdf2-sha256-160000'&&salt?await hash(pin,salt):'';
+ const actual=alg==='pbkdf2-sha256-100000'&&salt?await hash(pin,salt):'';
  if(expected!==actual){
   // Durable five-attempt lockout shared between all devices for this child.
   const prior=(session.pin_locked_until&&session.pin_locked_until<=now)?0:session.pin_attempts;
