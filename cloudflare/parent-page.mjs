@@ -48,7 +48,28 @@ export function parentPage() {
  <p id="approvalNote" role="status" class="subtle"></p></section>
  <section class="panel" id="pointsPanel" hidden><h2>🏆 Πόντοι παιδιών</h2>
  <ul id="balances"></ul><p class="subtle">Οι πόντοι προστίθενται μόνο μετά από έγκριση γονέα.</p></section>
- <section class="panel"><h2>🚧 Επόμενες λειτουργίες</h2><p class="subtle">Η αυτόνομη σύνδεση παιδιών, οι εξαργυρώσεις και οι επιβραβεύσεις παραμένουν κλειδωμένες έως ότου ελεγχθούν.</p></section>
+ <section class="panel" id="rewardsPanel" hidden>
+  <h2>🎁 Έπαθλα & ανταμοιβές</h2>
+  <p class="subtle">Δημιουργήστε έπαθλα για τα παιδιά. Η εξαργύρωση αφαιρεί πόντους μόνο όταν την εγκρίνετε.</p>
+  <ul id="rewardsList"></ul><p id="noRewards" class="subtle">Δεν υπάρχουν ακόμη έπαθλα.</p>
+  <form id="rewardForm">
+    <label for="rewardName">Όνομα επάθλου</label>
+    <input id="rewardName" required maxlength="100" placeholder="π.χ. Μια ώρα στο πάρκο">
+    <label for="rewardDescription">Περιγραφή (προαιρετική)</label>
+    <input id="rewardDescription" maxlength="500" placeholder="Τι περιλαμβάνει το έπαθλο">
+    <label for="rewardCost">Πόντοι που απαιτούνται</label>
+    <input id="rewardCost" type="number" min="1" max="100000" value="50" required>
+    <label for="rewardChild">Παιδί</label><select id="rewardChild" required></select>
+    <label><input id="rewardRecurring" type="checkbox" checked style="width:auto"> Επαναλαμβανόμενο έπαθλο</label>
+    <button id="rewardSave" type="submit">Προσθήκη επάθλου</button>
+  </form><p id="rewardStatus" role="status" class="subtle"></p>
+ </section>
+ <section class="panel" id="redemptionsPanel" hidden>
+  <h2>📩 Αιτήματα εξαργύρωσης</h2><ul id="redemptionsList"></ul>
+  <p id="noRedemptions" class="subtle">Δεν υπάρχουν ακόμη αιτήματα.</p>
+  <p id="redemptionStatus" role="status" class="subtle"></p>
+ </section>
+ <section class="panel"><h2>🚧 Επόμενες λειτουργίες</h2><p class="subtle">Επεξεργασία συνηθειών, υπενθυμίσεις, αναλυτικά στατιστικά και πλήρης σχεδίαση εφαρμογής βρίσκονται υπό ανάπτυξη.</p></section>
  </main><script>
  const status=document.getElementById('status'),greeting=document.getElementById('greeting');
  const list=document.getElementById('children'),empty=document.getElementById('empty');
@@ -77,6 +98,11 @@ export function parentPage() {
    document.getElementById('habitPanel').hidden=data.children.length===0;
    if(data.children.length)await refreshHabits();
    if(data.children.length)await refreshActivityWorkflow();
+   const rewardChild=document.getElementById('rewardChild');rewardChild.replaceChildren();
+   for(const child of data.children){const option=document.createElement('option');option.value=child.id;option.textContent=child.display_name;rewardChild.append(option)}
+   document.getElementById('rewardsPanel').hidden=data.children.length===0;
+   document.getElementById('redemptionsPanel').hidden=data.children.length===0;
+   if(data.children.length)await refreshRewards();
   }catch(e){
    greeting.textContent='Habit Hero';status.textContent=e.message;
    const a=document.createElement('a');a.href='/api/auth/google/start';a.textContent='Σύνδεση με Google';
@@ -214,6 +240,64 @@ export function parentPage() {
    document.getElementById('pairResult').hidden=true;
    document.getElementById('deviceStatus').textContent='Η πρόσβαση ανακλήθηκε.';
   }catch(e){document.getElementById('deviceStatus').textContent=e.message}finally{btn.disabled=false}
+ });
+ async function refreshRewards(){
+  const [catalogResponse,requestsResponse]=await Promise.all([
+    fetch('/api/rewards',{credentials:'same-origin',cache:'no-store'}),
+    fetch('/api/rewards/redemptions',{credentials:'same-origin',cache:'no-store'})
+  ]);
+  if(!catalogResponse.ok||!requestsResponse.ok)throw Error('Δεν ήταν δυνατή η φόρτωση των επάθλων.');
+  const catalog=(await catalogResponse.json()).rewards,requests=(await requestsResponse.json()).redemptions;
+  const catalogList=document.getElementById('rewardsList');catalogList.replaceChildren();
+  for(const reward of catalog){
+    const item=document.createElement('li');
+    item.textContent=(reward.emoji||'🎁')+' '+reward.name+' · '+reward.points_cost+' πόντοι · '+reward.children.map(child=>child.name).join(', ');
+    catalogList.append(item);
+  }
+  document.getElementById('noRewards').hidden=catalog.length>0;
+  const requestsList=document.getElementById('redemptionsList');requestsList.replaceChildren();
+  for(const request of requests){
+    const item=document.createElement('li'),label=document.createElement('span');
+    label.textContent=request.child_name+' → '+request.reward_name+' · '+request.points_spent+' πόντοι · '+request.status+' ';
+    item.append(label);
+    const options=request.status==='requested'?[
+      ['approved','Έγκριση'],['rejected','Απόρριψη']
+    ]:request.status==='approved'?[['fulfilled','Παραδόθηκε']]:[];
+    for(const [decision,text] of options){
+      const button=document.createElement('button');button.textContent=text;
+      if(decision==='rejected')button.className='secondary';
+      button.addEventListener('click',async()=>{
+        item.querySelectorAll('button').forEach(b=>b.disabled=true);
+        try{
+          const response=await fetch('/api/rewards/review',{method:'POST',credentials:'same-origin',
+             headers:{'content-type':'application/json'},body:JSON.stringify({redemption_id:request.id,decision})});
+          if(!response.ok)throw Error('Η ενέργεια απέτυχε. Ελέγξτε τους διαθέσιμους πόντους.');
+          document.getElementById('redemptionStatus').textContent='Το αίτημα ενημερώθηκε.';
+          await refreshRewards();await refreshActivityWorkflow();
+        }catch(e){document.getElementById('redemptionStatus').textContent=e.message;item.querySelectorAll('button').forEach(b=>b.disabled=false)}
+      });
+      item.append(button);
+    }
+    requestsList.append(item);
+  }
+  document.getElementById('noRedemptions').hidden=requests.length>0;
+ }
+ document.getElementById('rewardForm').addEventListener('submit',async event=>{
+  event.preventDefault();const save=document.getElementById('rewardSave');save.disabled=true;
+  const status=document.getElementById('rewardStatus');
+  try{
+    const payload={name:document.getElementById('rewardName').value,
+      description:document.getElementById('rewardDescription').value,
+      points_cost:Number(document.getElementById('rewardCost').value),
+      child_id:document.getElementById('rewardChild').value,
+      recurring:document.getElementById('rewardRecurring').checked};
+    const response=await fetch('/api/rewards',{method:'POST',credentials:'same-origin',
+      headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
+    if(!response.ok)throw Error('Δεν δημιουργήθηκε το έπαθλο.');
+    document.getElementById('rewardName').value='';
+    document.getElementById('rewardDescription').value='';
+    status.textContent='Το έπαθλο δημιουργήθηκε.';await refreshRewards();
+  }catch(e){status.textContent=e.message}finally{save.disabled=false}
  });
  document.getElementById('logout').addEventListener('click',async()=>{
   await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
