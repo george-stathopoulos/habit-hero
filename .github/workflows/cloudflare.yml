@@ -32,6 +32,7 @@ jobs:
           node --check cloudflare/occurrence.mjs
           node --check cloudflare/export-api.mjs
           node --check cloudflare/points-api.mjs
+          node --check cloudflare/timezone.mjs
           node scripts/test-child-auth.mjs
           python3 scripts/generate-icons.py
           python3 scripts/prepare-original-assets.py
@@ -60,6 +61,15 @@ jobs:
         with:
           name: habit-hero-cloudflare
           path: cloudflare-dist/
+      - name: Install additive family timezone table before Worker rollout
+        if: ${{ vars.HABIT_HERO_CLOUDFLARE_DEPLOY == 'true' }}
+        working-directory: cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID || '3fc2c10ca86a2322b58f7daa16c77c6d' }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          npx --yes wrangler@4 d1 execute habit-hero-db --remote --file ./migrations/0002_family_timezone.sql
       - name: Deploy using existing Cloudflare account
         if: ${{ vars.HABIT_HERO_CLOUDFLARE_DEPLOY == 'true' }}
         working-directory: cloudflare
