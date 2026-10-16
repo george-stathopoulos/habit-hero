@@ -1,6 +1,6 @@
 // Small, Worker-owned parent dashboard until the Expo feature screens are migrated.
 export function parentPage() {
- const html=`<!doctype html><html lang="el"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer">
+ const html=`<!doctype html><html lang="el"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><link rel="manifest" href="/habit-hero/app/parent.webmanifest"><meta name="theme-color" content="#448be7"><meta name="apple-mobile-web-app-capable" content="yes">
  <title>Habit Hero — Οικογένεια</title><style>
  :root{font-family:system-ui,-apple-system,sans-serif;background:#f3f7ff;color:#173451}
  *{box-sizing:border-box}body{margin:0;padding:24px}main{max-width:760px;margin:30px auto}
