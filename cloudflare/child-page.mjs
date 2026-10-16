@@ -28,6 +28,13 @@ export function childPage(){
  button:active{transform:scale(.97)}
  [data-tab]:not([data-active="true"]){display:none!important}
  nav.quick-nav{display:none}
+ .mission-toast{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#21195db8;padding:20px;animation:fadeHero .25s ease}
+ .mission-toast-content{border-radius:30px;background:#fff;padding:32px 25px;max-width:420px;text-align:center;box-shadow:0 30px 100px #1d164966}
+ .mission-toast-emoji{font-size:74px;display:block;animation:heroPop .45s ease}
+ .mission-toast h2{color:#5144bc;margin:14px 0}.mission-toast p{color:#596477}
+ @keyframes heroPop{from{transform:scale(.4) rotate(-15deg);opacity:0}to{transform:scale(1);opacity:1}}
+ @keyframes fadeHero{from{opacity:0}to{opacity:1}}
+ @media(prefers-reduced-motion:reduce){.mission-toast,.mission-toast-emoji{animation:none}}
  #questOverview{background:linear-gradient(135deg,#5144bc,#8b6ef4);color:white;border:0}
  .quest-head{display:flex;align-items:center;gap:14px}.quest-emoji{font-size:46px}
  .quest-kicker{font-size:11px;letter-spacing:1.1px;font-weight:850;opacity:.78;margin:0}
@@ -104,6 +111,17 @@ export function childPage(){
   const close=document.createElement('button');close.textContent='Εντάξει';close.type='button';close.addEventListener('click',()=>banner.remove());
   banner.append(instruction,close);document.querySelector('main').prepend(banner);
  }
+ function celebrateMission(){
+  const overlay=document.createElement('div');overlay.className='mission-toast';overlay.setAttribute('role','dialog');
+  overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','Αποστολή ολοκληρώθηκε');
+  const card=document.createElement('div');card.className='mission-toast-content';
+  const star=document.createElement('span');star.className='mission-toast-emoji';star.textContent='🌟';
+  const title=document.createElement('h2');title.textContent='Υπέροχη προσπάθεια!';
+  const description=document.createElement('p');description.textContent='Η αποστολή σου στάλθηκε για έγκριση. Οι πόντοι σου περιμένουν! 🚀';
+  const close=document.createElement('button');close.textContent='Συνέχισε την περιπέτεια!';close.type='button';
+  close.addEventListener('click',()=>overlay.remove());card.append(star,title,description,close);
+  overlay.append(card);document.body.append(overlay);close.focus();
+ }
  const status=document.getElementById('status');
  async function refresh(){
   const me=await fetch('/api/child/me',{credentials:'same-origin',cache:'no-store'});
@@ -167,7 +185,8 @@ export function childPage(){
      try{
       const r=await fetch('/api/child/activities',{method:'POST',credentials:'same-origin',
        headers:{'content-type':'application/json'},body:JSON.stringify({habit_id:item.habit_id})});
-      if(!r.ok)throw Error('Δεν αποθηκεύτηκε η δραστηριότητα.');
+      if(!r.ok)throw Error('Δεν αποθηκεύτηκε η δραστηριότητα.')
+      celebrateMission();;
       document.getElementById('feedback').textContent='Μπράβο! Περιμένουμε την έγκριση του γονέα.';
       await refresh();
      }catch(e){document.getElementById('feedback').textContent=e.message;button.disabled=false}
