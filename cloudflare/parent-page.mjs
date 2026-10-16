@@ -72,6 +72,9 @@ export function parentPage() {
  <section class="panel" id="progressPanel" hidden><h2>📈 Η πρόοδός μας</h2>
  <p class="subtle">Οι τελευταίες 30 ημέρες · οι συνεχόμενες ημέρες βασίζονται σε εγκεκριμένες δραστηριότητες.</p>
  <ul id="progressList"></ul><p id="progressMessage" role="status" class="subtle"></p></section>
+ <section class="panel" id="privacyPanel" hidden><h2>🔒 Τα δεδομένα της οικογένειας</h2>
+ <p class="subtle">Μπορείτε να κατεβάσετε τα προφίλ, τις συνήθειες, τις εγκρίσεις, τους πόντους και τα έπαθλα της οικογένειάς σας ως αρχείο JSON. Το αρχείο περιέχει προσωπικά δεδομένα και πρέπει να φυλάσσεται με ασφάλεια.</p>
+ <a href="/api/family/export" download="habit-hero-family-export.json">⬇️ Εξαγωγή οικογενειακών δεδομένων</a></section>
  <section class="panel"><h2>🚧 Επόμενες λειτουργίες</h2><p class="subtle">Επεξεργασία συνηθειών, υπενθυμίσεις, αναλυτικά στατιστικά και πλήρης σχεδίαση εφαρμογής βρίσκονται υπό ανάπτυξη.</p></section>
  </main><script>
  const status=document.getElementById('status'),greeting=document.getElementById('greeting');
@@ -84,6 +87,7 @@ export function parentPage() {
    greeting.textContent='Καλώς ήρθατε, '+data.parent.name+'!';
    status.textContent='Οικογένεια: '+data.family.name;
    document.getElementById('family').hidden=false;document.getElementById('create').hidden=false;
+   document.getElementById('privacyPanel').hidden=false;
    list.replaceChildren();
    for(const child of data.children) {
     const li=document.createElement('li'),label=document.createElement('span');
