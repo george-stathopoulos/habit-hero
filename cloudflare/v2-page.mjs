@@ -19,7 +19,13 @@ export function v2Page(role='child'){
  body[data-theme="playful"] .stage{background:radial-gradient(circle at 75% 30%,#fff5b5,transparent 40%),linear-gradient(140deg,#aa91f6,#83cce9)}
  body[data-theme="minimal"] .stage{background:linear-gradient(145deg,#e2e9ea,#cddfd9);color:#1c514f}
  body[data-theme="youth"] .stage{background:radial-gradient(circle at 75% 20%,#148fc966,transparent 35%),linear-gradient(140deg,#101e37,#273d5f)}
- .hero-art{font-size:105px;position:absolute;right:10%;top:38px;filter:drop-shadow(0 16px 15px #0003);animation:float 4s ease-in-out infinite}.stage h2{font-size:29px;letter-spacing:-1px;margin:0}.stage p{opacity:.9;margin:7px 0 0}
+ .stage{background-image:linear-gradient(90deg,#141633bf,#14163333),url("/habit-hero/app/v2-world-adventure.svg");background-size:cover;background-position:center}
+ body[data-theme="playful"] .stage{background-image:linear-gradient(90deg,#e4cafa60,#fff2fa10),url("/habit-hero/app/v2-world-playful.svg")}
+ body[data-theme="minimal"] .stage{background-image:linear-gradient(90deg,#eaf1eb60,#fff9),url("/habit-hero/app/v2-world-minimal.svg")}
+ body[data-theme="youth"] .stage{background-image:linear-gradient(90deg,#061229a1,#0915282e),url("/habit-hero/app/v2-world-youth.svg")}
+ .hero-art{position:absolute;right:1%;top:6px;width:min(48%,240px);height:84%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 16px 15px #0003);animation:float 4s ease-in-out infinite}
+ .hero-select{display:flex;flex-wrap:wrap;gap:12px;margin:15px 0}.hero-choice{display:grid;place-items:center;gap:7px;flex:1;min-width:100px;padding:12px;background:color-mix(in srgb,var(--accent),transparent 90%);border-radius:20px;color:var(--ink)}.hero-choice img{height:115px;max-width:100%;object-fit:contain}.hero-choice[aria-pressed="true"]{outline:3px solid var(--accent)}
+ .sticker{display:inline-flex;align-items:center;gap:7px;border-radius:99px;background:color-mix(in srgb,var(--accent),transparent 82%);padding:7px 14px;font-size:12px;font-weight:800}.stage h2{font-size:29px;letter-spacing:-1px;margin:0}.stage p{opacity:.9;margin:7px 0 0}
  @keyframes float{50%{transform:translateY(-13px)}}.progress{height:11px;background:#ffffff50;border-radius:99px;overflow:hidden;margin:15px 0 0}.fill{height:100%;width:0;background:linear-gradient(90deg,#88f1bb,#fada71);border-radius:99px;transition:width .6s}
  .heading{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:24px 0 12px}.heading h2{font-size:21px;margin:0}.muted{color:var(--muted);font-size:13px}.mission{width:100%;display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;text-align:left;gap:12px;margin:9px 0;background:var(--surface);color:var(--ink);padding:13px;border-radius:20px;border:1px solid #8882;min-height:79px}.mission .emoji{width:51px;height:51px;background:color-mix(in srgb,var(--accent),transparent 80%);border-radius:16px;display:grid;place-items:center;font-size:28px}.mission strong{display:block;overflow-wrap:anywhere}.mission small{display:block;margin-top:5px;color:var(--muted)}
  .pill{padding:7px 10px;border-radius:22px;background:color-mix(in srgb,var(--accent),transparent 80%);color:var(--ink);font-size:12px;font-weight:800}.primary{background:var(--accent);color:#132033;padding:15px 20px;border-radius:17px;font-weight:800;min-height:50px}.secondary{background:color-mix(in srgb,var(--accent),transparent 80%);color:var(--ink);padding:13px 16px;border-radius:16px}
@@ -32,10 +38,10 @@ export function v2Page(role='child'){
  @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
  </style></head><body data-theme="minimal"><main class="shell">
  <header class="top"><div><div class="eyebrow">HABIT HERO · V2</div><h1 id="greeting">Η περιπέτειά σου</h1></div><div class="controls"><button id="bell" class="iconbtn" aria-label="Μηνύματα">🔔<span id="bellCount" class="count" hidden></span></button><button id="switchUser" class="iconbtn" aria-label="Αλλαγή χρήστη">⇄</button></div></header>
- <section id="homeTab"><div class="stage"><div id="heroArt" class="hero-art">🦸</div><div style="position:relative;max-width:66%"><div class="eyebrow">TODAY'S ADVENTURE</div><h2 id="heroHeading">Κάθε μικρή νίκη μετράει.</h2><p id="heroSubtitle">Ο κόσμος σου μεγαλώνει μαζί σου.</p></div><div class="progress"><div id="progressFill" class="fill"></div></div><div id="progressLabel" style="margin-top:10px;font-weight:700">—</div></div><div class="heading"><h2>Οι αποστολές μου</h2><span id="missionTotal" class="muted"></span></div><div id="missionList"></div></section>
+ <section id="homeTab"><div class="stage"><img id="heroArt" class="hero-art" src="/habit-hero/app/v2-hero-boy.svg" alt="Ο ήρωάς μου"><div style="position:relative;max-width:66%"><div class="eyebrow">TODAY'S ADVENTURE</div><h2 id="heroHeading">Κάθε μικρή νίκη μετράει.</h2><p id="heroSubtitle">Ο κόσμος σου μεγαλώνει μαζί σου.</p></div><div class="progress"><div id="progressFill" class="fill"></div></div><div id="progressLabel" style="margin-top:10px;font-weight:700">—</div></div><div class="heading"><h2>Οι αποστολές μου</h2><span id="missionTotal" class="muted"></span></div><div id="missionList"></div></section>
  <section id="messagesTab" hidden><h2>🔔 Μηνύματα</h2><div id="messagesList"></div></section>
  <section id="rewardsTab" hidden><h2>🎁 Έπαθλα</h2><div id="rewardsList"></div></section>
- <section id="profileTab" hidden><div class="panel"><h2>🎨 Διάλεξε τον κόσμο σου</h2><div id="themeChoices" class="themes"></div></div><div id="profileInfo" class="panel"></div></section>
+ <section id="profileTab" hidden><div class="panel"><h2>🦸 Διάλεξε ήρωα</h2><p class="muted">Όλοι μπορούν να επιλέξουν τον ήρωα που τους εκφράζει.</p><div id="heroChoices" class="hero-select"></div></div><div class="panel"><h2>🎨 Διάλεξε τον κόσμο σου</h2><div id="themeChoices" class="themes"></div></div><div id="profileInfo" class="panel"></div></section>
  <nav class="nav" id="tabs" aria-label="Πλοήγηση"></nav><p id="error" role="status" class="muted"></p></main><div id="modal" class="dialog" hidden><div class="sheet"><button id="closeModal" class="secondary" style="float:right">✕</button><div id="modalBody"></div></div></div>
  <script>
  const ROLE=${JSON.stringify(role)},$=id=>document.getElementById(id);
@@ -47,6 +53,20 @@ export function v2Page(role='child'){
  function theme(v){if(!themeList.some(x=>x[0]===v))v='minimal';document.body.dataset.theme=v;
   for(const b of document.querySelectorAll('.theme'))b.setAttribute('aria-pressed',String(b.dataset.value===v));
   try{localStorage.setItem(themeKey(),v)}catch{}}
+ const heroTypes=[['boy','🦸 Ήρωας'],['girl','🦸‍♀️ Ηρωίδα']];
+ const heroKey=()=> 'hh2-hero-'+(actor?.id||'default');
+ function pickHero(choice){
+  if(!heroTypes.some(x=>x[0]===choice))choice='boy';
+  $('heroArt').src='/habit-hero/app/v2-hero-'+choice+'.svg';
+  for(const b of $('heroChoices').querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.hero===choice));
+  try{localStorage.setItem(heroKey(),choice)}catch{}
+ }
+ for(const [kind,label] of heroTypes){
+  const button=document.createElement('button');button.type='button';button.className='hero-choice';button.dataset.hero=kind;
+  const picture=document.createElement('img');picture.src='/habit-hero/app/v2-hero-'+kind+'.svg';picture.alt='';
+  const name=document.createElement('strong');name.textContent=label;button.append(picture,name);
+  button.onclick=()=>pickHero(kind);$('heroChoices').append(button);
+ }
  function node(tag,text,cls){const el=document.createElement(tag);if(text!==undefined)el.textContent=esc(text);if(cls)el.className=cls;return el}
  function openTab(name){for(const [id] of tabs){$(id+'Tab').hidden=id!==name}for(const b of $('tabs').children)b.setAttribute('aria-selected',String(b.dataset.tab===name))}
  function showModal(title,content){$('modalBody').replaceChildren(node('h2',title),content);$('modal').hidden=false}
@@ -69,7 +89,7 @@ export function v2Page(role='child'){
  function renderMessages(){const list=$('messagesList');list.replaceChildren();if(!messages.length){list.append(node('div','💌 Τα μηνύματά σου θα εμφανίζονται εδώ.','panel'));return}for(const m of messages){const card=node('div',undefined,'panel');card.append(node('strong','💜 Μήνυμα από γονέα'),node('p',m.parent_message));list.append(card)}}
  async function loadChild(){
   const me=await fetch('/api/child/me',{credentials:'same-origin',cache:'no-store'});if(!me.ok){$('error').textContent='Χρειάζεται σύνδεση παιδιού από την οικογενειακή αρχική.';return}
-  actor=await me.json();$('greeting').textContent='Γεια σου, '+actor.name+'!';$('heroArt').textContent=actor.avatar_id==='unicorn'?'🦄':actor.avatar_id==='robot'?'🤖':'🦸';
+  actor=await me.json();$('greeting').textContent='Γεια σου, '+actor.name+'!';try{pickHero(localStorage.getItem(heroKey())||'boy')}catch{pickHero('boy')}
   try{theme(localStorage.getItem(themeKey())||'playful')}catch{theme('playful')}
   const [a,h,r]=await Promise.all([fetch('/api/child/activities',{credentials:'same-origin'}),fetch('/api/child/help',{credentials:'same-origin'}),fetch('/api/child/rewards',{credentials:'same-origin'})]);
   if(a.ok)activities=(await a.json()).activities||[];
@@ -81,7 +101,7 @@ export function v2Page(role='child'){
  }
  async function loadParent(){
   const r=await fetch('/api/family/overview',{credentials:'same-origin'});if(!r.ok){$('error').textContent='Ξεκλείδωσε πρώτα το προφίλ γονέα.';return}
-  const data=await r.json();actor={id:data.parent.id,name:data.parent.name};$('greeting').textContent='Η οικογένειά μου';$('heroArt').textContent='🏡';theme('minimal');
+  const data=await r.json();actor={id:data.parent.id,name:data.parent.name};$('greeting').textContent='Η οικογένειά μου';$('heroArt').src='/habit-hero/app/v2-hero-girl.svg';theme('minimal');
   $('heroHeading').textContent='Μαζί χτίζουμε καλές συνήθειες.';$('heroSubtitle').textContent=(data.children||[]).length+' μικροί ήρωες στην οικογένεια.';
   $('missionList').replaceChildren();for(const child of data.children||[]){const b=node('button',undefined,'mission');b.append(node('span','🦸','emoji'),node('strong',child.display_name||child.name));$('missionList').append(b)}
   $('profileInfo').append(node('p','Πλήρης διαχείριση προτύπων και προσαρμοσμένων συνηθειών:'));const link=node('a','Άνοιγμα εργαλείων γονέα →');link.href='/habit-hero/welcome/parent/';$('profileInfo').append(link);
