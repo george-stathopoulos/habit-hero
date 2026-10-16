@@ -42,6 +42,7 @@ export function parentPage() {
  <input id="name" maxlength="80" autocomplete="off" required placeholder="π.χ. Αλέξης">
  <label for="initialChildPin">PIN παιδιού (προαιρετικό, 4 ψηφία)</label>
  <input id="initialChildPin" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="new-password" placeholder="π.χ. 2468">
+ <label for="initialChildPinConfirm">Επιβεβαίωση PIN (προαιρετικό)</label><input id="initialChildPinConfirm" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="new-password">
  <label for="age">Ηλικιακή ομάδα (προαιρετική)</label><select id="age"><option value="">Δεν θέλω να δηλώσω</option><option value="6-8">6–8</option><option value="9-11">9–11</option><option value="12-14">12–14</option></select>
  <button id="save" type="submit">Προσθήκη παιδιού</button></form><p id="formStatus" role="status" class="subtle"></p></section>
  <section class="panel" id="devicesPanel" hidden><h2>📱 Συσκευές παιδιών</h2>
@@ -352,7 +353,10 @@ export function parentPage() {
   }catch(e){status.textContent=e.message}finally{button.disabled=false}
  });
  document.getElementById('form').addEventListener('submit',async ev=>{
-  ev.preventDefault();const btn=document.getElementById('save'),note=document.getElementById('formStatus');btn.disabled=true;
+  ev.preventDefault();const btn=document.getElementById('save'),note=document.getElementById('formStatus');
+  const initialPin=document.getElementById('initialChildPin').value,confirmation=document.getElementById('initialChildPinConfirm').value;
+  if(initialPin!==confirmation){note.textContent='Οι δύο κωδικοί PIN δεν ταιριάζουν.';return}
+  btn.disabled=true;
   try{
    const r=await fetch('/api/children',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},
      body:JSON.stringify({name:document.getElementById('name').value,age_band:document.getElementById('age').value||null})});
