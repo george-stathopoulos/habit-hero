@@ -1,3 +1,4 @@
+import {listHabits,createHabit} from './habits-api.mjs';
 import {parentPage} from './parent-page.mjs';
 import {familyOverview,createChild} from './family-api.mjs';
 import {begin,callback,me,logout} from './google-auth.mjs';
@@ -110,6 +111,12 @@ export default {
     }
     if (url.pathname === '/api/children' && request.method === 'POST') {
       return createChild(request,env);
+    }
+    if (url.pathname === '/api/habits' && request.method === 'GET') {
+      return listHabits(request,env);
+    }
+    if (url.pathname === '/api/habits' && request.method === 'POST') {
+      return createHabit(request,env);
     }
     if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
       return json({ detail: 'Habit Hero API functionality is not available yet.' }, 503);
