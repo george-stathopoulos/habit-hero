@@ -41,7 +41,7 @@ export function childPage(){
  @media(max-width:600px){body{padding:10px}main{margin:0 auto}section{padding:20px;border-radius:24px}}
  </style></head><body>
  <main><section><h1>🏆 Habit Hero</h1><p id="status" role="status">Έλεγχος προφίλ...</p>
- <button id="lockProfile" class="secondary" hidden>🔒 Κλείδωμα</button> <button id="logout" class="secondary" hidden>Αποσύνδεση παιδιού</button></section>
+ <button id="lockProfile" class="secondary" hidden>🔒 Κλείδωμα</button> <button id="switchFamily" class="secondary" hidden>🚪 Αλλαγή χρήστη</button> <button id="logout" class="secondary" hidden>Αποσύνδεση παιδιού</button></section>
  <nav id="quickNav" class="quick-nav" aria-label="Πλοήγηση παιδιού" hidden>
  <a href="#activitiesPanel">🌟 Συνήθειες</a><a href="#rewardsPanel">🎁 Έπαθλα</a>
  <a href="#progressPanel">📈 Πρόοδος</a></nav>
@@ -103,6 +103,7 @@ export function childPage(){
    document.getElementById('activityHistory').replaceChildren();
    document.getElementById('heroBadges').replaceChildren();
    document.getElementById('logout').hidden=!needsPin;
+   document.getElementById('switchFamily').hidden=true;
    document.getElementById('lockProfile').hidden=true;
    status.textContent=needsPin?'Εισαγωγή προσωπικού PIN.':'Χρειάζεται σύνδεση με κωδικό γονέα.';
    return;
@@ -116,6 +117,7 @@ export function childPage(){
   document.getElementById('childTabs').hidden=false;
   document.getElementById('childTabTitle').hidden=false;
   document.getElementById('logout').hidden=false;
+  document.getElementById('switchFamily').hidden=false;
   document.getElementById('lockProfile').hidden=!profile.pin_enabled;
   const res=await fetch('/api/child/activities',{credentials:'same-origin',cache:'no-store'});
   if(!res.ok){status.textContent='Οι δραστηριότητες δεν είναι διαθέσιμες αυτή τη στιγμή.';return}
@@ -251,6 +253,11 @@ export function childPage(){
    await refresh();
   }catch(e){document.getElementById('feedback').textContent=e.message}
   finally{button.disabled=false}
+ });
+ document.getElementById('switchFamily').addEventListener('click',async()=>{
+  const response=await fetch('/api/household/exit',{method:'POST',credentials:'same-origin'});
+  if(!response.ok)await fetch('/api/child/logout',{method:'POST',credentials:'same-origin'});
+  location.replace('/habit-hero/welcome/');
  });
  document.getElementById('logout').addEventListener('click',async()=>{
   await fetch('/api/child/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
