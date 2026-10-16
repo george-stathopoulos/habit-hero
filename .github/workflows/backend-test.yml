@@ -1,11 +1,6 @@
 name: Verify original Habit Hero backend
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "original/backend/**"
-      - ".github/workflows/backend-test.yml"
 permissions:
   contents: read
 jobs:
