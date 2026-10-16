@@ -116,7 +116,44 @@ export function parentPage() {
   items.replaceChildren();
   for(const habit of data.habits){
    const li=document.createElement('li');
-   li.textContent=(habit.emoji||'⭐')+' '+habit.name+' · '+habit.points+' πόντοι · '+habit.children.map(c=>c.name).join(', ');
+   const label=document.createElement('span');
+   label.textContent=(habit.emoji||'⭐')+' '+habit.name+' · '+habit.points+' πόντοι · '+habit.children.map(c=>c.name).join(', ')+' ';
+   li.append(label);
+   const edit=document.createElement('button');edit.className='secondary';edit.textContent='Επεξεργασία';
+   edit.addEventListener('click',async()=>{
+    const name=prompt('Όνομα συνήθειας',habit.name);
+    if(name===null)return;
+    const pts=prompt('Πόντοι',String(habit.points));if(pts===null)return;
+    const frequency=prompt('Συχνότητα: daily, weekly, monthly, once',habit.frequency);
+    if(frequency===null)return;
+    const points=Number(pts);
+    if(!name.trim()||!Number.isInteger(points)||points<1||points>1000||
+      !['daily','weekly','monthly','once'].includes(frequency)){
+      document.getElementById('habitStatus').textContent='Ελέγξτε όνομα, πόντους και συχνότητα.';return;
+    }
+    edit.disabled=true;
+    try{
+     const res=await fetch('/api/habits/update',{method:'POST',credentials:'same-origin',
+       headers:{'content-type':'application/json'},body:JSON.stringify({habit_id:habit.id,name,points,frequency})});
+     if(!res.ok)throw Error('Δεν αποθηκεύτηκαν οι αλλαγές.');
+     document.getElementById('habitStatus').textContent='Η συνήθεια ενημερώθηκε.';
+     await refreshHabits();await refreshActivityWorkflow();
+    }catch(e){document.getElementById('habitStatus').textContent=e.message;edit.disabled=false}
+   });
+   li.append(edit);
+   const archive=document.createElement('button');archive.className='secondary';archive.textContent='Αρχειοθέτηση';
+   archive.addEventListener('click',async()=>{
+    if(!confirm('Αρχειοθέτηση της συνήθειας; Το ιστορικό και οι πόντοι θα διατηρηθούν.'))return;
+    archive.disabled=true;
+    try{
+     const res=await fetch('/api/habits/archive',{method:'POST',credentials:'same-origin',
+      headers:{'content-type':'application/json'},body:JSON.stringify({habit_id:habit.id})});
+     if(!res.ok)throw Error('Δεν αρχειοθετήθηκε η συνήθεια.');
+     document.getElementById('habitStatus').textContent='Η συνήθεια αρχειοθετήθηκε.';
+     await refreshHabits();await refreshActivityWorkflow();
+    }catch(e){document.getElementById('habitStatus').textContent=e.message;archive.disabled=false}
+   });
+   li.append(archive);
    items.append(li);
   }
   document.getElementById('noHabits').hidden=data.habits.length>0;
