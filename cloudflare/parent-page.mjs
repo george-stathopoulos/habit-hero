@@ -130,7 +130,7 @@ export function parentPage() {
    for(const child of data.children) {
     const avatarIcons={hero:'🦸',unicorn:'🦄',robot:'🤖',dragon:'🐉',astronaut:'🧑‍🚀',cat:'🐱',ninja:'🥷',wizard:'🧙'};
     const li=document.createElement('li'),label=document.createElement('span');
-    label.textContent=(avatarIcons[child.avatar_id]||'🌟')+' '+child.display_name+(child.age_band?' · '+child.age_band:'')+' ';
+    label.textContent=(avatarIcons[child.avatar_id]||'🌟')+' '+child.display_name+(child.age_band?' · '+child.age_band:'')+(child.pin_configured?' · 🔒 PIN ενεργό':' · PIN δεν ορίστηκε')+' ';
     li.append(label);
     const edit=document.createElement('button');edit.className='secondary';edit.textContent='Επεξεργασία';
     edit.addEventListener('click',async()=>{
