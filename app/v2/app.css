@@ -46,3 +46,20 @@
  @media(min-width:700px){.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}.stage{min-height:405px}}@media(max-width:370px){.shell{padding-left:10px;padding-right:10px}.stage{min-height:280px}.hero-art{font-size:77px}.nav button{font-size:10px}}
  @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
  
+
+
+/* V2 art-directed home: use a readable editorial zone, not text floating on artwork. */
+.stage{display:flex;flex-direction:column;justify-content:flex-end;min-height:410px;padding:25px;isolation:isolate}
+.stage::after{content:"";position:absolute;z-index:0;inset:36% 0 0;background:linear-gradient(0deg,#101b42ed 0%,#182047c9 44%,transparent 100%);pointer-events:none}
+.stage .hero-art{width:min(57%,235px);height:60%;top:9px;right:4%;z-index:1;object-position:right top}
+.stage>div:not(.world-caption):not(.progress){position:relative;z-index:3;max-width:min(100%,340px)!important}
+.stage .eyebrow,.stage h2,.stage p,.stage #progressLabel{color:#fff;text-shadow:0 2px 12px #14204373}
+.stage .progress{z-index:3;position:relative;background:#ffffff66}
+.stage #progressLabel{z-index:3;position:relative}
+.stage .world-caption{z-index:4;top:16px;left:16px}
+body[data-role="parent"] .stage{min-height:325px;background-image:linear-gradient(90deg,#d6eee6,#d9e4e7),url("/habit-hero/app/v2-world-minimal.svg")}
+body[data-role="parent"] .stage::after{background:linear-gradient(0deg,#153f46db,#325e6588 42%,transparent 92%)}
+body[data-role="parent"] .stage .hero-art{width:min(58%,245px);height:74%;top:1px;right:0}
+body[data-role="parent"] .stage h2{font-size:clamp(23px,6vw,31px);line-height:1.15}
+body[data-role="parent"] .stage .world-caption{background:#244c57aa}
+@media(max-width:370px){.stage{min-height:370px;padding:20px}.stage .hero-art{width:54%;height:54%}.stage h2{font-size:clamp(22px,7vw,27px)}}
