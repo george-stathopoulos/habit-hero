@@ -1,3 +1,4 @@
+import {occurrenceKey,occurrenceSql} from './occurrence.mjs';
 // Child access via parent-approved pairing, never the parent's authentication cookie.
 // Intended for a separate child device/browser profile; never share a parent session.
 import {authorizedParent} from './family-api.mjs';
@@ -103,9 +104,9 @@ export async function childActivities(request,env){
     LEFT JOIN completion_submissions s ON s.id=(
       SELECT x.id FROM completion_submissions x WHERE x.family_id=a.family_id
         AND x.child_id=a.child_id AND x.habit_id=a.habit_id
-        AND x.occurrence_date=? LIMIT 1)
+        AND x.occurrence_date=${occurrenceSql} LIMIT 1)
     WHERE a.family_id=? AND a.child_id=? AND h.active=1 AND h.deleted_at IS NULL
-    ORDER BY h.name_el LIMIT 100`).bind(now,child.family_id,child.child_id).all();
+    ORDER BY h.name_el LIMIT 100`).bind(now,now,now,child.family_id,child.child_id).all();
   return json({name:child.child_name,activities:rows.results||[],date:now});
  }catch{return json({detail:'Could not load habits'},503)}
 }
@@ -117,12 +118,12 @@ export async function childSubmit(request,env){
  const habitId=parsed.body.habit_id;
  if(!validUUID(habitId))return json({detail:'Invalid habit'},400);
  try{
-  const assigned=await env.DB.prepare(`SELECT h.id FROM habit_assignments a
+  const assigned=await env.DB.prepare(`SELECT h.id,h.frequency_type FROM habit_assignments a
    JOIN habits h ON h.id=a.habit_id AND h.family_id=a.family_id
    WHERE a.family_id=? AND a.child_id=? AND a.habit_id=? AND h.active=1 AND h.deleted_at IS NULL`)
    .bind(child.family_id,child.child_id,habitId).first();
   if(!assigned)return json({detail:'Habit not assigned'},404);
-  const now=new Date().toISOString(),day=now.slice(0,10);
+  const now=new Date().toISOString(),day=occurrenceKey(assigned.frequency_type,now);
   await env.DB.prepare(`INSERT INTO completion_submissions
     (id,family_id,child_id,habit_id,occurrence_date,status,submitted_at,idempotency_key)
     VALUES (?,?,?,?,?,'pending',?,?)`)
@@ -130,7 +131,7 @@ export async function childSubmit(request,env){
       'child-'+habitId+'-'+day).run();
   return json({status:'pending'},201);
  }catch(e){
-  if(/constraint|UNIQUE/i.test(String(e)))return json({detail:'Already submitted today'},409);
+  if(/constraint|UNIQUE/i.test(String(e)))return json({detail:'Already submitted for this period'},409);
   return json({detail:'Could not submit habit'},503);
  }
 }
