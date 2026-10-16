@@ -43,6 +43,7 @@ jobs:
           node scripts/test-parent-pin.mjs
           node scripts/test-pin-roundtrip.mjs
           node scripts/test-household.mjs
+          node scripts/test-mobile-app.mjs
           python3 scripts/generate-icons.py
           python3 scripts/prepare-original-assets.py
       - name: Build original Expo app for Cloudflare
