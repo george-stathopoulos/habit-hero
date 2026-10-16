@@ -42,12 +42,20 @@ export async function setupParentPin(req,env){
   const actor=await anchor(req,env);if(!actor)return out({detail:'Sign in with Google first'},401);
   if(actor.pin_hash)return out({detail:'Parent PIN already configured'},409);
   const verifier=await createPinVerifier(pin);
-  const r=await env.DB.prepare('UPDATE parent_users SET pin_hash=?,pin_attempts=0,pin_locked_until=NULL WHERE id=? AND pin_hash IS NULL')
-   .bind(verifier,actor.parent_id).run();
-  if(r.meta?.changes!==1)return out({detail:'PIN already set'},409);
-  // Initial onboarding remains authorized until first child is created and launcher is entered.
+  let result;
+  try{
+   result=await env.DB.prepare('UPDATE parent_users SET pin_hash=?,pin_attempts=0,pin_locked_until=NULL WHERE id=? AND pin_hash IS NULL')
+    .bind(verifier,actor.parent_id).run();
+  }catch(error){
+   console.error('Household PIN database update failed',String(error));
+   return out({detail:'Could not save PIN in database. Check the shared-device database migration.',code:'PIN_DATABASE_UPDATE_FAILED'},503);
+  }
+  if(result.meta?.changes!==1)return out({detail:'Parent PIN already configured'},409);
   return out({configured:true});
- }catch{return out({detail:'PIN setup unavailable'},503)}
+ }catch(error){
+  console.error('Household PIN setup failed',String(error));
+  return out({detail:'PIN setup failed. Please try again.',code:'PIN_SETUP_FAILED'},503);
+ }
 }
 export async function unlockHousehold(req,env){
  const input=await body(req);if(input.error)return input.error;
