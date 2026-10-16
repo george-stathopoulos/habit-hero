@@ -1,7 +1,7 @@
 // Habit Hero v2 — independent client app; protected APIs remain authoritative.
 
  const ROLE=document.body.dataset.role,$=id=>document.getElementById(id);
- const tabs=ROLE==='child'?[['home','🏠','Αρχική'],['rewards','🎁','Έπαθλα'],['profile','🦸','Ο ήρωας'],['messages','🔔','Μηνύματα']]:[['home','🏠','Αρχική'],['rewards','✅','Εγκρίσεις'],['profile','⚙️','Εμφάνιση'],['messages','🔔','Βοήθεια']];
+ const tabs=ROLE==='child'?[['home','🏠','Αρχική'],['rewards','🎁','Έπαθλα'],['profile','🦸','Ο ήρωας'],['messages','🔔','Μηνύματα']]:[['home','🏠','Αρχική'],['children','🦸','Παιδιά'],['missions','🎯','Αποστολές'],['rewards','✅','Εγκρίσεις'],['profile','⚙️','Ρυθμίσεις']];
  let actor=null,activities=[],messages=[],rewards=[],balance=0,progressData=null;
  const esc=s=>String(s??'');
  const themeList=[['playful','🌈 Playful'],['adventure','⚔️ Hero Adventure'],['minimal','✦ Minimal'],['youth','⚡ Pro Youth']];
@@ -25,7 +25,7 @@
   button.onclick=()=>pickHero(kind);$('heroChoices').append(button);
  }
  function node(tag,text,cls){const el=document.createElement(tag);if(text!==undefined)el.textContent=esc(text);if(cls)el.className=cls;return el}
- function openTab(name){for(const [id] of tabs){$(id+'Tab').hidden=id!==name}for(const b of $('tabs').children)b.setAttribute('aria-selected',String(b.dataset.tab===name))}
+ function openTab(name){for(const id of ['home','children','missions','rewards','profile','messages']){const view=$(id+'Tab');if(view)view.hidden=id!==name}for(const b of $('tabs').children)b.setAttribute('aria-selected',String(b.dataset.tab===name))}
  function showModal(title,content){$('modalBody').replaceChildren(node('h2',title),content);$('modal').hidden=false}
  $('closeModal').onclick=()=>{$('modal').hidden=true};$('modal').addEventListener('click',e=>{if(e.target===$('modal'))$('modal').hidden=true});
  for(const [id,icon,label] of tabs){const b=node('button');b.dataset.tab=id;b.append(node('span',icon),node('span',label));b.onclick=()=>openTab(id);$('tabs').append(b)}openTab('home');
@@ -210,6 +210,7 @@
   $('heroSubtitle').textContent=(data.children||[]).length+' μικροί ήρωες στην οικογένεια.';
   familyChildren=(data.children||[]).map(c=>({id:c.id,name:c.name||c.display_name}));
   $('parentQuickActions').hidden=false;$('goalPicker').hidden=false;goalPicker();$('newHabit').onclick=()=>openHabitBuilder();$('newChild').onclick=openChildBuilder;
+  $('addChildFromTab').onclick=openChildBuilder;$('addMissionFromTab').onclick=()=>openHabitBuilder();
   $('missionList').replaceChildren();
   for(const child of familyChildren){const card=node('div',undefined,'mission');card.append(node('span','🦸','emoji'),node('strong',child.name));$('missionList').append(card)}
   $('profileInfo').replaceChildren(node('h2','Ο προσωπικός σου χώρος'),node('p','Άλλαξε εμφάνιση ανεξάρτητα από τα παιδιά.'));
