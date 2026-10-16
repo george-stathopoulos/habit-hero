@@ -67,7 +67,8 @@ export async function unlockChildPin(req,env){
  const actual=alg==='pbkdf2-sha256-160000'&&salt?await hash(pin,salt):'';
  if(expected!==actual){
   // Durable five-attempt lockout shared between all devices for this child.
-  const next=session.pin_attempts+1,locked=next>=5?new Date(Date.now()+15*60000).toISOString():null;
+  const prior=(session.pin_locked_until&&session.pin_locked_until<=now)?0:session.pin_attempts;
+  const next=prior+1,locked=next>=5?new Date(Date.now()+15*60000).toISOString():null;
   await env.DB.prepare(`UPDATE child_profiles SET pin_attempts=?,pin_locked_until=?
     WHERE family_id=? AND id=? AND pin_attempts=?`).bind(next,locked,session.family_id,session.child_id,session.pin_attempts).run();
   return json({detail:locked?'Too many attempts. Locked for 15 minutes.':'Incorrect PIN'},locked?429:401);
