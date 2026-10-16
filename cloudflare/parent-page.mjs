@@ -227,6 +227,25 @@ export function parentPage() {
        await refreshHabits();await refreshActivityWorkflow();
      }catch(e){document.getElementById('habitStatus').textContent=e.message;assign.disabled=false}
    });li.append(assign);
+   const removeChild=document.createElement('button');removeChild.className='secondary';removeChild.textContent='Αφαίρεση ανάθεσης';
+   removeChild.addEventListener('click',async()=>{
+    if(!habit.children.length)return;
+    const selection=prompt('Επιλέξτε αριθμό παιδιού για αφαίρεση:\\n'+
+     habit.children.map((child,index)=>(index+1)+'. '+child.name).join('\\n'));
+    if(selection===null)return;
+    const index=Number(selection)-1;
+    if(!Number.isInteger(index)||index<0||index>=habit.children.length)return;
+    if(!confirm('Να μην εμφανίζεται πλέον αυτή η συνήθεια στο παιδί; Το ιστορικό διατηρείται.'))return;
+    removeChild.disabled=true;
+    try{
+     const response=await fetch('/api/habits/unassign',{method:'POST',credentials:'same-origin',
+      headers:{'content-type':'application/json'},body:JSON.stringify({
+       habit_id:habit.id,child_id:habit.children[index].id})});
+     if(!response.ok)throw Error('Η ανάθεση δεν αφαιρέθηκε.');
+     document.getElementById('habitStatus').textContent='Η ανάθεση αφαιρέθηκε.';
+     await refreshHabits();await refreshActivityWorkflow();
+    }catch(e){document.getElementById('habitStatus').textContent=e.message;removeChild.disabled=false}
+   });li.append(removeChild);
    const archive=document.createElement('button');archive.className='secondary';archive.textContent='Αρχειοθέτηση';
    archive.addEventListener('click',async()=>{
     if(!confirm('Αρχειοθέτηση της συνήθειας; Το ιστορικό και οι πόντοι θα διατηρηθούν.'))return;
@@ -450,6 +469,25 @@ export function parentPage() {
           await refreshRewards();
         }catch(e){document.getElementById('rewardStatus').textContent=e.message;assign.disabled=false}
       });item.append(assign);
+      const removeChild=document.createElement('button');removeChild.className='secondary';removeChild.textContent='Αφαίρεση ανάθεσης';
+      removeChild.addEventListener('click',async()=>{
+        if(!reward.children.length)return;
+        const choice=prompt('Επιλέξτε αριθμό παιδιού για αφαίρεση:\\n'+
+         reward.children.map((child,i)=>(i+1)+'. '+child.name).join('\\n'));
+        if(choice===null)return;
+        const index=Number(choice)-1;
+        if(!Number.isInteger(index)||index<0||index>=reward.children.length)return;
+        if(!confirm('Να αφαιρεθεί το έπαθλο από αυτό το παιδί; Οι παλιές εξαργυρώσεις διατηρούνται.'))return;
+        removeChild.disabled=true;
+        try{
+          const response=await fetch('/api/rewards/unassign',{method:'POST',credentials:'same-origin',
+           headers:{'content-type':'application/json'},body:JSON.stringify({
+            reward_id:reward.id,child_id:reward.children[index].id})});
+          if(!response.ok)throw Error('Η ανάθεση δεν αφαιρέθηκε.');
+          document.getElementById('rewardStatus').textContent='Η ανάθεση αφαιρέθηκε.';
+          await refreshRewards();
+        }catch(e){document.getElementById('rewardStatus').textContent=e.message;removeChild.disabled=false}
+      });item.append(removeChild);
       const archive=document.createElement('button');archive.className='secondary';archive.textContent='Αρχειοθέτηση';
       archive.addEventListener('click',async()=>{
         if(!confirm('Να κρυφτεί το έπαθλο από τα παιδιά; Οι παλιές αιτήσεις παραμένουν.'))return;
