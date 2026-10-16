@@ -4,7 +4,7 @@ const encoder = new TextEncoder();
 const issuer = 'https://accounts.google.com';
 const base = 'https://habit-hero-cloudflare.george-stathopoulos.workers.dev';
 const redirectUri = base + '/api/auth/google/callback';
-const appCallback = base + '/habit-hero/original-preview/auth/google-callback';
+const appCallback = base + '/habit-hero/welcome/';
 const sessionCookie = '__Host-hh_session';
 const flowCookie = '__Host-hh_oauth';
 const noStore = {'cache-control':'no-store','content-type':'application/json; charset=utf-8'};
@@ -113,8 +113,9 @@ async function callback(request,env) {
       .bind(new Date().toISOString(),issuer,profile.sub).run();
   }
   const token=b64(random()),sessionNow=new Date(),expires=new Date(sessionNow.getTime()+7*86400000);
-  await env.DB.prepare(`INSERT INTO auth_sessions (id,parent_id,role,token_hash,created_at,expires_at)
-      VALUES (?,?,'parent',?,?,?)`).bind(crypto.randomUUID(),parentId,await hash(token),sessionNow.toISOString(),expires.toISOString()).run();
+  await env.DB.prepare(`INSERT INTO auth_sessions (id,parent_id,role,token_hash,created_at,expires_at,household_mode)
+      VALUES (?,?,'parent',?,?,?,CASE WHEN EXISTS(SELECT 1 FROM parent_users WHERE id=? AND pin_hash IS NOT NULL) THEN 1 ELSE 0 END)`)
+    .bind(crypto.randomUUID(),parentId,await hash(token),sessionNow.toISOString(),expires.toISOString(),parentId).run();
   const headers=new Headers({'location':appCallback,'cache-control':'no-store','referrer-policy':'no-referrer'});
   headers.append('set-cookie',sessionCookie+'='+token+sessionFlags+'; Max-Age=604800');
   headers.append('set-cookie',clearFlow);
