@@ -79,3 +79,15 @@ jobs:
             "https://habit-hero-cloudflare.george-stathopoulos.workers.dev/api/auth/google/start")
           test "$status" = "302" || { echo "::error::Google OIDC initiation returned HTTP $status, expected 302"; exit 1; }
           echo "Verified Google OIDC start endpoint redirects to Google without exposing credentials"
+
+      - name: Verify live Google SSO return page is reachable
+        if: ${{ vars.HABIT_HERO_CLOUDFLARE_DEPLOY == 'true' }}
+        run: |
+          curl --fail --silent --show-error --retry 5 --retry-delay 3 --retry-all-errors \
+            -D /tmp/hero-callback-headers.txt \
+            -o /tmp/hero-callback.html \
+            "https://habit-hero-cloudflare.george-stathopoulos.workers.dev/habit-hero/original-preview/auth/google-callback"
+          grep -qi 'content-type: text/html' /tmp/hero-callback-headers.txt
+          grep -q "Επαλήθευση σύνδεσης" /tmp/hero-callback.html
+          grep -q "/api/auth/me" /tmp/hero-callback.html
+          echo "Verified live SSO landing HTML (unauthenticated browser will prompt re-login)"
