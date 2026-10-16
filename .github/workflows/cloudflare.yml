@@ -30,6 +30,7 @@ jobs:
           node --check cloudflare/rewards-api.mjs
           node --check cloudflare/progress-api.mjs
           node --check cloudflare/occurrence.mjs
+          node --check cloudflare/export-api.mjs
           node scripts/test-child-auth.mjs
           python3 scripts/generate-icons.py
           python3 scripts/prepare-original-assets.py
