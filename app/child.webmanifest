@@ -1,0 +1,20 @@
+{
+  "short_name": "Habit Hero Child",
+  "description": "Family habits, approvals and rewards.",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f3f7ff",
+  "theme_color": "#448be7",
+  "scope": "/habit-hero/",
+  "icons": [
+    {
+      "src": "/habit-hero/app/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ],
+  "name": "Habit Hero — Child",
+  "id": "/habit-hero/child/",
+  "start_url": "/habit-hero/child/"
+}
