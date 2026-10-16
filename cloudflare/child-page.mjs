@@ -21,7 +21,7 @@ export function childPage(){
  <p class="muted">Πάτησε «Το έκανα!» όταν ολοκληρώσεις μια δραστηριότητα. Οι πόντοι προστίθενται μετά από έγκριση γονέα.</p>
  <ul id="activities"></ul><p id="feedback" role="status"></p></section>
  <section id="progressPanel" hidden><h2>📈 Η πρόοδός μου</h2>
- <p id="progressStats" class="muted"></p></section>
+ <p id="progressStats" class="muted"></p><h3>Οι πρόσφατες προσπάθειές μου</h3><ul id="activityHistory"></ul></section>
  <section id="rewardsPanel" hidden><h2>🎁 Τα έπαθλά μου</h2>
  <p id="balance" class="muted"></p><ul id="rewards"></ul>
  <p id="rewardMessage" role="status"></p></section>
@@ -35,6 +35,7 @@ export function childPage(){
    document.getElementById('progressPanel').hidden=true;
    document.getElementById('rewards').replaceChildren();
    document.getElementById('progressStats').textContent='';
+   document.getElementById('activityHistory').replaceChildren();
    document.getElementById('logout').hidden=true;
    status.textContent='Χρειάζεται σύνδεση με κωδικό γονέα.';
    return;
@@ -82,6 +83,13 @@ export function childPage(){
   document.getElementById('progressStats').textContent=
    '🔥 '+progress.current_streak_days+' ημέρες σερί · ✅ '+progress.approved_last_30_days+
    ' ολοκληρώσεις τον τελευταίο μήνα · ⭐ '+progress.earned_last_30_days+' πόντοι κερδισμένοι';
+  const history=document.getElementById('activityHistory');history.replaceChildren();
+  for(const event of progress.recent_activity){
+   const item=document.createElement('li');
+   const state=event.status==='approved'?'✅ Εγκρίθηκε':event.status==='rejected'?'❌ Απορρίφθηκε':'⏳ Σε αναμονή';
+   item.textContent=event.habit_name+' · '+state+' · '+event.occurrence_date;
+   history.append(item);
+  }
   document.getElementById('progressPanel').hidden=false;
  }
  async function refreshRewards(){
