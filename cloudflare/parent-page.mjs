@@ -53,6 +53,9 @@ export function parentPage() {
  button:active{transform:scale(.97)}
  button.secondary{background:#ebeaff;color:#423da1}
  input,select{background:#fafbff;border:1px solid #dcdcf3;border-radius:13px}
+ [data-tab][data-active="true"]:not([hidden]){animation:tabBloom .35s cubic-bezier(.2,.75,.2,1) both}
+ @keyframes tabBloom{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+ @media(prefers-reduced-motion:reduce){[data-tab][data-active="true"]{animation:none!important}}
  [data-tab]:not([data-active="true"]){display:none!important}
  nav.quick-nav{display:none}
  .app-tabs{position:fixed;bottom:0;left:0;right:0;z-index:50;background:#fffefafa;
