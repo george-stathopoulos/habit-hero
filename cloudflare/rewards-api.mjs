@@ -86,7 +86,13 @@ export async function childRewards(req,env) {
     .bind(actor.child_id,actor.family_id,actor.child_id).all();
   const balance=await env.DB.prepare(`SELECT COALESCE(SUM(delta),0) AS points
     FROM point_ledger WHERE family_id=? AND child_id=?`).bind(actor.family_id,actor.child_id).first();
-  return json({rewards:results.results||[],balance:balance?.points??0});
+  const history=await env.DB.prepare(`SELECT x.id,x.reward_id,r.name_el AS reward_name,
+   x.points_spent,x.status,x.requested_at,x.resolved_at
+   FROM reward_redemptions x JOIN reward_catalog r ON r.id=x.reward_id AND r.family_id=x.family_id
+   WHERE x.family_id=? AND x.child_id=? ORDER BY x.requested_at DESC LIMIT 30`)
+   .bind(actor.family_id,actor.child_id).all();
+  return json({rewards:results.results||[],balance:balance?.points??0,
+   redemption_history:history.results||[]});
  }catch{return json({detail:'Could not load rewards'},503)}
 }
 export async function childRequestReward(req,env) {
