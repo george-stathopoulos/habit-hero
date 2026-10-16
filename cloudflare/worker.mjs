@@ -1,6 +1,8 @@
-// Habit Hero Cloudflare-native edge entry point.
-// Step 7: static assets only. API routes deliberately fail closed until D1-backed
-// handlers with session authentication and family authorization are implemented.
+// Habit Hero Cloudflare Worker: static PWA + protected API foundation.
+// Never expose family data until a fully authenticated, tenant-scoped API is implemented.
+const JSON_HEADERS = { 'cache-control': 'no-store', 'content-type': 'application/json; charset=utf-8' };
+const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: JSON_HEADERS });
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -8,17 +10,23 @@ export default {
       return Response.redirect(new URL('/habit-hero/', url), 302);
     }
     if (url.pathname === '/_health') {
-      return Response.json({
-        service: 'habit-hero-edge',
-        status: 'ok',
-        apiConfigured: false
-      }, { headers: { 'cache-control': 'no-store' } });
+      return json({ service: 'habit-hero-edge', status: 'ok', apiConfigured: false });
+    }
+    // Safe, read-only connectivity probe. Never return database errors, names, rows or identifiers.
+    if (url.pathname === '/api/health' && request.method === 'GET') {
+      if (!env.DB) return json({ status: 'unavailable' }, 503);
+      try {
+        const result = await env.DB.prepare('SELECT 1 AS ready').first();
+        if (result?.ready === 1) {
+          return json({ service: 'habit-hero-api', status: 'ok', database: 'connected', featuresEnabled: false });
+        }
+      } catch {
+        // Deliberately omit error details to avoid exposing the database setup.
+      }
+      return json({ status: 'unavailable' }, 503);
     }
     if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
-      return Response.json({ detail: 'Habit Hero API is not configured yet.' }, {
-        status: 503,
-        headers: { 'cache-control': 'no-store' }
-      });
+      return json({ detail: 'Habit Hero API functionality is not available yet.' }, 503);
     }
     return env.ASSETS.fetch(request);
   }
