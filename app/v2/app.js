@@ -36,7 +36,12 @@
  function updateBell(){const seen=(()=>{try{return localStorage.getItem('hh2-seen-'+(actor?.id||'default'))||''}catch{return ''}})();const unread=!!messages.length&&messages[0].id!==seen;$('bellCount').hidden=!unread;$('bellCount').textContent=unread?String(messages.length):'';$('bell').classList.toggle('ringing',unread)}
  function renderMissions(){const list=$('missionList');list.replaceChildren();const completed=activities.filter(x=>x.submission_status==='approved'||x.submission_status==='pending').length,total=activities.length;
   $('progressFill').style.width=(total?100*completed/total:0)+'%';$('progressLabel').textContent=completed+' / '+total+' αποστολές';$('missionTotal').textContent=total+' σήμερα';
-  if(total&&completed===total){list.append(node('div','🏆 Όλα έτοιμα! Απόλαυσε τον ελεύθερο χρόνο σου.','notice'));return}
+  if(total&&completed===total){
+   const done=node('div',undefined,'all-done');done.append(node('span','🏆','all-done-icon'),
+    node('h3','Τα κατάφερες σήμερα!'),
+    node('p','Όλες οι αποστολές ολοκληρώθηκαν. Ο ήρωάς σου μπορεί να ξεκουραστεί και να απολαύσει τη μέρα του!'));
+   list.append(done);return
+  }
   if(!total){list.append(node('div','✨ Οι επόμενες αποστολές σου θα εμφανιστούν εδώ.','notice'));return}
   for(const m of activities){const b=node('button',undefined,'mission');b.append(node('span',m.emoji||'⭐','emoji'));const t=node('div');t.append(node('strong',m.habit_name),node('small',(m.slot_total>1?m.slot_index+'/'+m.slot_total+' · ':'')+(m.submission_status==='pending'?'Σε έγκριση':m.submission_status==='approved'?'Ολοκληρώθηκε':m.points+' πόντοι')));b.append(t,node('span',m.submission_status?'✓':'›','pill'));b.onclick=()=>detail(m);list.append(b)}}
  function detail(m){
