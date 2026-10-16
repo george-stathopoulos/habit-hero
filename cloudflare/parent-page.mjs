@@ -26,7 +26,9 @@ export function parentPage() {
  <a href="#approvalsPanel">✅ Εγκρίσεις</a><a href="#rewardsPanel">🎁 Έπαθλα</a>
  <a href="#redemptionsPanel">📩 Αιτήματα</a><a href="#progressPanel">📈 Πρόοδος</a>
  <a href="#privacyPanel">🔒 Δεδομένα</a></nav>
- <section class="panel"><h2 id="greeting">Φόρτωση...</h2><p id="status" role="status" class="subtle">Έλεγχος σύνδεσης...</p></section>
+ <section class="panel"><h2 id="greeting">Φόρτωση...</h2><p id="status" role="status" class="subtle">Έλεγχος σύνδεσης...</p>
+ <div class="row"><a href="#approvalsPanel" id="pendingApprovalSummary">✅ Εγκρίσεις: —</a>
+ <a href="#redemptionsPanel" id="pendingRedemptionSummary">🎁 Αιτήματα: —</a></div></section>
  <section class="panel" id="family" hidden><h2>👨‍👩‍👧‍👦 Τα παιδιά μου</h2><p class="subtle">Δημιουργήστε το προφίλ κάθε παιδιού. Δεν απαιτείται Google λογαριασμός για τα παιδιά.</p>
  <ul id="children"></ul><p id="empty" class="subtle">Δεν υπάρχουν ακόμη προφίλ παιδιών.</p></section>
  <section class="panel" id="create" hidden><h2>➕ Προσθήκη παιδιού</h2><form id="form"><label for="name">Όνομα ή ψευδώνυμο</label>
@@ -290,6 +292,7 @@ export function parentPage() {
     approvalsList.append(li);
   }
   document.getElementById('noApprovals').hidden=pending.length>0;
+  document.getElementById('pendingApprovalSummary').textContent='✅ Εγκρίσεις: '+pending.length;
   const balanceList=document.getElementById('balances');balanceList.replaceChildren();
   for(const child of balances){
    const li=document.createElement('li');li.textContent='🏅 '+child.child_name+': '+child.points+' πόντοι';balanceList.append(li);
@@ -482,6 +485,7 @@ export function parentPage() {
     requestsList.append(item);
   }
   document.getElementById('noRedemptions').hidden=requests.length>0;
+  document.getElementById('pendingRedemptionSummary').textContent='🎁 Αιτήματα: '+requests.filter(item=>item.status==='requested').length;
  }
  document.getElementById('pointsForm').addEventListener('submit',async event=>{
   event.preventDefault();
