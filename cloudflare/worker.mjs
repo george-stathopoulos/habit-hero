@@ -5,7 +5,7 @@ import {makePairing,pairDevice,childMe,childActivities,childSubmit,childLogout,r
 import {listActivities,submitActivity,listApprovals,reviewActivity,listBalances} from './activity-api.mjs';
 import {listHabits,createHabit,updateHabit,archiveHabit,assignHabit} from './habits-api.mjs';
 import {parentPage} from './parent-page.mjs';
-import {familyOverview,createChild} from './family-api.mjs';
+import {familyOverview,createChild,editChild} from './family-api.mjs';
 import {begin,callback,me,logout} from './google-auth.mjs';
 // Habit Hero Cloudflare Worker: static PWA + protected API foundation.
 // Never expose family data until a fully authenticated, tenant-scoped API is implemented.
@@ -121,6 +121,7 @@ export default {
     if (url.pathname === '/api/children' && request.method === 'POST') {
       return createChild(request,env);
     }
+    if (url.pathname === '/api/children/update' && request.method === 'POST') return editChild(request,env);
     if (url.pathname === '/api/habits' && request.method === 'GET') {
       return listHabits(request,env);
     }
