@@ -1,3 +1,5 @@
+import {householdPage} from './household-page.mjs';
+import {householdState,setupParentPin,unlockHousehold,exitToHousehold} from './household-auth.mjs';
 import {configureChildPin,childPinStatus,unlockChildPin,lockChildPin} from './child-pin.mjs';
 import {setFamilyTimezone} from './timezone.mjs';
 import {adjustPoints} from './points-api.mjs';
@@ -75,6 +77,14 @@ h1{font-size:29px;margin:10px 0}p{line-height:1.6}a,button{display:inline-block;
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === '/habit-hero/welcome' || url.pathname === '/habit-hero/welcome/') {
+      if(request.method!=='GET')return json({detail:'Method not allowed'},405);
+      return householdPage();
+    }
+    if (url.pathname === '/api/household' && request.method === 'GET')return householdState(request,env);
+    if (url.pathname === '/api/household/parent-pin' && request.method === 'POST')return setupParentPin(request,env);
+    if (url.pathname === '/api/household/unlock' && request.method === 'POST')return unlockHousehold(request,env);
+    if (url.pathname === '/api/household/exit' && request.method === 'POST')return exitToHousehold(request,env);
     if (url.pathname === '/') {
       return Response.redirect(new URL('/habit-hero/', url), 302);
     }
