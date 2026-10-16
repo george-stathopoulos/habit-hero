@@ -14,12 +14,12 @@ export function householdPage(){
  [hidden]{display:none!important}@media(min-width:450px){.profiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
  </style></head><body><main><div style="font-size:58px">🏆</div><h1>Habit Hero</h1><p>Κάθε μέρα, μια νέα περιπέτεια!</p>
  <section class="panel" id="loading"><p>Ετοιμάζουμε την οικογένειά σου…</p></section>
- <section class="panel" id="signup" hidden><h2>Καλωσόρισες στην οικογένεια!</h2>
- <p>Συνδέσου με Google για να δημιουργήσεις τον λογαριασμό της οικογένειας.</p><a class="action" style="display:block;text-decoration:none" href="/api/auth/google/start">Συνέχεια με Google</a></section>
+ <section class="panel" id="signup" hidden><h2>🚀 Ξεκινά η περιπέτειά σας!</h2>
+ <p>1️⃣ Δημιουργείς οικογενειακό λογαριασμό με Google.</p><p>2️⃣ Ορίζεις το PIN σου.</p><p>3️⃣ Προσθέτεις το πρώτο παιδί με το δικό του PIN.</p><p>4️⃣ Μετά όλοι επιλέγετε προφίλ από την ίδια συσκευή.</p><a class="action" style="display:block;text-decoration:none" href="/api/auth/google/start">Συνέχεια με Google</a></section>
  <section class="panel" id="setup" hidden><h2>✨ Μικρή προετοιμασία</h2><p id="setupText"></p>
- <form id="parentPinSetup" hidden><label for="newPin">Δημιούργησε PIN γονέα</label><input id="newPin" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="new-password" required>
+ <form id="parentPinSetup" hidden><label for="newPin">Δημιούργησε PIN γονέα</label><input id="newPin" type="text" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="off" required>
  <label for="repeatPin">Επιβεβαίωση PIN</label><input id="repeatPin" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="new-password" required>
- <p><button>Αποθήκευση PIN</button></p></form>
+ <p id="pinMismatch" role="alert" style="color:#a82844;font-weight:700" hidden>Τα δύο PIN δεν ταιριάζουν.</p><p><button id="saveParentPin" type="submit">Αποθήκευση PIN</button></p></form>
  <a id="addChild" class="action" href="/habit-hero/parent/#home" hidden style="display:block;text-decoration:none">Προσθήκη πρώτου παιδιού →</a>
  </section>
  <section class="panel" id="choose" hidden><h2>👋 Ποιος παίζει σήμερα;</h2><p>Επίλεξε το προφίλ σου.</p>
@@ -61,10 +61,22 @@ export function householdPage(){
   }catch(e){el('message').textContent=e.message;show('signup')}
  }
  el('parentPinSetup').addEventListener('submit',async e=>{
-  e.preventDefault();if(el('newPin').value!==el('repeatPin').value){el('message').textContent='Τα PIN δεν ταιριάζουν.';return}
+  e.preventDefault();
+  if(el('newPin').value!==el('repeatPin').value){
+   el('pinMismatch').hidden=false;el('message').textContent='Τα δύο PIN δεν ταιριάζουν.';return;
+  }
+  el('pinMismatch').hidden=true;
+  const save=el('saveParentPin');save.disabled=true;
   try{await api('/api/household/parent-pin',{pin:el('newPin').value});await load()}
   catch(err){el('message').textContent=err.message}
+  finally{save.disabled=false}
  });
+ ['newPin','repeatPin'].forEach(id=>el(id).addEventListener('input',()=>{
+  const a=el('newPin').value,b=el('repeatPin').value;
+  el('pinMismatch').hidden=!a||!b||a===b;
+  if(a&&b&&a!==b)el('message').textContent='Τα δύο PIN δεν ταιριάζουν.';
+  else el('message').textContent='';
+ }));
  el('unlockForm').addEventListener('submit',async e=>{
   e.preventDefault();const button=el('unlockButton');button.disabled=true;
   try{const result=await api('/api/household/unlock',{pin:el('entryPin').value,child_id:selected.id});location.replace(result.url)}
