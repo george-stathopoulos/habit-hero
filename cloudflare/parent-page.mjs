@@ -351,7 +351,9 @@ export function parentPage() {
   document.getElementById('goalSuggestions').hidden=false;
   document.getElementById('goalSuggestions').scrollIntoView({behavior:'smooth',block:'nearest'});
  });
- document.getElementById('refreshAppVersion').addEventListener('click',async()=>{
+ let openedVersion=null;
+ fetch('/api/version',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(v=>{if(v)openedVersion=v.current}).catch(()=>{});
+  document.getElementById('refreshAppVersion').addEventListener('click',async()=>{
   const button=document.getElementById('refreshAppVersion'),note=document.getElementById('versionResult');
   button.disabled=true;note.textContent='Ελέγχουμε την τελευταία έκδοση…';
   try{
@@ -359,6 +361,13 @@ export function parentPage() {
    if(!response.ok)throw Error('Ο έλεγχος δεν ήταν διαθέσιμος.');
    const info=await response.json();
    document.getElementById('buildDate').textContent='Εγκατεστημένη έκδοση: '+String(info.current).slice(0,8);
+   if(openedVersion&&info.current!==openedVersion&&info.current!=='unknown'){
+    note.textContent='🚀 Μια νέα έκδοση του Habit Hero είναι διαθέσιμη! Πάτησε εγκατάσταση για να την ανοίξεις.';
+    button.textContent='⬇️ Εγκατάσταση ενημέρωσης';
+    button.onclick=()=>{location.reload()};
+    button.disabled=false;
+    return;
+   }
    if(!info.check_available||info.current==='unknown')note.textContent='Δεν ήταν δυνατή η επαλήθευση της τελευταίας έκδοσης. Προσπάθησε ξανά.';
    else if(info.update_available){
     note.textContent='🚀 Υπάρχει νεότερη έκδοση στο GitHub ('+info.latest.slice(0,8)+'). Μπορεί να μην έχει αναπτυχθεί ακόμη στο Cloudflare.';
