@@ -80,3 +80,16 @@ export async function unlockChildPin(req,env){
  return results[1]?.meta?.changes===1?json({unlocked:true}):json({detail:'Session unavailable'},401);
  }catch{return json({detail:'PIN verification unavailable'},503)}
 }
+
+export async function lockChildPin(req,env){
+ if(req.headers.get('origin')!==origin)return json({detail:'Forbidden'},403);
+ const token=cookie(req);
+ if(!token||!/^[A-Za-z0-9_-]{32}$/.test(token))return json({detail:'Not authenticated'},401);
+ try{
+  const result=await env.DB.prepare(`UPDATE auth_sessions SET pin_verified_at=NULL
+   WHERE token_hash=? AND role='child' AND revoked_at IS NULL AND expires_at>?`)
+   .bind(await digest(token),new Date().toISOString()).run();
+  if(result.meta?.changes!==1)return json({detail:'Session not found'},401);
+  return json({locked:true});
+ }catch{return json({detail:'Cannot lock profile'},503)}
+}
