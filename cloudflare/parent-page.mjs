@@ -29,6 +29,13 @@ export function parentPage() {
  <section class="panel"><h2 id="greeting">Φόρτωση...</h2><p id="status" role="status" class="subtle">Έλεγχος σύνδεσης...</p>
  <div class="row"><a href="#approvalsPanel" id="pendingApprovalSummary">✅ Εγκρίσεις: —</a>
  <a href="#redemptionsPanel" id="pendingRedemptionSummary">🎁 Αιτήματα: —</a></div></section>
+ <section class="panel" id="familySettingsPanel" hidden><h2>🕒 Ώρα οικογένειας</h2>
+ <p class="subtle">Η ημέρα και οι εβδομαδιαίες συνήθειες ακολουθούν αυτή τη ζώνη ώρας.</p>
+ <form id="timezoneForm"><label for="familyTimezone">Ζώνη ώρας (IANA)</label>
+ <input id="familyTimezone" required maxlength="80" placeholder="Europe/Athens">
+ <button type="button" id="detectTimezone" class="secondary">Χρήση ζώνης αυτής της συσκευής</button>
+ <button id="saveTimezone" type="submit">Αποθήκευση ζώνης ώρας</button></form>
+ <p id="timezoneStatus" role="status" class="subtle"></p></section>
  <section class="panel" id="family" hidden><h2>👨‍👩‍👧‍👦 Τα παιδιά μου</h2><p class="subtle">Δημιουργήστε το προφίλ κάθε παιδιού. Δεν απαιτείται Google λογαριασμός για τα παιδιά.</p>
  <ul id="children"></ul><p id="empty" class="subtle">Δεν υπάρχουν ακόμη προφίλ παιδιών.</p></section>
  <section class="panel" id="create" hidden><h2>➕ Προσθήκη παιδιού</h2><form id="form"><label for="name">Όνομα ή ψευδώνυμο</label>
@@ -108,6 +115,8 @@ export function parentPage() {
    status.textContent='Οικογένεια: '+data.family.name;
    document.getElementById('family').hidden=false;document.getElementById('create').hidden=false;
    document.getElementById('privacyPanel').hidden=false;
+   document.getElementById('familySettingsPanel').hidden=false;
+   document.getElementById('familyTimezone').value=data.family.timezone||'UTC';
    list.replaceChildren();
    for(const child of data.children) {
     const avatarIcons={hero:'🦸',unicorn:'🦄',robot:'🤖',dragon:'🐉',astronaut:'🧑‍🚀',cat:'🐱',ninja:'🥷',wizard:'🧙'};
@@ -487,6 +496,21 @@ export function parentPage() {
   document.getElementById('noRedemptions').hidden=requests.length>0;
   document.getElementById('pendingRedemptionSummary').textContent='🎁 Αιτήματα: '+requests.filter(item=>item.status==='requested').length;
  }
+ document.getElementById('detectTimezone').addEventListener('click',()=>{
+  document.getElementById('familyTimezone').value=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';
+ });
+ document.getElementById('timezoneForm').addEventListener('submit',async event=>{
+  event.preventDefault();const button=document.getElementById('saveTimezone');
+  const status=document.getElementById('timezoneStatus');button.disabled=true;
+  try{
+   const response=await fetch('/api/family/timezone',{method:'POST',credentials:'same-origin',
+    headers:{'content-type':'application/json'},body:JSON.stringify({
+     timezone:document.getElementById('familyTimezone').value.trim()})});
+   if(!response.ok)throw Error('Η ζώνη ώρας δεν αποθηκεύτηκε.');
+   status.textContent='Η ζώνη ώρας ενημερώθηκε. Η πρόοδος επανυπολογίζεται.';
+   await refreshActivityWorkflow();await refreshProgress();
+  }catch(e){status.textContent=e.message}finally{button.disabled=false}
+ });
  document.getElementById('pointsForm').addEventListener('submit',async event=>{
   event.preventDefault();
   const button=document.getElementById('pointsSave'),status=document.getElementById('pointsStatus');
