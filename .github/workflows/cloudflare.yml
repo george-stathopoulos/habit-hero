@@ -24,7 +24,9 @@ jobs:
       - name: Test Cloudflare routing and fail-closed API
         run: |
           node --check cloudflare/worker.mjs
+          node --check cloudflare/google-auth.mjs
           node scripts/test-cloudflare.mjs
+          node scripts/test-google-auth.mjs
           python3 scripts/generate-icons.py
           python3 scripts/prepare-original-assets.py
       - name: Build original Expo app for Cloudflare
