@@ -212,10 +212,10 @@ export function parentPage() {
  <p class="subtle">Οι τελευταίες 30 ημέρες · οι συνεχόμενες ημέρες βασίζονται σε εγκεκριμένες δραστηριότητες.</p>
  <ul id="progressList"></ul><p id="progressMessage" role="status" class="subtle"></p></section>
  <section class="panel" id="releaseInfo" data-tab="settings" hidden>
- <h2>🛠️ Έκδοση εφαρμογής</h2><p class="subtle">Habit Hero · Family Adventure beta</p>
+ <h2>🛠️ Έκδοση εφαρμογής</h2><p class="subtle">Habit Hero · Family Adventure beta · Δεν υπάρχει ακόμη αυτόματος έλεγχος έκδοσης</p>
  <p id="buildDate">Ενημέρωση: 16 Οκτωβρίου 2026</p>
  <p class="subtle">Οι ενημερώσεις εγκαθίστανται μετά την ανάπτυξη της νέας έκδοσης στο Cloudflare. Κλείσε και άνοιξε ξανά την εφαρμογή για να ελέγξεις νέες αλλαγές.</p>
- <button type="button" class="secondary" id="refreshAppVersion">🔄 Έλεγχος ενημέρωσης</button>
+ <button type="button" class="secondary" id="refreshAppVersion">🔄 Ανανέωση εφαρμογής</button>
  </section>
  <section class="panel" id="privacyPanel" data-tab="settings" hidden><h2>🔒 Τα δεδομένα της οικογένειας</h2>
  <p class="subtle">Μπορείτε να κατεβάσετε τα προφίλ, τις συνήθειες, τις εγκρίσεις, τους πόντους και τα έπαθλα της οικογένειάς σας ως αρχείο JSON. Το αρχείο περιέχει προσωπικά δεδομένα και πρέπει να φυλάσσεται με ασφάλεια.</p>
