@@ -63,3 +63,7 @@ body[data-role="parent"] .stage .hero-art{width:min(58%,245px);height:74%;top:1p
 body[data-role="parent"] .stage h2{font-size:clamp(23px,6vw,31px);line-height:1.15}
 body[data-role="parent"] .stage .world-caption{background:#244c57aa}
 @media(max-width:370px){.stage{min-height:370px;padding:20px}.stage .hero-art{width:54%;height:54%}.stage h2{font-size:clamp(22px,7vw,27px)}}
+
+.all-done{background:radial-gradient(circle at 50% 0,#fff9bda8,transparent 45%),linear-gradient(140deg,#4ca6aa,#6c65d8);border-radius:25px;padding:35px 21px;text-align:center;color:#fff;box-shadow:0 15px 30px #26388425}
+.all-done-icon{font-size:78px;display:block;animation:float 3s ease-in-out infinite}.all-done h3{font-size:25px;margin:9px 0}.all-done p{line-height:1.6;max-width:34ch;margin:0 auto}
+@media(prefers-reduced-motion:reduce){.all-done-icon{animation:none}}
