@@ -86,11 +86,28 @@ class SchemaTests(unittest.TestCase):
         with self.assertRaises(sqlite3.IntegrityError):
             self.db.execute("INSERT INTO oauth_flows VALUES (?,?,?,?,?,?,?,NULL)", ("flow2","state1","nonce2","verifier2","google",NOW,NOW))
 
+    def test_pairings_are_family_scoped_and_one_time(self):
+        self.db.execute("""INSERT INTO child_device_pairings
+          (id,family_id,child_id,token_hash,created_by,created_at,expires_at)
+          VALUES (?,?,?,?,?,?,?)""", ("pair1","f1","c1","random-hash","p1",NOW,NOW))
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute("""INSERT INTO child_device_pairings
+              (id,family_id,child_id,token_hash,created_by,created_at,expires_at)
+              VALUES (?,?,?,?,?,?,?)""", ("pair2","f1","c1","random-hash","p1",NOW,NOW))
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute("""INSERT INTO child_device_pairings
+              (id,family_id,child_id,token_hash,created_by,created_at,expires_at)
+              VALUES (?,?,?,?,?,?,?)""", ("pair3","f2","c2","another-hash","p1",NOW,NOW))
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute("""INSERT INTO child_device_pairings
+              (id,family_id,child_id,token_hash,created_by,created_at,expires_at)
+              VALUES (?,?,?,?,?,?,?)""", ("pair4","f1","c2","another-hash","p1",NOW,NOW))
+
     def test_relational_model_has_expected_tables(self):
         names={r[0] for r in self.db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         self.assertTrue({"families","parent_users","family_memberships","child_profiles","habits","habit_assignments",
                          "completion_submissions","reward_catalog","reward_eligibility","reward_redemptions",
-                         "point_ledger","auth_sessions","auth_challenges","audit_events","parent_identities","oauth_flows"}.issubset(names))
+                         "point_ledger","auth_sessions","auth_challenges","audit_events","parent_identities","oauth_flows","child_device_pairings"}.issubset(names))
 
 if __name__ == "__main__":
     unittest.main()
