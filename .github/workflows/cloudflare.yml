@@ -58,6 +58,13 @@ jobs:
           npm install --no-save --no-package-lock playwright@1.57.0
           npx playwright install chromium
           node scripts/test-v2-layout.mjs
+      - name: Preview v2 visual QA thumbnails
+        run: |
+          for role in child parent; do
+            printf "V2_VISUAL_%s=" "$role"
+            base64 -w0 "v2-layout-shots/preview-$role.jpg"
+            printf "\\n"
+          done
       - name: Upload v2 visual QA screenshots
         if: always()
         uses: actions/upload-artifact@v4
