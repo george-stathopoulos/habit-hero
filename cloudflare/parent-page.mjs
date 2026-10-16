@@ -167,7 +167,7 @@ export function parentPage() {
  <label for="habitCount">Πόσες φορές ανά περίοδο; (1–5)</label>
  <input id="habitCount" type="number" min="1" max="5" value="1" required>
  <label for="habitCooldown">Ελάχιστα λεπτά μεταξύ επαναλήψεων</label>
- <input id="habitCooldown" type="number" min="0" max="1440" value="0" required>
+ <input id="habitCooldown" type="number" min="0" max="1440" value="0" required><p class="subtle">Για πολλαπλές ολοκληρώσεις απαιτούνται τουλάχιστον 30 λεπτά ανάμεσα στις προσπάθειες. Για εβδομαδιαίους ή μηνιαίους στόχους, οι προσπάθειες γίνονται σε διαφορετικές ημέρες.</p>
  <label for="habitDescription">Τι πρέπει να κάνει το παιδί;</label>
  <textarea id="habitDescription" maxlength="500" rows="3" placeholder="Περιέγραψε τα βήματα της αποστολής..."></textarea>
  <label for="habitBenefit">Γιατί είναι σημαντικό;</label>
