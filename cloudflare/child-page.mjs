@@ -73,7 +73,7 @@ export function childPage(){
   document.getElementById('pinPanel').hidden=true;
   document.getElementById('quickNav').hidden=false;
   document.getElementById('logout').hidden=false;
-  document.getElementById('lockProfile').hidden=false;
+  document.getElementById('lockProfile').hidden=!profile.pin_enabled;
   const res=await fetch('/api/child/activities',{credentials:'same-origin',cache:'no-store'});
   if(!res.ok){status.textContent='Οι δραστηριότητες δεν είναι διαθέσιμες αυτή τη στιγμή.';return}
   const data=await res.json();
