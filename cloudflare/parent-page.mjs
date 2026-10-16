@@ -55,7 +55,7 @@ export function parentPage() {
  @media(min-width:800px){.app-tabs{left:50%;width:min(680px,94%);transform:translateX(-50%);border-radius:24px 24px 0 0}
   main{padding-bottom:120px}.app-tabs button{font-size:14px}.app-tabs button span:first-child{font-size:26px}}
  @media(max-width:600px){body{padding:12px}main{margin:3px auto}header,.panel{padding:20px;border-radius:23px}}
- </style></head><body><main><header><div><h1>🏆 Habit Hero</h1><div class="subtle">Οικογενειακός πίνακας</div></div><button id="logout" class="secondary">Αποσύνδεση</button></header>
+ </style></head><body><main><header><div><h1>🏆 Habit Hero</h1><div class="subtle">Οικογενειακός πίνακας</div></div><button id="switchProfile" class="secondary">🚪 Αλλαγή χρήστη</button> <button id="logout" class="secondary">Αποσύνδεση</button></header>
  <nav class="quick-nav" aria-label="Γρήγορη πλοήγηση">
  <a href="#family">👨‍👩‍👧 Παιδιά</a><a href="#pinPanel">🔐 PIN παιδιού</a><a href="#habitPanel">🎯 Συνήθειες</a>
  <a href="#approvalsPanel">✅ Εγκρίσεις</a><a href="#rewardsPanel">🎁 Έπαθλα</a>
@@ -479,6 +479,14 @@ export function parentPage() {
      body:JSON.stringify({name:document.getElementById('name').value,age_band:document.getElementById('age').value||null,pin:initialPin})});
    if(!r.ok)throw Error('Δεν αποθηκεύτηκε το προφίλ. Ελέγξτε τα στοιχεία.');
    const created=await r.json();
+   const stateResponse=await fetch('/api/household',{credentials:'same-origin',cache:'no-store'});
+   if(stateResponse.ok){
+    const home=await stateResponse.json();
+    if(home.has_parent_pin&&home.children?.length===1){
+     await fetch('/api/household/exit',{method:'POST',credentials:'same-origin'});
+     location.replace('/habit-hero/welcome/');return;
+    }
+   }
    document.getElementById('form').reset();note.textContent='Το παιδί προστέθηκε!';await refresh();
   }catch(e){note.textContent=e.message}finally{btn.disabled=false}
  });
@@ -735,6 +743,14 @@ export function parentPage() {
     document.getElementById('rewardDescription').value='';
     status.textContent='Το έπαθλο δημιουργήθηκε.';await refreshRewards();
   }catch(e){status.textContent=e.message}finally{save.disabled=false}
+ });
+ document.getElementById('switchProfile').addEventListener('click',async()=>{
+  const button=document.getElementById('switchProfile');button.disabled=true;
+  try{
+   const response=await fetch('/api/household/exit',{method:'POST',credentials:'same-origin'});
+   if(!response.ok)throw Error('Δεν ήταν δυνατή η αλλαγή προφίλ.');
+   location.replace('/habit-hero/welcome/');
+  }catch(error){document.getElementById('status').textContent=error.message;button.disabled=false}
  });
  document.getElementById('logout').addEventListener('click',async()=>{
   await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
