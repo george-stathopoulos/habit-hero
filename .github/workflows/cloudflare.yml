@@ -1,20 +1,6 @@
 name: Build and deploy Cloudflare Habit Hero
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "cloudflare/**"
-      - "scripts/test-cloudflare.mjs"
-      - "scripts/test-google-auth.mjs"
-      - "scripts/test-family-api.mjs"
-      - "scripts/test-habits-api.mjs"
-      - "scripts/test-activity-api.mjs"
-      - "scripts/test-child-auth.mjs"
-      - "scripts/add-original-pwa.py"
-      - "scripts/repair-original-web.cjs"
-      - "original/frontend/**"
-      - ".github/workflows/cloudflare.yml"
 permissions:
   contents: read
 jobs:
