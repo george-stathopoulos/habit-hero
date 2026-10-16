@@ -230,3 +230,23 @@ export async function archiveReward(req,env){
   return json({id,status:'archived'});
  }catch{return json({detail:'Could not archive reward'},503)}
 }
+
+/** Share an existing reward with another child in the verified family. */
+export async function assignReward(req,env){
+ const input=await readBody(req);if(input.error)return input.error;
+ const actor=await authorizedParent(req,env);
+ if(!actor)return json({detail:'Not authenticated'},401);
+ const rewardId=input.body.reward_id,childId=input.body.child_id;
+ if(!uuid(rewardId)||!uuid(childId))return json({detail:'Invalid assignment'},400);
+ try{
+  const result=await env.DB.prepare(`INSERT INTO reward_eligibility (family_id,reward_id,child_id)
+    SELECT r.family_id,r.id,c.id
+    FROM reward_catalog r JOIN child_profiles c ON c.family_id=r.family_id
+    WHERE r.family_id=? AND r.id=? AND c.id=? AND r.active=1 AND c.deleted_at IS NULL
+    AND NOT EXISTS(SELECT 1 FROM reward_eligibility e WHERE e.family_id=r.family_id
+      AND e.reward_id=r.id AND e.child_id=c.id)`)
+   .bind(actor.family_id,rewardId,childId).run();
+  if(result.meta?.changes!==1)return json({detail:'Already assigned or unavailable'},409);
+  return json({status:'assigned'},201);
+ }catch{return json({detail:'Could not assign reward'},503)}
+}
