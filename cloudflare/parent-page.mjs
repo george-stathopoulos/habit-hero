@@ -342,6 +342,7 @@ export function parentPage() {
   if(!r.ok)throw Error('Δεν ήταν δυνατή η φόρτωση των συνηθειών.');
   const data=await r.json(),items=document.getElementById('habits');
   items.replaceChildren();
+  document.getElementById('snapshotHabits').textContent=data.habits.length;
   for(const habit of data.habits){
    const li=document.createElement('li');
    const label=document.createElement('span');
@@ -437,6 +438,7 @@ export function parentPage() {
   ]);
   if(!a.ok||!p.ok||!b.ok)throw Error('Δεν φορτώθηκαν οι δραστηριότητες.');
   const activities=(await a.json()).activities,pending=(await p.json()).pending,balances=(await b.json()).balances;
+  document.getElementById('snapshotPending').textContent=pending.length;
   for(const id of ['activitiesPanel','approvalsPanel','pointsPanel'])document.getElementById(id).hidden=false;
   const activitiesList=document.getElementById('activities');activitiesList.replaceChildren();
   for(const activity of activities){
@@ -492,6 +494,7 @@ export function parentPage() {
    const li=document.createElement('li');li.textContent='🏅 '+child.child_name+': '+child.points+' πόντοι';balanceList.append(li);
   }
  }
+ document.getElementById('form').addEventListener('submit',()=>document.getElementById('create').classList.remove('expanded'));
  document.getElementById('habitTemplates').addEventListener('click',event=>{
   const button=event.target.closest('button[data-name]');
   if(!button)return;
