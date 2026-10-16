@@ -26,6 +26,9 @@ export function childPage(){
  section{border-radius:26px;border:1px solid #eeebfd;box-shadow:0 12px 28px #232f6c13}
  button{background:var(--purple);font-weight:750;border-radius:16px;min-height:45px}
  button:active{transform:scale(.97)}
+ [data-tab][data-active="true"]:not([hidden]){animation:tabBloom .35s cubic-bezier(.2,.75,.2,1) both}
+ @keyframes tabBloom{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+ @media(prefers-reduced-motion:reduce){[data-tab][data-active="true"]{animation:none!important}}
  [data-tab]:not([data-active="true"]){display:none!important}
  nav.quick-nav{display:none}
  .hero-particles{position:absolute;inset:0;pointer-events:none;overflow:hidden}
