@@ -44,6 +44,15 @@ export function childPage(){
  @keyframes heroPop{from{transform:scale(.4) rotate(-15deg);opacity:0}to{transform:scale(1);opacity:1}}
  @keyframes fadeHero{from{opacity:0}to{opacity:1}}
  @media(prefers-reduced-motion:reduce){.mission-toast,.mission-toast-emoji{animation:none}}
+ body[data-world="forest"]{background:linear-gradient(155deg,#d6f9df,#f6fff5 62%,#e5f5ff);--purple:#249464;--violet:#155f45}
+ body[data-world="space"]{background:linear-gradient(150deg,#dcd7ff,#eaf0ff 60%,#ede9ff);--purple:#5644c5;--violet:#2c235d}
+ body[data-world="ocean"]{background:linear-gradient(145deg,#c8f8ff,#e1f8ff 65%,#e9efff);--purple:#0782a4;--violet:#105b78}
+ body[data-world="sunset"]{background:linear-gradient(155deg,#ffe9ca,#fff5ef 65%,#ffdcf5);--purple:#c95f8e;--violet:#8c426b}
+ .theme-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .theme-choices button{min-width:0;min-height:85px;white-space:normal;border:3px solid transparent;background:var(--purple,#6658e8);color:white;font-weight:800;border-radius:20px}
+ .theme-choices button[aria-pressed="true"]{border-color:#f5c651;box-shadow:0 0 0 3px #7161aa44}
+ .egg-stage{font-size:76px;display:grid;place-items:center;min-height:140px;border-radius:25px;background:#ffffffb8;animation:questFloat 3.5s ease-in-out infinite}
+ @media(prefers-reduced-motion:reduce){.egg-stage{animation:none}}
  .reward-tile{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;
   border:2px solid #f3deff!important;border-radius:25px;background:linear-gradient(135deg,#fff4fc,#f2f0ff)!important;
   padding:24px 16px!important;margin-bottom:15px;box-shadow:0 10px 23px #603c8915}
@@ -120,6 +129,11 @@ export function childPage(){
  <p class="muted">Πάτησε «Το έκανα!» όταν ολοκληρώσεις μια δραστηριότητα. Οι πόντοι προστίθενται μετά από έγκριση γονέα.</p>
  <ul id="activities"></ul><p id="feedback" role="status"></p></section>
  <section id="parentMessages" data-tab="quests" hidden><h2>💌 Μηνύματα από τους γονείς</h2><ul id="helpReplies"></ul></section>
+ <section id="heroThemes" data-tab="hero" hidden><h2>🎨 Ο κόσμος του ήρωά μου</h2><p class="muted">Διάλεξε τον κόσμο που σου αρέσει!</p>
+ <div id="themeChoices" class="theme-choices"></div>
+ <h3>🥚 Το μαγικό μου αυγό</h3><div id="companionEgg" class="egg-stage" aria-live="polite">🥚</div>
+ <p id="eggMessage" class="muted">Μείνε συνεπής στις αποστολές σου για να μεγαλώσει!</p>
+ </section>
  <section id="progressPanel" data-tab="hero" hidden><h2>📈 Η πρόοδός μου</h2>
  <p id="progressStats" class="muted"></p>
  <p id="heroLevel" class="muted"></p><div id="levelBar" style="height:14px;border-radius:20px;background:#e8eff9;overflow:hidden"><div id="levelFill" style="height:100%;width:0;background:#f5a623;transition:width .3s"></div></div>
@@ -170,6 +184,20 @@ export function childPage(){
   }
   overlay.append(particles,card);document.body.append(overlay);close.focus();
  }
+ const worlds=[['space','🌌','Διάστημα'],['forest','🌳','Μαγικό δάσος'],['ocean','🐬','Βυθός'],['sunset','🌅','Ηλιοβασίλεμα']];
+ const themeChoices=document.getElementById('themeChoices');
+ let activeWorld='space';
+ try{activeWorld=localStorage.getItem('habitHero:world')||'space'}catch{}
+ function chooseWorld(id){
+  activeWorld=worlds.some(x=>x[0]===id)?id:'space';document.body.dataset.world=activeWorld;
+  for(const button of themeChoices.querySelectorAll('button'))button.setAttribute('aria-pressed',String(button.dataset.world===activeWorld));
+  try{localStorage.setItem('habitHero:world',activeWorld)}catch{}
+ }
+ for(const [id,emoji,title] of worlds){
+  const button=document.createElement('button');button.type='button';button.dataset.world=id;button.textContent=emoji+' '+title;
+  button.addEventListener('click',()=>chooseWorld(id));themeChoices.append(button);
+ }
+ chooseWorld(activeWorld);
  const status=document.getElementById('status');
  async function refresh(){
   const me=await fetch('/api/child/me',{credentials:'same-origin',cache:'no-store'});
@@ -183,6 +211,7 @@ export function childPage(){
    document.getElementById('childTabTitle').hidden=true;
    document.getElementById('activitiesPanel').hidden=true;
    document.getElementById('questOverview').hidden=true;
+   document.getElementById('heroThemes').hidden=true;
    document.getElementById('allDonePanel').hidden=true;
    document.getElementById('rewardsPanel').hidden=true;
    document.getElementById('progressPanel').hidden=true;
@@ -205,6 +234,7 @@ export function childPage(){
   document.getElementById('quickNav').hidden=false;
   document.getElementById('childTabs').hidden=false;
   document.getElementById('questOverview').hidden=false;
+  document.getElementById('heroThemes').hidden=false;
   document.getElementById('childTabTitle').hidden=false;
   document.getElementById('logout').hidden=false;
   document.getElementById('switchFamily').hidden=false;
@@ -294,6 +324,9 @@ export function childPage(){
   document.getElementById('progressStats').textContent=
    '🔥 '+progress.current_streak_days+' ημέρες σερί · ✅ '+progress.approved_last_30_days+
    ' ολοκληρώσεις τον τελευταίο μήνα · ⭐ '+progress.earned_last_30_days+' πόντοι κερδισμένοι';
+  const streak=Number(progress.current_streak_days)||0;
+  document.getElementById('companionEgg').textContent=streak>=30?'🐉':streak>=21?'🐣':streak>=10?'🥚✨':'🥚';
+  document.getElementById('eggMessage').textContent=streak>=30?'Το αυγό σου εκκολάφθηκε! 30 ημέρες συνέπειας! 🏆':streak>=21?'Είναι σχεδόν έτοιμο! Συνέχισε για 30 μέρες.':'Χρειάζονται 30 ημέρες συνεχόμενης συνέπειας για να εκκολαφθεί. Τώρα: '+streak+'/30 ημέρες.';
   document.getElementById('heroLevel').textContent='🦸 Επίπεδο '+progress.level+' · '+progress.level_points+'/100 πόντοι μέχρι το επόμενο επίπεδο';
   document.getElementById('levelFill').style.width=progress.level_points+'%';
   const badges=document.getElementById('heroBadges');badges.replaceChildren();
