@@ -52,6 +52,13 @@ try{
    assert(artwork.hero>0&&artwork.background>0,role+' '+width+'px artwork blocked or missing: '+JSON.stringify(artwork));
    const labels=await page.locator('.nav button span:last-child').evaluateAll(items=>items.map(x=>Number.parseFloat(getComputedStyle(x).fontSize)));
    assert(labels.every(px=>px<=12),role+' navigation labels are too large: '+JSON.stringify(labels));
+   const heroLayout=await page.evaluate(()=>{
+    const stage=document.querySelector('.stage'),heading=document.querySelector('#heroHeading'),art=document.querySelector('#heroArt');
+    const a=heading.getBoundingClientRect(),b=art.getBoundingClientRect(),c=stage.getBoundingClientRect();
+    return {stage:c.height,headingTop:a.top,headingBottom:a.bottom,artBottom:b.bottom,headingInStage:a.bottom<=c.bottom+1}
+   });
+   assert(heroLayout.headingInStage,role+' hero headline escapes artwork card: '+JSON.stringify(heroLayout));
+
    assert.equal(errors.length,0,role+' '+width+'px errors '+errors.join('; '));
    await page.screenshot({path:'v2-layout-shots/'+role+'-'+width+'.png',fullPage:true});
    if(width===390)await page.screenshot({path:'v2-layout-shots/preview-'+role+'.jpg',type:'jpeg',quality:30});
