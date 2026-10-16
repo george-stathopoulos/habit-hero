@@ -49,7 +49,7 @@ export function parentPage() {
  <button id="save" type="submit">Προσθήκη παιδιού</button></form><p id="formStatus" role="status" class="subtle"></p></section>
  <section class="panel" id="pinPanel" hidden><h2>🔐 Ορισμός PIN παιδιού</h2><p class="subtle">Δημιούργησε ή άλλαξε τον προσωπικό τετραψήφιο κωδικό του παιδιού. Χρησιμοποιείται μετά τη σύνδεση της συσκευής του.</p>
  <label for="pinChild">Παιδί</label><select id="pinChild"></select>
-  <form id="pinForm"><label for="deviceChild">Επιλεγμένο παιδί</label><p class="subtle">Επίλεξε παιδί στην ενότητα «Συσκευές παιδιών» ή πάτησε «Ορισμός PIN» δίπλα στο προφίλ του.</p><label for="childPin">4-ψήφιος κωδικός παιδιού (PIN)</label>
+  <form id="pinForm"><label for="childPin">4-ψήφιος κωδικός παιδιού (PIN)</label>
  <input id="childPin" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="new-password" required placeholder="••••">
  <label for="confirmChildPin">Επιβεβαίωση PIN</label>
  <input id="confirmChildPin" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="new-password" required>
