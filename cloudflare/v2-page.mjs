@@ -197,6 +197,13 @@ export function v2Page(role='child'){
   $('missionList').replaceChildren();
   for(const child of familyChildren){const card=node('div',undefined,'mission');card.append(node('span','🦸','emoji'),node('strong',child.name));$('missionList').append(card)}
   $('profileInfo').replaceChildren(node('h2','Ο προσωπικός σου χώρος'),node('p','Άλλαξε εμφάνιση ανεξάρτητα από τα παιδιά.'));
+  const release=node('button','🔄 Έλεγχος τελευταίας έκδοσης','secondary');
+  const versionResult=node('p','','muted');release.onclick=async()=>{
+   release.disabled=true;versionResult.textContent='Ελέγχουμε το GitHub και το Cloudflare…';
+   try{const v=await api('/api/version');versionResult.textContent='Έκδοση: '+String(v.current).slice(0,8)+' · '+(v.check_available?(v.update_available?'Νεότερη έκδοση στο GitHub':'Η τελευταία έκδοση!'):'Δεν ήταν δυνατός ο έλεγχος');}
+   catch(error){versionResult.textContent=error.message}finally{release.disabled=false}
+  };
+  $('profileInfo').append(release,versionResult);
   $('rewardsList').classList.remove('reward-grid');$('rewardsList').replaceChildren();
   const approvalTitle=node('h2','✅ Εγκρίσεις');$('rewardsList').append(approvalTitle);
   try{
