@@ -9,7 +9,9 @@ new Function(js);
 for(const required of ['hh2-theme','mission-scene','heroChoices','messagesList','openChildBuilder','openHabitBuilder','parentGoals'])assert(js.includes(required)||css.includes(required),required+' must exist');
 assert(css.includes('env(safe-area-inset-bottom)'));
 assert(css.includes('prefers-reduced-motion'));
-for(const asset of ['v2-world-playful.svg','v2-world-adventure.svg','v2-world-minimal.svg','v2-world-youth.svg','v2-hero-boy.svg','v2-hero-girl.svg']){
+assert(js.includes('v2-hero-'),'App should construct theme-specific hero URLs');
+for(const gender of ['boy','girl'])for(const theme of ['playful','adventure','minimal','youth'])assert(existsSync(new URL('../app/v2-hero-'+gender+'-'+theme+'.svg',import.meta.url)),'Missing themed hero art: '+gender+'/'+theme);
+for(const asset of ['v2-world-playful.svg','v2-world-adventure.svg','v2-world-minimal.svg','v2-world-youth.svg']){
  assert(css.includes(asset)||js.includes(asset),'Missing reference to '+asset);
  assert(existsSync(new URL('../app/'+asset,import.meta.url)),'Missing asset: '+asset);
 }
