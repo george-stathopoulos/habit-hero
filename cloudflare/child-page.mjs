@@ -20,6 +20,9 @@ export function childPage(){
  <section id="activitiesPanel" hidden><h2>🌟 Οι δραστηριότητές μου</h2>
  <p class="muted">Πάτησε «Το έκανα!» όταν ολοκληρώσεις μια δραστηριότητα. Οι πόντοι προστίθενται μετά από έγκριση γονέα.</p>
  <ul id="activities"></ul><p id="feedback" role="status"></p></section>
+ <section id="rewardsPanel" hidden><h2>🎁 Τα έπαθλά μου</h2>
+ <p id="balance" class="muted"></p><ul id="rewards"></ul>
+ <p id="rewardMessage" role="status"></p></section>
  </main><script>
  const status=document.getElementById('status');
  async function refresh(){
@@ -38,6 +41,7 @@ export function childPage(){
   if(!res.ok){status.textContent='Οι δραστηριότητες δεν είναι διαθέσιμες αυτή τη στιγμή.';return}
   const data=await res.json();
   document.getElementById('activitiesPanel').hidden=false;
+  await refreshRewards();
   const list=document.getElementById('activities');list.replaceChildren();
   if(!data.activities.length){const li=document.createElement('li');li.textContent='Δεν υπάρχουν ακόμη δραστηριότητες.';list.append(li)}
   for(const item of data.activities){
@@ -61,6 +65,38 @@ export function childPage(){
     li.append(label);
    }
    list.append(li);
+  }
+ }
+ async function refreshRewards(){
+  const response=await fetch('/api/child/rewards',{credentials:'same-origin',cache:'no-store'});
+  if(!response.ok){document.getElementById('rewardMessage').textContent='Δεν είναι διαθέσιμα τα έπαθλα.';return}
+  const data=await response.json();
+  document.getElementById('rewardsPanel').hidden=false;
+  document.getElementById('balance').textContent='Διαθέσιμοι πόντοι: '+data.balance;
+  const list=document.getElementById('rewards');list.replaceChildren();
+  if(!data.rewards.length){
+    const item=document.createElement('li');item.textContent='Δεν υπάρχουν ακόμη έπαθλα.';list.append(item);
+  }
+  for(const reward of data.rewards){
+    const item=document.createElement('li'),label=document.createElement('span');
+    label.textContent=(reward.emoji||'🎁')+' '+reward.name+' · '+reward.points_cost+' πόντοι ';
+    item.append(label);
+    if(!reward.recurring&&reward.previously_requested){
+      const caption=document.createElement('small');caption.textContent='Έχει ήδη ζητηθεί';item.append(caption);
+    }else {
+      const btn=document.createElement('button');btn.textContent='Ζήτα το έπαθλο';
+      btn.addEventListener('click',async()=>{
+        btn.disabled=true;
+        try{
+          const r=await fetch('/api/child/rewards/request',{method:'POST',credentials:'same-origin',
+            headers:{'content-type':'application/json'},body:JSON.stringify({reward_id:reward.id})});
+          if(!r.ok)throw Error('Δεν στάλθηκε το αίτημα. Δοκίμασε ξανά.');
+          document.getElementById('rewardMessage').textContent='Το αίτημα στάλθηκε στον γονέα σου!';
+          await refreshRewards();
+        }catch(e){document.getElementById('rewardMessage').textContent=e.message;btn.disabled=false}
+      });item.append(btn);
+    }
+    list.append(item);
   }
  }
  document.getElementById('pairForm').addEventListener('submit',async ev=>{
