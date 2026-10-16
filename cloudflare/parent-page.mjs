@@ -12,6 +12,11 @@ export function parentPage() {
  input,select{width:100%;padding:12px;border:1px solid #d4ddea;border-radius:9px;font:inherit;margin:7px 0 15px}
  label{font-weight:600}ul{list-style:none;padding:0}li{padding:14px 0;border-bottom:1px solid #e9eef8}
  form{display:grid;gap:6px}.row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+ body[data-parent-theme="midnight"]{background:#1d2435;color:#e9efff}body[data-parent-theme="midnight"] .panel,body[data-parent-theme="midnight"] header{background:#2b354b;color:#f5f6ff}body[data-parent-theme="midnight"] .subtle{color:#cbd5e1}
+ body[data-parent-theme="sage"]{background:#eef5ef;color:#193c35}body[data-parent-theme="sage"] .panel{background:#fcfffb}
+ body[data-parent-theme="sand"]{background:#f8f3e9;color:#493d32}body[data-parent-theme="sand"] .panel{background:#fffdfa}
+ .parent-theme-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.parent-theme-grid button{min-height:70px;white-space:normal}.parent-theme-grid button[aria-pressed="true"]{outline:3px solid #f4bd50;outline-offset:2px}
+ .custom-habit-heading{display:grid;gap:5px;padding:14px;border-radius:16px;background:#f2efff;margin:15px 0;color:#423688}.custom-habit-heading span{font-size:13px}
  .goal-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,148px),1fr));gap:10px;margin:20px 0}
  .goal-choices button{background:#f3f2ff;color:#40377c;border:2px solid transparent;border-radius:17px;min-height:72px;padding:13px 10px;text-align:left;font-weight:750;font-size:14px;line-height:1.35}
  .goal-choices button[aria-pressed="true"]{background:#6253db;color:white;border-color:#a49aff;box-shadow:0 7px 20px #5b45b64a}
@@ -115,6 +120,10 @@ export function parentPage() {
    <button type="button" data-action-tab="rewards" data-action-section="rewardsPanel">🎁 Νέο έπαθλο</button>
   </div>
  </section>
+ <section class="panel" id="parentAppearance" data-tab="settings" hidden>
+ <h2>🎨 Εμφάνιση γονέα</h2><p class="subtle">Η δική σου εμφάνιση είναι ανεξάρτητη από τον κόσμο κάθε παιδιού.</p>
+ <div class="parent-theme-grid" id="parentThemeChoices"></div>
+ </section>
  <section class="panel" id="familySettingsPanel" data-tab="settings" hidden><h2>🕒 Ώρα οικογένειας</h2>
  <p class="subtle">Η ημέρα και οι εβδομαδιαίες συνήθειες ακολουθούν αυτή τη ζώνη ώρας.</p>
  <form id="timezoneForm"><label for="familyTimezone">Ζώνη ώρας (IANA)</label>
@@ -151,7 +160,7 @@ export function parentPage() {
  <p><a href="/habit-hero/child/" target="_blank" rel="noopener noreferrer">Άνοιγμα σελίδας παιδιού</a></p></div>
  <p class="subtle">Προσοχή: αν ο γονέας είναι ήδη συνδεδεμένος στον ίδιο browser, το παιδί θα μπορούσε να ανοίξει τις σελίδες γονέα. Χρησιμοποιήστε ξεχωριστή συσκευή ή προφίλ.</p>
  </section>
- <section class="panel" id="habitPanel" data-tab="habits" hidden><h2>✅ Συνήθειες</h2><p class="subtle">Αναθέστε δραστηριότητες στα παιδιά. Οι πόντοι θα ενεργοποιηθούν όταν υλοποιηθούν οι εγκρίσεις.</p>
+ <section class="panel" id="habitPanel" data-tab="habits" hidden><h2>🎯 Αποστολές & προσωπικές συνήθειες</h2><p class="subtle">Αναθέστε δραστηριότητες στα παιδιά. Οι πόντοι θα ενεργοποιηθούν όταν υλοποιηθούν οι εγκρίσεις.</p>
  <ul id="habits"></ul><p id="noHabits" class="subtle">Δεν υπάρχουν ακόμη συνήθειες.</p>
  <div id="habitTemplates" class="template-grid" aria-label="Έτοιμες συνήθειες">
  <button type="button" class="secondary" data-name="Βουρτσίζω τα δόντια μου" data-points="10" data-frequency="daily">🪥 Δόντια</button>
@@ -161,7 +170,7 @@ export function parentPage() {
  <button type="button" class="secondary" data-name="Βοηθάω σε μία δουλειά του σπιτιού" data-points="20" data-frequency="weekly">🏠 Βοήθεια</button>
  <button type="button" class="secondary" data-name="Κάνω φυσική δραστηριότητα" data-points="15" data-frequency="daily">🚴 Κίνηση</button>
  </div><p class="subtle">Επίλεξε μια ιδέα και προσαρμόσε όνομα, πόντους και συχνότητα πριν την αποθήκευση.</p>
- <form id="habitForm"><label for="habitName">Όνομα συνήθειας</label><input id="habitName" required maxlength="100" placeholder="π.χ. Βουρτσίζω τα δόντια μου">
+ <div class="custom-habit-heading"><strong>✍️ Φτιάξε τη δική σου αποστολή</strong><span>Προσαρμοσμένο όνομα, περιγραφή, οφέλη, πρόγραμμα, επαναλήψεις, διαλείμματα και πόντοι.</span></div><form id="habitForm"><label for="habitName">Όνομα συνήθειας</label><input id="habitName" required maxlength="100" placeholder="π.χ. Βουρτσίζω τα δόντια μου">
  <label for="habitChild">Παιδί</label><select id="habitChild" required></select>
  <label for="habitFrequency">Συχνότητα</label><select id="habitFrequency"><option value="daily">Καθημερινά</option><option value="weekly">Εβδομαδιαία</option><option value="monthly">Μηνιαία</option><option value="once">Μία φορά</option></select>
  <label for="habitCount">Πόσες φορές ανά περίοδο; (1–5)</label>
@@ -378,6 +387,19 @@ export function parentPage() {
   }catch(error){note.textContent=error.message}
   finally{button.disabled=false}
  });
+ const parentThemeOptions=[['daylight','☀️ Φωτεινό'],['midnight','🌙 Midnight Pro'],['sage','🌿 Sage'],['sand','🏜️ Sandstone']];
+ const themeArea=document.getElementById('parentThemeChoices');
+ function applyParentTheme(id){
+  if(!parentThemeOptions.some(p=>p[0]===id))id='daylight';
+  document.body.dataset.parentTheme=id;
+  for(const b of themeArea.querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.theme===id));
+  try{localStorage.setItem('habitHero:parentTheme',id)}catch{}
+ }
+ for(const [id,label] of parentThemeOptions){
+  const button=document.createElement('button');button.type='button';button.dataset.theme=id;button.textContent=label;
+  button.addEventListener('click',()=>applyParentTheme(id));themeArea.append(button);
+ }
+ try{applyParentTheme(localStorage.getItem('habitHero:parentTheme')||'daylight')}catch{applyParentTheme('daylight')}
  const status=document.getElementById('status'),greeting=document.getElementById('greeting');
  const list=document.getElementById('children'),empty=document.getElementById('empty');
  async function refresh() {
@@ -396,6 +418,7 @@ export function parentPage() {
    document.getElementById('nextStep').textContent=data.children.length?'Δημιούργησε μια νέα αποστολή ή έλεγξε τις προσπάθειες των παιδιών! 🌟':'Ξεκίνα δημιουργώντας το πρώτο προφίλ παιδιού! 🌈';
    document.getElementById('privacyPanel').hidden=false;
    document.getElementById('familySettingsPanel').hidden=false;
+   document.getElementById('parentAppearance').hidden=false;
    document.getElementById('releaseInfo').hidden=false;
    document.getElementById('familyTimezone').value=data.family.timezone||'UTC';
    list.replaceChildren();
