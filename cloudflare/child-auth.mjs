@@ -81,7 +81,7 @@ export async function authorizedChild(request,env){
  if(!env.DB||!token|| !/^[A-Za-z0-9_-]{32}$/.test(token))return null;
  try{
   return await env.DB.prepare(`SELECT s.id AS session_id,s.family_id,s.child_id,
-    c.display_name AS child_name,c.avatar_id,COALESCE(settings.timezone,'UTC') AS timezone
+    c.display_name AS child_name,c.avatar_id,(c.pin_hash IS NOT NULL) AS pin_enabled,COALESCE(settings.timezone,'UTC') AS timezone
    FROM auth_sessions s JOIN child_profiles c ON c.id=s.child_id AND c.family_id=s.family_id
    JOIN families f ON f.id=s.family_id
    LEFT JOIN family_settings settings ON settings.family_id=f.id
@@ -94,7 +94,7 @@ export async function authorizedChild(request,env){
 }
 export async function childMe(request,env){
  const actor=await authorizedChild(request,env);
- return actor?json({role:'child',name:actor.child_name,avatar_id:actor.avatar_id}):json({detail:'Not authenticated'},401);
+ return actor?json({role:'child',name:actor.child_name,avatar_id:actor.avatar_id,pin_enabled:!!actor.pin_enabled}):json({detail:'Not authenticated'},401);
 }
 export async function childActivities(request,env){
  const child=await authorizedChild(request,env);
