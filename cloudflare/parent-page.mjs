@@ -476,18 +476,9 @@ export function parentPage() {
   btn.disabled=true;
   try{
    const r=await fetch('/api/children',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},
-     body:JSON.stringify({name:document.getElementById('name').value,age_band:document.getElementById('age').value||null})});
+     body:JSON.stringify({name:document.getElementById('name').value,age_band:document.getElementById('age').value||null,pin:initialPin})});
    if(!r.ok)throw Error('Δεν αποθηκεύτηκε το προφίλ. Ελέγξτε τα στοιχεία.');
-   const created=await r.json(),initialPin=document.getElementById('initialChildPin').value;
-   if(initialPin){
-     const pinResult=await fetch('/api/children/pin',{method:'POST',credentials:'same-origin',
-      headers:{'content-type':'application/json'},body:JSON.stringify({child_id:created.id,pin:initialPin})});
-     if(!pinResult.ok){
-       note.textContent='Το προφίλ δημιουργήθηκε, αλλά το PIN δεν αποθηκεύτηκε. Ορίστε PIN από τις Συσκευές παιδιών.';
-       document.getElementById('initialChildPin').value='';
-       await refresh();return;
-     }
-   }
+   const created=await r.json();
    document.getElementById('form').reset();note.textContent='Το παιδί προστέθηκε!';await refresh();
   }catch(e){note.textContent=e.message}finally{btn.disabled=false}
  });
