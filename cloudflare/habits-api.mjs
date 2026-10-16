@@ -54,3 +54,49 @@ export async function createHabit(request,env){
   return respond({id,name,points,frequency,child_id:childId},201);
  }catch{return respond({detail:'Could not save habit'},503)}
 }
+
+/** Edit habit properties without rewriting historical submissions or points. */
+export async function updateHabit(request,env){
+ if(request.headers.get('origin')!==origin)return respond({detail:'Forbidden'},403);
+ if(!(request.headers.get('content-type')||'').toLowerCase().startsWith('application/json'))return respond({detail:'JSON required'},415);
+ const actor=await authorizedParent(request,env);
+ if(!actor)return respond({detail:'Not authenticated'},401);
+ let data;
+ try{const raw=await request.text();if(raw.length>2048)return respond({detail:'Request too large'},413);data=JSON.parse(raw)}
+ catch{return respond({detail:'Invalid JSON'},400)}
+ const id=data?.habit_id,name=typeof data?.name==='string'?data.name.trim():'',
+  points=data?.points,frequency=data?.frequency;
+ if(typeof id!=='string'||!/^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id)||
+    !name||name.length>100||/[\u0000-\u001f\u007f]/.test(name)||
+    !Number.isInteger(points)||points<1||points>1000||
+    !['daily','weekly','monthly','once'].includes(frequency))
+  return respond({detail:'Invalid habit details'},400);
+ try{
+  const result=await env.DB.prepare(`UPDATE habits SET name_el=?,points=?,frequency_type=?,updated_at=?
+    WHERE family_id=? AND id=? AND deleted_at IS NULL AND active=1`)
+   .bind(name,points,frequency,new Date().toISOString(),actor.family_id,id).run();
+  if(result.meta?.changes!==1)return respond({detail:'Habit not found'},404);
+  return respond({id,name,points,frequency});
+ }catch{return respond({detail:'Could not update habit'},503)}
+}
+/** Soft archive: historical submissions and immutable point-ledger entries remain intact. */
+export async function archiveHabit(request,env){
+ if(request.headers.get('origin')!==origin)return respond({detail:'Forbidden'},403);
+ if(!(request.headers.get('content-type')||'').toLowerCase().startsWith('application/json'))return respond({detail:'JSON required'},415);
+ const actor=await authorizedParent(request,env);
+ if(!actor)return respond({detail:'Not authenticated'},401);
+ let data;
+ try{const raw=await request.text();if(raw.length>512)return respond({detail:'Request too large'},413);data=JSON.parse(raw)}
+ catch{return respond({detail:'Invalid JSON'},400)}
+ const id=data?.habit_id;
+ if(typeof id!=='string'||!/^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id))
+  return respond({detail:'Invalid habit'},400);
+ try{
+  const now=new Date().toISOString();
+  const result=await env.DB.prepare(`UPDATE habits SET active=0,deleted_at=?,updated_at=?
+    WHERE family_id=? AND id=? AND active=1 AND deleted_at IS NULL`)
+    .bind(now,now,actor.family_id,id).run();
+  if(result.meta?.changes!==1)return respond({detail:'Habit not found or already archived'},404);
+  return respond({id,status:'archived'});
+ }catch{return respond({detail:'Could not archive habit'},503)}
+}
