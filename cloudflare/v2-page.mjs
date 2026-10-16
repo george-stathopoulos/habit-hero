@@ -29,6 +29,14 @@ export function v2Page(role='child'){
  @keyframes float{50%{transform:translateY(-13px)}}.progress{height:11px;background:#ffffff50;border-radius:99px;overflow:hidden;margin:15px 0 0}.fill{height:100%;width:0;background:linear-gradient(90deg,#88f1bb,#fada71);border-radius:99px;transition:width .6s}
  .heading{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:24px 0 12px}.heading h2{font-size:21px;margin:0}.muted{color:var(--muted);font-size:13px}.mission{width:100%;display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;text-align:left;gap:12px;margin:9px 0;background:var(--surface);color:var(--ink);padding:13px;border-radius:20px;border:1px solid #8882;min-height:79px}.mission .emoji{width:51px;height:51px;background:color-mix(in srgb,var(--accent),transparent 80%);border-radius:16px;display:grid;place-items:center;font-size:28px}.mission strong{display:block;overflow-wrap:anywhere}.mission small{display:block;margin-top:5px;color:var(--muted)}
  .pill{padding:7px 10px;border-radius:22px;background:color-mix(in srgb,var(--accent),transparent 80%);color:var(--ink);font-size:12px;font-weight:800}.primary{background:var(--accent);color:#132033;padding:15px 20px;border-radius:17px;font-weight:800;min-height:50px}.secondary{background:color-mix(in srgb,var(--accent),transparent 80%);color:var(--ink);padding:13px 16px;border-radius:16px}
+ .world-caption{position:absolute;top:17px;left:18px;display:inline-flex;align-items:center;gap:8px;color:white;background:#11193266;padding:8px 12px;border:1px solid #ffffff40;border-radius:99px;backdrop-filter:blur(8px);font-size:11px;font-weight:800;letter-spacing:1px}
+ .hero-art{z-index:1}.stage>div:not(.world-caption){z-index:2}.stage{box-shadow:0 22px 55px color-mix(in srgb,var(--glow),transparent 60%);border:1px solid #ffffff35}
+ .portrait-progress{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:18px}.portrait-progress strong{font-size:15px}
+ .egg{display:flex;align-items:center;gap:12px;border-radius:22px;background:color-mix(in srgb,var(--accent),transparent 88%);padding:15px;margin:16px 0;overflow:hidden}.egg .egg-icon{font-size:52px;animation:float 4s ease-in-out infinite}.egg h3{margin:0 0 5px}.egg p{margin:0;font-size:13px;color:var(--muted)}
+ .reward-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.reward-item{background:var(--surface);border-radius:23px;padding:20px 12px;text-align:center;border:1px solid #8882;min-width:0}.reward-item .big{font-size:54px;display:block;margin-bottom:14px}.reward-item strong{overflow-wrap:anywhere;display:block;min-height:45px}.reward-item p{color:var(--muted);margin:7px}
+ .mission-scene{min-height:185px;display:grid;place-items:center;margin:-10px -10px 20px;border-radius:23px;background:radial-gradient(circle at 50% 30%,#fff9,transparent 45%),linear-gradient(140deg,#9fa3ed,#7dc9ce);position:relative;overflow:hidden}.mission-scene img{height:170px;max-width:60%;object-fit:contain}.mission-scene .mission-symbol{font-size:72px;filter:drop-shadow(0 8px 12px #0004);position:absolute;right:17%;top:20px;animation:float 3s infinite}
+ .message{border:1px solid color-mix(in srgb,var(--accent),transparent 77%);display:flex;align-items:flex-start;gap:13px}.message-icon{width:47px;height:47px;flex:none;border-radius:14px;background:color-mix(in srgb,var(--accent),transparent 72%);display:grid;place-items:center;font-size:24px}
+ .celebrate{text-align:center;padding:26px 10px}.celebrate-icon{display:block;font-size:95px;animation:float 1.5s ease-in-out infinite}
  .nav{position:fixed;bottom:0;left:0;right:0;padding:10px 12px calc(env(safe-area-inset-bottom) + 10px);display:flex;justify-content:space-evenly;gap:6px;max-width:940px;margin:auto;background:color-mix(in srgb,var(--surface),transparent 5%);backdrop-filter:blur(18px);border-radius:22px 22px 0 0;z-index:20}.nav button{flex:1;color:var(--muted);background:transparent;padding:8px 1px;border-radius:14px;font-size:11px;min-width:0}.nav button span{display:block;font-size:21px;margin-bottom:4px}.nav button[aria-selected="true"]{color:var(--accent);background:color-mix(in srgb,var(--accent),transparent 89%)}
  .themes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.theme{border-radius:20px;padding:22px 10px;color:white;font-weight:800;min-height:85px}.theme[aria-pressed="true"]{outline:3px solid var(--accent);outline-offset:3px}.theme[data-value="adventure"]{background:linear-gradient(140deg,#1f214e,#6c437c)}.theme[data-value="playful"]{background:linear-gradient(140deg,#aa79e6,#8ad9cf)}.theme[data-value="minimal"]{background:linear-gradient(140deg,#8bb3a7,#647f7b)}.theme[data-value="youth"]{background:linear-gradient(140deg,#0a172a,#2c558b)}
  .dialog{position:fixed;inset:0;z-index:40;background:#050b23ba;display:grid;place-items:center;padding:16px}.sheet{background:var(--surface);color:var(--ink);padding:24px;border-radius:26px;width:min(100%,520px);max-height:88dvh;overflow:auto}.sheet h2{margin:0 0 14px}.sheet p{line-height:1.65}.sheet .actions{display:flex;flex-wrap:wrap;gap:9px}.message{padding:15px;border-radius:18px;background:color-mix(in srgb,var(--accent),transparent 88%);margin:10px 0}
@@ -38,9 +46,9 @@ export function v2Page(role='child'){
  @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
  </style></head><body data-theme="minimal"><main class="shell">
  <header class="top"><div><div class="eyebrow">HABIT HERO · V2</div><h1 id="greeting">Η περιπέτειά σου</h1></div><div class="controls"><button id="bell" class="iconbtn" aria-label="Μηνύματα">🔔<span id="bellCount" class="count" hidden></span></button><button id="switchUser" class="iconbtn" aria-label="Αλλαγή χρήστη">⇄</button></div></header>
- <section id="homeTab"><div class="stage"><img id="heroArt" class="hero-art" src="/habit-hero/app/v2-hero-boy.svg" alt="Ο ήρωάς μου"><div style="position:relative;max-width:66%"><div class="eyebrow">TODAY'S ADVENTURE</div><h2 id="heroHeading">Κάθε μικρή νίκη μετράει.</h2><p id="heroSubtitle">Ο κόσμος σου μεγαλώνει μαζί σου.</p></div><div class="progress"><div id="progressFill" class="fill"></div></div><div id="progressLabel" style="margin-top:10px;font-weight:700">—</div></div><div class="heading"><h2>Οι αποστολές μου</h2><span id="missionTotal" class="muted"></span></div><div id="missionList"></div></section>
+ <section id="homeTab"><div class="stage"><div id="worldCaption" class="world-caption">✦ YOUR WORLD</div><img id="heroArt" class="hero-art" src="/habit-hero/app/v2-hero-boy.svg" alt="Ο ήρωάς μου"><div style="position:relative;max-width:66%"><div class="eyebrow">TODAY'S ADVENTURE</div><h2 id="heroHeading">Κάθε μικρή νίκη μετράει.</h2><p id="heroSubtitle">Ο κόσμος σου μεγαλώνει μαζί σου.</p></div><div class="progress"><div id="progressFill" class="fill"></div></div><div id="progressLabel" style="margin-top:10px;font-weight:700">—</div></div><div class="heading"><h2>Οι αποστολές μου</h2><span id="missionTotal" class="muted"></span></div><div id="missionList"></div><div class="egg"><span class="egg-icon" id="eggArt">🥚</span><div><h3 id="eggTitle">Το μυστηριώδες αυγό</h3><p id="eggProgress">Ο σύντροφός σου μεγαλώνει με την προσπάθειά σου.</p></div></div></section>
  <section id="messagesTab" hidden><h2>🔔 Μηνύματα</h2><div id="messagesList"></div></section>
- <section id="rewardsTab" hidden><h2>🎁 Έπαθλα</h2><div id="rewardsList"></div></section>
+ <section id="rewardsTab" hidden><h2>🎁 Θησαυροφυλάκιο</h2><p id="balanceTitle" class="notice">⭐ 0 διαθέσιμοι πόντοι</p><div id="rewardsList" class="reward-grid"></div></section>
  <section id="profileTab" hidden><div class="panel"><h2>🦸 Διάλεξε ήρωα</h2><p class="muted">Όλοι μπορούν να επιλέξουν τον ήρωα που τους εκφράζει.</p><div id="heroChoices" class="hero-select"></div></div><div class="panel"><h2>🎨 Διάλεξε τον κόσμο σου</h2><div id="themeChoices" class="themes"></div></div><div id="profileInfo" class="panel"></div></section>
  <nav class="nav" id="tabs" aria-label="Πλοήγηση"></nav><p id="error" role="status" class="muted"></p></main><div id="modal" class="dialog" hidden><div class="sheet"><button id="closeModal" class="secondary" style="float:right">✕</button><div id="modalBody"></div></div></div>
  <script>
@@ -51,6 +59,7 @@ export function v2Page(role='child'){
  const themeList=[['playful','🌈 Playful'],['adventure','⚔️ Hero Adventure'],['minimal','✦ Minimal'],['youth','⚡ Pro Youth']];
  const themeKey=()=> 'hh2-theme-'+ROLE+'-'+(actor?.id||'default');
  function theme(v){if(!themeList.some(x=>x[0]===v))v='minimal';document.body.dataset.theme=v;
+  $('worldCaption').textContent=({playful:'🌈 DREAM GARDEN',adventure:'⚔️ SKY KINGDOM',minimal:'✦ CALM STUDIO',youth:'⚡ NEON ACADEMY'})[v];
   for(const b of document.querySelectorAll('.theme'))b.setAttribute('aria-pressed',String(b.dataset.value===v));
   try{localStorage.setItem(themeKey(),v)}catch{}}
  const heroTypes=[['boy','🦸 Ήρωας'],['girl','🦸‍♀️ Ηρωίδα']];
@@ -81,12 +90,37 @@ export function v2Page(role='child'){
   if(total&&completed===total){list.append(node('div','🏆 Όλα έτοιμα! Απόλαυσε τον ελεύθερο χρόνο σου.','notice'));return}
   if(!total){list.append(node('div','✨ Οι επόμενες αποστολές σου θα εμφανιστούν εδώ.','notice'));return}
   for(const m of activities){const b=node('button',undefined,'mission');b.append(node('span',m.emoji||'⭐','emoji'));const t=node('div');t.append(node('strong',m.habit_name),node('small',(m.slot_total>1?m.slot_index+'/'+m.slot_total+' · ':'')+(m.submission_status==='pending'?'Σε έγκριση':m.submission_status==='approved'?'Ολοκληρώθηκε':m.points+' πόντοι')));b.append(t,node('span',m.submission_status?'✓':'›','pill'));b.onclick=()=>detail(m);list.append(b)}}
- function detail(m){const wrap=node('div');const info=node('p',m.description_el||'Αποστολή: '+m.habit_name);const why=node('div',m.why_important_el?'💡 Γιατί έχει σημασία: '+m.why_important_el:'Κάθε προσπάθεια σε βοηθά να αναπτυχθείς.','notice');wrap.append(info,why);
+ function detail(m){
+  const wrap=node('div');
+  const scene=node('div',undefined,'mission-scene');
+  const art=node('img');art.src=$('heroArt').src;art.alt='';
+  scene.append(art,node('span',m.emoji||'⭐','mission-symbol'));wrap.append(scene);
+  const kicker=node('div','✨ ΑΠΟΣΤΟΛΗ '+(m.slot_index||1)+' / '+(m.slot_total||1),'eyebrow');wrap.append(kicker);
+  const info=node('p',m.description_el||'Αποστολή: '+m.habit_name);
+  const why=node('div',m.why_important_el?'💡 Γιατί αξίζει: '+m.why_important_el:'💜 Κάθε προσπάθεια χτίζει τη δύναμή σου.','notice');
+  wrap.append(info,why,node('p','🌟 '+m.points+' πόντοι μετά την έγκριση γονέα','sticker'));
   const actions=node('div',undefined,'actions');
-  const help=node('button','🙋 Χρειάζομαι βοήθεια','secondary');help.onclick=async()=>{help.disabled=true;try{const r=await fetch('/api/child/help',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({habit_id:m.habit_id})});if(!r.ok&&r.status!==409)throw Error();help.textContent='💌 Στάλθηκε στο γονέα'}catch{help.disabled=false;help.textContent='Δοκίμασε ξανά'}};
-  const done=node('button',m.submission_status?'✓ '+m.submission_status:'Το έκανα!','primary');done.disabled=!!m.submission_status;done.onclick=async()=>{done.disabled=true;try{const r=await fetch('/api/child/activities',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({habit_id:m.habit_id,slot_index:m.slot_index||1})});if(!r.ok)throw Error((await r.json()).detail||'Αποτυχία');$('modal').hidden=true;await loadChild();showModal('🌟 Φοβερή προσπάθεια!',node('p','Η αποστολή σου στάλθηκε για έγκριση!'))}catch(e){done.disabled=false;wrap.append(node('p',e.message))}};
-  actions.append(help,done);wrap.append(actions);showModal(m.habit_name,wrap)}
- function renderMessages(){const list=$('messagesList');list.replaceChildren();if(!messages.length){list.append(node('div','💌 Τα μηνύματά σου θα εμφανίζονται εδώ.','panel'));return}for(const m of messages){const card=node('div',undefined,'panel');card.append(node('strong','💜 Μήνυμα από γονέα'),node('p',m.parent_message));list.append(card)}}
+  const help=node('button','🙋 Χρειάζομαι βοήθεια','secondary');help.onclick=async()=>{help.disabled=true;try{
+   const r=await fetch('/api/child/help',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({habit_id:m.habit_id})});
+   if(!r.ok&&r.status!==409)throw Error();help.textContent='💌 Στάλθηκε στον γονέα';
+  }catch{help.disabled=false;help.textContent='Δοκίμασε ξανά'}};
+  const done=node('button',m.submission_status?'✓ '+m.submission_status:'✓ Το κατάφερα!','primary');
+  done.disabled=!!m.submission_status;done.onclick=async()=>{done.disabled=true;try{
+   const r=await fetch('/api/child/activities',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({habit_id:m.habit_id,slot_index:m.slot_index||1})});
+   if(!r.ok)throw Error((await r.json()).detail||'Αποτυχία');
+   $('modal').hidden=true;await loadChild();
+   const finish=node('div',undefined,'celebrate');finish.append(node('span','🌟','celebrate-icon'),node('h3','Η προσπάθειά σου μετράει!'),node('p','Η αποστολή στάλθηκε στον γονέα για έγκριση. Πάμε για την επόμενη!'));
+   const close=node('button','Συνέχεια στην περιπέτεια','primary');close.onclick=()=>{$('modal').hidden=true};finish.append(close);
+   showModal('Αποστολή ολοκληρώθηκε!',finish);
+  }catch(e){done.disabled=false;wrap.append(node('p',e.message))}};
+  actions.append(help,done);wrap.append(actions);showModal(m.habit_name,wrap)
+ }
+ function renderMessages(){
+  const list=$('messagesList');list.replaceChildren();
+  if(!messages.length){list.append(node('div','💌 Δεν έχεις νέα μηνύματα. Όταν οι γονείς σου απαντήσουν, θα τα δεις εδώ.','panel'));return}
+  for(const m of messages){const card=node('article',undefined,'message');card.append(node('span','💌','message-icon'));
+   const content=node('div');content.append(node('strong',m.status==='try_again'?'💪 Μπορείς να το κάνεις!':'💜 Μήνυμα από γονέα'),node('p',m.parent_message));card.append(content);list.append(card)}
+ }
  async function loadChild(){
   const me=await fetch('/api/child/me',{credentials:'same-origin',cache:'no-store'});if(!me.ok){$('error').textContent='Χρειάζεται σύνδεση παιδιού από την οικογενειακή αρχική.';return}
   actor=await me.json();$('greeting').textContent='Γεια σου, '+actor.name+'!';try{pickHero(localStorage.getItem(heroKey())||'boy')}catch{pickHero('boy')}
@@ -95,9 +129,24 @@ export function v2Page(role='child'){
   if(a.ok)activities=(await a.json()).activities||[];
   if(h.ok)messages=((await h.json()).requests||[]).filter(x=>x.parent_message);
   if(r.ok){const v=await r.json();rewards=v.rewards||[];balance=v.balance||0}
-  renderMissions();renderMessages();updateBell();$('rewardsList').replaceChildren(node('div','⭐ '+balance+' διαθέσιμοι πόντοι','panel'));
-  for(const reward of rewards){const card=node('div',undefined,'panel');card.append(node('h3',(reward.emoji||'🎁')+' '+reward.name),node('p',reward.points_cost+' πόντοι'));$('rewardsList').append(card)}
+  renderMissions();renderMessages();updateBell();$('balanceTitle').textContent='⭐ '+balance+' διαθέσιμοι πόντοι';$('rewardsList').replaceChildren();
+  for(const reward of rewards){
+   const card=node('div',undefined,'reward-item');card.append(node('span',reward.emoji||'🎁','big'),node('strong',reward.name),node('p','⭐ '+reward.points_cost+' πόντοι'));
+   const redeem=node('button',balance>=reward.points_cost?'Ξεκλείδωμα':'🔒 '+Math.max(0,reward.points_cost-balance)+' ακόμα','primary');redeem.disabled=balance<reward.points_cost;
+   redeem.onclick=async()=>{redeem.disabled=true;try{const response=await fetch('/api/child/rewards/request',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({reward_id:reward.id})});
+    if(!response.ok)throw Error('Δεν ήταν δυνατό να ζητήσεις το έπαθλο.');
+    showModal('🎁 Αίτημα επάθλου',node('p','Ο γονέας θα εξετάσει το αίτημά σου!'));await loadChild();
+   }catch(e){redeem.disabled=false;showModal('Δοκίμασε ξανά',node('p',e.message))}};card.append(redeem);$('rewardsList').append(card)}
+  if(!rewards.length)$('rewardsList').append(node('p','Οι θησαυροί σου θα εμφανιστούν εδώ!'));
   $('profileInfo').replaceChildren(node('h2','Ο δικός σου κόσμος'),node('p','Μικρά βήματα, μεγάλη περιπέτεια.'));
+  try{const progressResponse=await fetch('/api/child/progress',{credentials:'same-origin',cache:'no-store'});
+   if(progressResponse.ok){const progress=(await progressResponse.json()).progress;
+    if(progress){const streak=Number(progress.current_streak_days)||0;
+     $('eggArt').textContent=streak>=30?'🐲':streak>=21?'🐣':streak>=10?'🥚✨':'🥚';
+     $('eggProgress').textContent=streak+' / 30 ημέρες συνέπειας για να εκκολαφθεί!';
+     $('profileInfo').append(node('div','🏅 Επίπεδο '+progress.level+'  ·  🔥 '+streak+' ημέρες σερί','notice'));
+    }}
+  }catch{}
  }
  async function loadParent(){
   const r=await fetch('/api/family/overview',{credentials:'same-origin'});if(!r.ok){$('error').textContent='Ξεκλείδωσε πρώτα το προφίλ γονέα.';return}
