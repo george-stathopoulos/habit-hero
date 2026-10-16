@@ -22,32 +22,60 @@ export function parentPage() {
  section.panel{scroll-margin-top:90px}
  @media(max-width:600px){body{padding:12px}main{margin:8px auto}header,.panel{padding:19px;border-radius:17px}
   h1{font-size:27px}h2{font-size:20px}button{padding:11px 13px}nav.quick-nav{margin:0 0 12px}}
+ /* Habit Hero: mobile-first application shell, not a scrolling admin document */
+ :root{--navy:#172c56;--indigo:#6559e8;--peach:#ffcf83}
+ body{background:linear-gradient(160deg,#f6f4ff 0%,#eef6ff 50%,#fff9ed 100%);color:var(--navy)}
+ main{max-width:980px;padding-bottom:106px}
+ header{background:linear-gradient(125deg,#292f77,#7160ee);color:#fff;border-radius:26px;padding:26px}
+ header .subtle{color:#e1dcff}header button.secondary{background:#ffffff24;color:white}
+ .panel{border:1px solid #eeeefe;box-shadow:0 12px 30px #34378010;border-radius:24px}
+ h2{letter-spacing:-.6px}
+ button{background:var(--indigo);font-weight:700;transition:transform .12s ease}
+ button:active{transform:scale(.97)}
+ button.secondary{background:#ebeaff;color:#423da1}
+ input,select{background:#fafbff;border:1px solid #dcdcf3;border-radius:13px}
+ [data-tab]:not([data-active="true"]){display:none!important}
+ nav.quick-nav{display:none}
+ .app-tabs{position:fixed;bottom:0;left:0;right:0;z-index:50;background:#fffefafa;
+  display:flex;justify-content:space-around;gap:2px;padding:9px max(8px,env(safe-area-inset-right)) calc(9px + env(safe-area-inset-bottom));
+  box-shadow:0 -8px 35px #24295b19;border-top:1px solid #eceaf7}
+ .app-tabs button{flex:1;min-width:0;background:transparent;color:#66728a;border-radius:16px;
+  padding:7px 3px;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:3px}
+ .app-tabs button span:first-child{font-size:23px}
+ .app-tabs button[aria-selected="true"]{background:#eeedff;color:#5448d1}
+ .app-heading{padding:8px 5px 14px;font-size:23px;font-weight:800;letter-spacing:-.7px}
+ .tab-intro{margin:0 5px 15px;color:#687a99}
+ @media(min-width:800px){.app-tabs{left:50%;width:min(680px,94%);transform:translateX(-50%);border-radius:24px 24px 0 0}
+  main{padding-bottom:120px}.app-tabs button{font-size:14px}.app-tabs button span:first-child{font-size:26px}}
+ @media(max-width:600px){body{padding:12px}main{margin:3px auto}header,.panel{padding:20px;border-radius:23px}}
  </style></head><body><main><header><div><h1>🏆 Habit Hero</h1><div class="subtle">Οικογενειακός πίνακας</div></div><button id="logout" class="secondary">Αποσύνδεση</button></header>
  <nav class="quick-nav" aria-label="Γρήγορη πλοήγηση">
  <a href="#family">👨‍👩‍👧 Παιδιά</a><a href="#pinPanel">🔐 PIN παιδιού</a><a href="#habitPanel">🎯 Συνήθειες</a>
  <a href="#approvalsPanel">✅ Εγκρίσεις</a><a href="#rewardsPanel">🎁 Έπαθλα</a>
  <a href="#redemptionsPanel">📩 Αιτήματα</a><a href="#progressPanel">📈 Πρόοδος</a>
  <a href="#privacyPanel">🔒 Δεδομένα</a></nav>
+ <div class="app-heading" id="tabTitle">Η οικογένειά μου</div>
+ <p class="tab-intro" id="tabDescription">Το μικρό σου κέντρο για μεγάλες νίκες ✨</p>
  <section class="panel"><h2 id="greeting">Φόρτωση...</h2><p id="status" role="status" class="subtle">Έλεγχος σύνδεσης...</p>
  <div class="row"><a href="#approvalsPanel" id="pendingApprovalSummary">✅ Εγκρίσεις: —</a>
  <a href="#redemptionsPanel" id="pendingRedemptionSummary">🎁 Αιτήματα: —</a></div></section>
- <section class="panel" id="familySettingsPanel" hidden><h2>🕒 Ώρα οικογένειας</h2>
+ <section class="panel" id="familySettingsPanel" data-tab="settings" hidden><h2>🕒 Ώρα οικογένειας</h2>
  <p class="subtle">Η ημέρα και οι εβδομαδιαίες συνήθειες ακολουθούν αυτή τη ζώνη ώρας.</p>
  <form id="timezoneForm"><label for="familyTimezone">Ζώνη ώρας (IANA)</label>
  <input id="familyTimezone" required maxlength="80" placeholder="Europe/Athens">
  <button type="button" id="detectTimezone" class="secondary">Χρήση ζώνης αυτής της συσκευής</button>
  <button id="saveTimezone" type="submit">Αποθήκευση ζώνης ώρας</button></form>
  <p id="timezoneStatus" role="status" class="subtle"></p></section>
- <section class="panel" id="family" hidden><h2>👨‍👩‍👧‍👦 Τα παιδιά μου</h2><p class="subtle">Δημιουργήστε το προφίλ κάθε παιδιού. Δεν απαιτείται Google λογαριασμός για τα παιδιά.</p>
+ <section class="panel" id="family" data-tab="home" hidden><h2>👨‍👩‍👧‍👦 Τα παιδιά μου</h2><p class="subtle">Δημιουργήστε το προφίλ κάθε παιδιού. Δεν απαιτείται Google λογαριασμός για τα παιδιά.</p>
  <ul id="children"></ul><p id="empty" class="subtle">Δεν υπάρχουν ακόμη προφίλ παιδιών.</p></section>
- <section class="panel" id="create" hidden><h2>➕ Προσθήκη παιδιού</h2><form id="form"><label for="name">Όνομα ή ψευδώνυμο</label>
+ <section class="panel" id="create" data-tab="home" hidden><h2>➕ Προσθήκη παιδιού</h2><form id="form"><label for="name">Όνομα ή ψευδώνυμο</label>
  <input id="name" maxlength="80" autocomplete="off" required placeholder="π.χ. Αλέξης">
- <label for="initialChildPin">PIN παιδιού (προαιρετικό, 4 ψηφία)</label>
- <input id="initialChildPin" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="new-password" placeholder="π.χ. 2468">
- <label for="initialChildPinConfirm">Επιβεβαίωση PIN (προαιρετικό)</label><input id="initialChildPinConfirm" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="new-password">
+ <label for="initialChildPin">PIN παιδιού (4 ψηφία)</label>
+ <input id="initialChildPin" required type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="new-password" placeholder="π.χ. 2468">
+ <label for="initialChildPinConfirm">Επιβεβαίωση PIN</label><input id="initialChildPinConfirm" required type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="new-password">
  <label for="age">Ηλικιακή ομάδα (προαιρετική)</label><select id="age"><option value="">Δεν θέλω να δηλώσω</option><option value="6-8">6–8</option><option value="9-11">9–11</option><option value="12-14">12–14</option></select>
  <button id="save" type="submit">Προσθήκη παιδιού</button></form><p id="formStatus" role="status" class="subtle"></p></section>
- <section class="panel" id="pinPanel" hidden><h2>🔐 Ορισμός PIN παιδιού</h2><p class="subtle">Δημιούργησε ή άλλαξε τον προσωπικό τετραψήφιο κωδικό του παιδιού. Χρησιμοποιείται μετά τη σύνδεση της συσκευής του.</p>
+ <section class="panel" id="pinPanel" data-tab="home" hidden><h2>🔐 Ορισμός PIN παιδιού</h2><p class="subtle">Δημιούργησε ή άλλαξε τον προσωπικό τετραψήφιο κωδικό του παιδιού. Χρησιμοποιείται μετά τη σύνδεση της συσκευής του.</p>
  <label for="pinChild">Παιδί</label><select id="pinChild"></select>
   <form id="pinForm"><label for="childPin">4-ψήφιος κωδικός παιδιού (PIN)</label>
  <input id="childPin" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="new-password" required placeholder="••••">
@@ -56,7 +84,7 @@ export function parentPage() {
  <button id="saveChildPin" type="submit">Ορισμός / επαναφορά PIN</button></form>
  <p id="pinStatus" role="status" class="subtle"></p>
 </section>
- <section class="panel" id="devicesPanel" hidden><h2>📱 Συσκευές παιδιών</h2>
+ <section class="panel" id="devicesPanel" data-tab="home" hidden><h2>📱 Συσκευές παιδιών</h2>
  <p class="subtle">Ενεργοποιήστε την ανεξάρτητη πρόσβαση του παιδιού από άλλη συσκευή ή ξεχωριστό προφίλ browser, χωρίς να δώσετε πρόσβαση στον λογαριασμό γονέα.</p>
  <label for="deviceChild">Παιδί</label><select id="deviceChild"></select>
  <button id="createPair">Δημιουργία κωδικού σύνδεσης (10 λεπτά)</button>
@@ -67,7 +95,7 @@ export function parentPage() {
  <p><a href="/habit-hero/child/" target="_blank" rel="noopener noreferrer">Άνοιγμα σελίδας παιδιού</a></p></div>
  <p class="subtle">Προσοχή: αν ο γονέας είναι ήδη συνδεδεμένος στον ίδιο browser, το παιδί θα μπορούσε να ανοίξει τις σελίδες γονέα. Χρησιμοποιήστε ξεχωριστή συσκευή ή προφίλ.</p>
  </section>
- <section class="panel" id="habitPanel" hidden><h2>✅ Συνήθειες</h2><p class="subtle">Αναθέστε δραστηριότητες στα παιδιά. Οι πόντοι θα ενεργοποιηθούν όταν υλοποιηθούν οι εγκρίσεις.</p>
+ <section class="panel" id="habitPanel" data-tab="habits" hidden><h2>✅ Συνήθειες</h2><p class="subtle">Αναθέστε δραστηριότητες στα παιδιά. Οι πόντοι θα ενεργοποιηθούν όταν υλοποιηθούν οι εγκρίσεις.</p>
  <ul id="habits"></ul><p id="noHabits" class="subtle">Δεν υπάρχουν ακόμη συνήθειες.</p>
  <div id="habitTemplates" class="template-grid" aria-label="Έτοιμες συνήθειες">
  <button type="button" class="secondary" data-name="Βουρτσίζω τα δόντια μου" data-points="10" data-frequency="daily">🪥 Δόντια</button>
@@ -82,22 +110,22 @@ export function parentPage() {
  <label for="habitFrequency">Συχνότητα</label><select id="habitFrequency"><option value="daily">Καθημερινά</option><option value="weekly">Εβδομαδιαία</option><option value="monthly">Μηνιαία</option><option value="once">Μία φορά</option></select>
  <label for="habitPoints">Πόντοι</label><input id="habitPoints" type="number" min="1" max="1000" value="10" required>
  <button id="habitSave" type="submit">Δημιουργία και ανάθεση</button></form><p id="habitStatus" role="status" class="subtle"></p></section>
- <section class="panel" id="activitiesPanel" hidden>
+ <section class="panel" id="activitiesPanel" data-tab="habits" hidden>
  <h2>🌟 Ολοκλήρωση δραστηριοτήτων</h2>
  <p class="subtle">Οι δραστηριότητες μπορούν να ολοκληρωθούν από τη συσκευή του παιδιού ή με επίβλεψη γονέα. Χρειάζεται έγκριση για να αποδοθούν πόντοι.</p>
  <ul id="activities"></ul><p id="activityNote" class="subtle" role="status"></p></section>
- <section class="panel" id="approvalsPanel" hidden>
+ <section class="panel" id="approvalsPanel" data-tab="approvals" hidden>
  <h2>🛡️ Εγκρίσεις γονέα</h2><ul id="approvals"></ul>
  <p id="noApprovals" class="subtle">Δεν υπάρχουν εκκρεμείς εγκρίσεις.</p>
  <p id="approvalNote" role="status" class="subtle"></p></section>
- <section class="panel" id="pointsPanel" hidden><h2>🏆 Πόντοι παιδιών</h2>
+ <section class="panel" id="pointsPanel" data-tab="approvals" hidden><h2>🏆 Πόντοι παιδιών</h2>
  <ul id="balances"></ul><p class="subtle">Οι πόντοι των συνηθειών προστίθενται μετά από έγκριση γονέα.</p>
  <form id="pointsForm"><label for="pointsChild">Παιδί</label><select id="pointsChild" required></select>
  <label for="pointsDelta">Προσθήκη (+) ή αφαίρεση (-) πόντων</label>
  <input id="pointsDelta" type="number" required step="1" min="-1000" max="1000" placeholder="+10 ή -5">
  <button type="submit" id="pointsSave">Καταχώρηση διόρθωσης</button></form>
  <p id="pointsStatus" role="status" class="subtle"></p></section>
- <section class="panel" id="rewardsPanel" hidden>
+ <section class="panel" id="rewardsPanel" data-tab="rewards" hidden>
   <h2>🎁 Έπαθλα & ανταμοιβές</h2>
   <p class="subtle">Δημιουργήστε έπαθλα για τα παιδιά. Η εξαργύρωση αφαιρεί πόντους μόνο όταν την εγκρίνετε.</p>
   <ul id="rewardsList"></ul><p id="noRewards" class="subtle">Δεν υπάρχουν ακόμη έπαθλα.</p>
@@ -119,19 +147,47 @@ export function parentPage() {
     <button id="rewardSave" type="submit">Προσθήκη επάθλου</button>
   </form><p id="rewardStatus" role="status" class="subtle"></p>
  </section>
- <section class="panel" id="redemptionsPanel" hidden>
+ <section class="panel" id="redemptionsPanel" data-tab="rewards" hidden>
   <h2>📩 Αιτήματα εξαργύρωσης</h2><ul id="redemptionsList"></ul>
   <p id="noRedemptions" class="subtle">Δεν υπάρχουν ακόμη αιτήματα.</p>
   <p id="redemptionStatus" role="status" class="subtle"></p>
  </section>
- <section class="panel" id="progressPanel" hidden><h2>📈 Η πρόοδός μας</h2>
+ <section class="panel" id="progressPanel" data-tab="progress" hidden><h2>📈 Η πρόοδός μας</h2>
  <p class="subtle">Οι τελευταίες 30 ημέρες · οι συνεχόμενες ημέρες βασίζονται σε εγκεκριμένες δραστηριότητες.</p>
  <ul id="progressList"></ul><p id="progressMessage" role="status" class="subtle"></p></section>
- <section class="panel" id="privacyPanel" hidden><h2>🔒 Τα δεδομένα της οικογένειας</h2>
+ <section class="panel" id="privacyPanel" data-tab="settings" hidden><h2>🔒 Τα δεδομένα της οικογένειας</h2>
  <p class="subtle">Μπορείτε να κατεβάσετε τα προφίλ, τις συνήθειες, τις εγκρίσεις, τους πόντους και τα έπαθλα της οικογένειάς σας ως αρχείο JSON. Το αρχείο περιέχει προσωπικά δεδομένα και πρέπει να φυλάσσεται με ασφάλεια.</p>
  <a href="/api/family/export" download="habit-hero-family-export.json">⬇️ Εξαγωγή οικογενειακών δεδομένων</a></section>
  <section class="panel"><h2>🚧 Επόμενες λειτουργίες</h2><p class="subtle">Υπενθυμίσεις, επιπλέον στατιστικά και ο τελικός σχεδιασμός της εφαρμογής βρίσκονται υπό ανάπτυξη.</p></section>
+ <nav class="app-tabs" aria-label="Κύρια πλοήγηση" role="tablist">
+ <button type="button" role="tab" aria-selected="true" data-open-tab="home"><span>🏠</span><span>Αρχική</span></button>
+ <button type="button" role="tab" aria-selected="false" data-open-tab="habits"><span>🎯</span><span>Συνήθειες</span></button>
+ <button type="button" role="tab" aria-selected="false" data-open-tab="approvals"><span>✅</span><span>Εγκρίσεις</span></button>
+ <button type="button" role="tab" aria-selected="false" data-open-tab="rewards"><span>🎁</span><span>Έπαθλα</span></button>
+ <button type="button" role="tab" aria-selected="false" data-open-tab="progress"><span>📊</span><span>Πρόοδος</span></button>
+ <button type="button" role="tab" aria-selected="false" data-open-tab="settings"><span>⚙️</span><span>Ρυθμίσεις</span></button>
+ </nav>
  </main><script>
+ const tabMeta={home:['Η οικογένειά μου','Μικρές συνήθειες, μεγάλες νίκες ✨'],
+ habits:['Οι συνήθειές μας','Δημιούργησε αποστολές και δώσε κίνητρο στα παιδιά 🎯'],
+ approvals:['Εγκρίσεις & πόντοι','Γιόρτασε τις προσπάθειες και επιβράβευσε δίκαια ⭐'],
+ rewards:['Ο κόσμος των επάθλων','Μικρές ανταμοιβές για μεγάλες προσπάθειες 🎁'],
+ progress:['Η πρόοδός μας','Δες πώς μεγαλώνουν οι μικροί σου ήρωες 📈'],
+ settings:['Ρυθμίσεις','Οι προσωπικές επιλογές και τα δεδομένα της οικογένειας ⚙️']};
+ function openTab(name,section){
+  if(!tabMeta[name])name='home';
+  for(const el of document.querySelectorAll('[data-tab]'))el.dataset.active=String(el.dataset.tab===name);
+  for(const btn of document.querySelectorAll('[data-open-tab]'))btn.setAttribute('aria-selected',String(btn.dataset.openTab===name));
+  document.getElementById('tabTitle').textContent=tabMeta[name][0];
+  document.getElementById('tabDescription').textContent=tabMeta[name][1];
+  if(location.hash!=='#'+name)history.replaceState(null,'','#'+name);
+  if(section)requestAnimationFrame(()=>document.getElementById(section)?.scrollIntoView({behavior:'smooth',block:'start'}));
+  else window.scrollTo({top:0,behavior:'instant'});
+ }
+ document.querySelector('.app-tabs').addEventListener('click',event=>{
+   const btn=event.target.closest('[data-open-tab]');if(btn)openTab(btn.dataset.openTab);
+ });
+ openTab(tabMeta[location.hash.slice(1)]?location.hash.slice(1):'home');
  const status=document.getElementById('status'),greeting=document.getElementById('greeting');
  const list=document.getElementById('children'),empty=document.getElementById('empty');
  async function refresh() {
@@ -173,7 +229,7 @@ export function parentPage() {
     pinButton.textContent=child.pin_configured?'🔐 Αλλαγή PIN':'🔐 Ορισμός PIN';
     pinButton.addEventListener('click',()=>{
       document.getElementById('pinChild').value=child.id;
-      document.getElementById('pinPanel').scrollIntoView({behavior:'smooth',block:'start'});
+      openTab('home','pinPanel');
       document.getElementById('childPin').focus({preventScroll:true});
     });
     li.append(pinButton);list.append(li);
