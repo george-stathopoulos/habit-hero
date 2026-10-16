@@ -80,7 +80,7 @@ export async function authorizedChild(request,env){
  if(!env.DB||!token|| !/^[A-Za-z0-9_-]{32}$/.test(token))return null;
  try{
   return await env.DB.prepare(`SELECT s.id AS session_id,s.family_id,s.child_id,
-    c.display_name AS child_name
+    c.display_name AS child_name,c.avatar_id
    FROM auth_sessions s JOIN child_profiles c ON c.id=s.child_id AND c.family_id=s.family_id
    JOIN families f ON f.id=s.family_id
    WHERE s.token_hash=? AND s.role='child' AND s.parent_id IS NULL
@@ -91,7 +91,7 @@ export async function authorizedChild(request,env){
 }
 export async function childMe(request,env){
  const actor=await authorizedChild(request,env);
- return actor?json({role:'child',name:actor.child_name}):json({detail:'Not authenticated'},401);
+ return actor?json({role:'child',name:actor.child_name,avatar_id:actor.avatar_id}):json({detail:'Not authenticated'},401);
 }
 export async function childActivities(request,env){
  const child=await authorizedChild(request,env);
