@@ -52,7 +52,8 @@ export async function createChild(req,env) {
  const name=typeof body.name==='string'?body.name.trim():'';
  const age=body.age_band===null||body.age_band===undefined?null:body.age_band;
  if(name.length<1||name.length>80||/[\u0000-\u001f\u007f]/.test(name) ||
-    (age!==null&&!['6-8','9-11','12-14'].includes(age)))return out({detail:'Invalid child name or age group'},400);
+    (age!==null&&!['6-8','9-11','12-14'].includes(age)) ||
+  (avatar!==null&&!['hero','unicorn','robot','dragon','astronaut','cat','ninja','wizard'].includes(avatar)))return out({detail:'Invalid child name or age group'},400);
  const id=crypto.randomUUID(),now=new Date().toISOString();
  try{
   await env.DB.prepare(`INSERT INTO child_profiles (id,family_id,display_name,age_band,created_at,updated_at)
@@ -72,16 +73,16 @@ export async function editChild(req,env){
  try{const raw=await req.text();if(raw.length>1024)return out({detail:'Request too large'},413);value=JSON.parse(raw)}
  catch{return out({detail:'Invalid JSON'},400)}
  const id=value?.child_id,name=typeof value?.name==='string'?value.name.trim():'',
-  age=value?.age_band??null;
+  age=value?.age_band??null,avatar=value?.avatar_id??null;
  if(typeof id!=='string'||!/^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id)||
   !name||name.length>80||/[\u0000-\u001f\u007f]/.test(name)||
   (age!==null&&!['6-8','9-11','12-14'].includes(age)))
   return out({detail:'Invalid child details'},400);
  try{
   const result=await env.DB.prepare(`UPDATE child_profiles
-   SET display_name=?,age_band=?,updated_at=? WHERE family_id=? AND id=? AND deleted_at IS NULL`)
-   .bind(name,age,new Date().toISOString(),parent.family_id,id).run();
+   SET display_name=?,age_band=?,avatar_id=COALESCE(?,avatar_id),updated_at=? WHERE family_id=? AND id=? AND deleted_at IS NULL`)
+   .bind(name,age,avatar,new Date().toISOString(),parent.family_id,id).run();
   if(result.meta?.changes!==1)return out({detail:'Child not found'},404);
-  return out({id,name,age_band:age});
+  return out({id,name,age_band:age,avatar_id:avatar});
  }catch{return out({detail:'Could not update child'},503)}
 }
