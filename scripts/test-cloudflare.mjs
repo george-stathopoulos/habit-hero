@@ -28,5 +28,5 @@ assert.equal((await r.text()).includes('internal SQL error'),false);
 r=await worker.fetch(new Request(url+'/api/health'),{ASSETS:assets,DB:dbOk,API_ORIGIN:'https://old-backend.example'});
 assert.equal(r.status,200);
 r=await worker.fetch(new Request(url+'/api/auth/me'),{ASSETS:assets,DB:dbOk});
-assert.equal(r.status,503);
+assert.equal(r.status,401);
 console.log('PASS Cloudflare Worker routing, D1 probe and safe-unconfigured API behavior');
