@@ -141,10 +141,17 @@ export function childPage(){
     const item=document.createElement('li'),label=document.createElement('span');
     label.textContent=(reward.emoji||'🎁')+' '+reward.name+' · '+reward.points_cost+' πόντοι ';
     item.append(label);
+    if(data.balance<reward.points_cost){
+      const needed=document.createElement('small');
+      needed.textContent=' 🔒 Χρειάζεσαι '+(reward.points_cost-data.balance)+' ακόμη πόντους';
+      item.append(needed);
+    }
     if(!reward.recurring&&reward.previously_requested){
       const caption=document.createElement('small');caption.textContent='Έχει ήδη ζητηθεί';item.append(caption);
     }else {
       const btn=document.createElement('button');btn.textContent='Ζήτα το έπαθλο';
+      btn.disabled=data.balance<reward.points_cost;
+      btn.title=btn.disabled?'Χρειάζεσαι περισσότερους πόντους':'';
       btn.addEventListener('click',async()=>{
         btn.disabled=true;
         try{
