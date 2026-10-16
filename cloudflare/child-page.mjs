@@ -52,13 +52,19 @@ export function childPage(){
  .reward-tile button{width:90%;border-radius:15px}
  @keyframes giftWiggle{0%,83%,100%{transform:rotate(0) scale(1)}88%{transform:rotate(-9deg) scale(1.07)}93%{transform:rotate(9deg) scale(1.07)}}
  @media(prefers-reduced-motion:reduce){.reward-gift{animation:none}}
- .quest-card{perspective:1000px;position:relative;min-height:245px;border:0!important;background:transparent!important;padding:0!important;margin:14px 0}
- .quest-card-inner{position:relative;width:100%;min-height:245px;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+ .quest-card{perspective:1000px;position:relative;min-width:0;border:0!important;background:transparent!important;padding:0!important;margin:14px 0;list-style:none}
+ .quest-card-inner{display:grid;grid-template-columns:minmax(0,1fr);width:100%;min-width:0;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.2,.8,.2,1)}
  .quest-card.flipped .quest-card-inner{transform:rotateY(180deg)}
- .quest-card-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:25px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:20px;text-align:center}
+ .quest-card-face{grid-area:1/1;position:relative;min-width:0;min-height:290px;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:25px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:26px 18px;text-align:center;overflow-wrap:anywhere}
+ .quest-card-face button{position:relative;max-width:100%;white-space:normal;flex-shrink:0}
+ .quest-card-face p{margin:8px 0;max-width:38ch;line-height:1.5}
+ .quest-card-face strong{display:block;max-width:100%;line-height:1.25}
+ .quest-card:focus-within{outline-offset:3px}
+ .quest-card:not(.flipped) .quest-back{visibility:hidden;pointer-events:none}
+ .quest-card.flipped .quest-front{visibility:hidden;pointer-events:none}
  .quest-front{background:linear-gradient(145deg,#fff,#eceaff);border:2px solid #e2dcff;box-shadow:0 14px 25px #29236a17}
  .quest-back{background:linear-gradient(145deg,#5448bf,#8c69ed);color:white;transform:rotateY(180deg)}
- .quest-card-title{font-size:22px}.quest-card-emoji{font-size:57px;filter:drop-shadow(0 9px 9px #2c1c6029);animation:questFloat 3s ease-in-out infinite}
+ .quest-card-title{font-size:clamp(18px,5vw,23px)}.quest-card-emoji{font-size:57px;filter:drop-shadow(0 9px 9px #2c1c6029);animation:questFloat 3s ease-in-out infinite}
  .quest-card-points{background:#ffeac1;color:#8a540d;font-weight:800;padding:7px 15px;border-radius:22px}
  .quest-flip{background:#6955db;min-height:42px}.quest-back .secondary{background:#ffffff30;color:white}
  .quest-done{background:linear-gradient(140deg,#e8fff3,#d7f8e7)}
