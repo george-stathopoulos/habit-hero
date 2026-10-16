@@ -31,6 +31,10 @@ export function childPage(){
   const me=await fetch('/api/child/me',{credentials:'same-origin',cache:'no-store'});
   if(!me.ok){document.getElementById('pairPanel').hidden=false;
    document.getElementById('activitiesPanel').hidden=true;
+   document.getElementById('rewardsPanel').hidden=true;
+   document.getElementById('progressPanel').hidden=true;
+   document.getElementById('rewards').replaceChildren();
+   document.getElementById('progressStats').textContent='';
    document.getElementById('logout').hidden=true;
    status.textContent='Χρειάζεται σύνδεση με κωδικό γονέα.';
    return;
