@@ -28,6 +28,11 @@ export function childPage(){
  <p class="muted">Ζήτησε από τον γονέα σου έναν νέο κωδικό σύνδεσης. Ο κωδικός λειτουργεί μόνο μία φορά και λήγει σε 10 λεπτά.</p>
  <form id="pairForm"><label for="code">Κωδικός συσκευής</label><input id="code" required maxlength="32" minlength="32" autocomplete="off" spellcheck="false" placeholder="Επικόλλησε τον κωδικό">
  <button id="pairButton" type="submit">Σύνδεση</button></form><p id="pairMessage" role="status"></p></section>
+ <section id="pinPanel" hidden><h2>🔐 Το PIN μου</h2>
+ <p class="muted">Πληκτρολόγησε το 4-ψήφιο PIN που όρισε ο γονέας σου.</p>
+ <form id="pinUnlockForm"><label for="pinInput">4-ψήφιο PIN</label>
+ <input id="pinInput" type="password" required inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="off">
+ <button id="pinUnlockButton" type="submit">Ξεκλείδωμα</button></form><p id="pinMessage" role="status"></p></section>
  <section id="activitiesPanel" hidden><h2>🌟 Οι δραστηριότητές μου</h2>
  <p class="muted">Πάτησε «Το έκανα!» όταν ολοκληρώσεις μια δραστηριότητα. Οι πόντοι προστίθενται μετά από έγκριση γονέα.</p>
  <ul id="activities"></ul><p id="feedback" role="status"></p></section>
@@ -42,7 +47,11 @@ export function childPage(){
  const status=document.getElementById('status');
  async function refresh(){
   const me=await fetch('/api/child/me',{credentials:'same-origin',cache:'no-store'});
-  if(!me.ok){document.getElementById('pairPanel').hidden=false;
+  if(!me.ok){
+   const pinState=await fetch('/api/child/pin/status',{credentials:'same-origin',cache:'no-store'}).catch(()=>null);
+   const needsPin=pinState?.ok&&(await pinState.json()).requires_pin===true;
+   document.getElementById('pinPanel').hidden=!needsPin;
+   document.getElementById('pairPanel').hidden=needsPin;
    document.getElementById('quickNav').hidden=true;
    document.getElementById('activitiesPanel').hidden=true;
    document.getElementById('rewardsPanel').hidden=true;
@@ -52,14 +61,15 @@ export function childPage(){
    document.getElementById('progressStats').textContent='';
    document.getElementById('activityHistory').replaceChildren();
    document.getElementById('heroBadges').replaceChildren();
-   document.getElementById('logout').hidden=true;
-   status.textContent='Χρειάζεται σύνδεση με κωδικό γονέα.';
+   document.getElementById('logout').hidden=!needsPin;
+   status.textContent=needsPin?'Εισαγωγή προσωπικού PIN.':'Χρειάζεται σύνδεση με κωδικό γονέα.';
    return;
   }
   const profile=await me.json();
   const icons={hero:'🦸',unicorn:'🦄',robot:'🤖',dragon:'🐉',astronaut:'🧑‍🚀',cat:'🐱',ninja:'🥷',wizard:'🧙'};
   status.textContent=(icons[profile.avatar_id]||'🦸')+' Γεια σου, '+profile.name+'!';
   document.getElementById('pairPanel').hidden=true;
+  document.getElementById('pinPanel').hidden=true;
   document.getElementById('quickNav').hidden=false;
   document.getElementById('logout').hidden=false;
   const res=await fetch('/api/child/activities',{credentials:'same-origin',cache:'no-store'});
@@ -166,6 +176,18 @@ export function childPage(){
     list.append(item);
   }
  }
+ document.getElementById('pinUnlockForm').addEventListener('submit',async event=>{
+  event.preventDefault();
+  const button=document.getElementById('pinUnlockButton'),note=document.getElementById('pinMessage');
+  button.disabled=true;
+  try{
+   const pin=document.getElementById('pinInput').value;
+   const response=await fetch('/api/child/pin/unlock',{method:'POST',credentials:'same-origin',
+    headers:{'content-type':'application/json'},body:JSON.stringify({pin})});
+   if(!response.ok){const error=await response.json().catch(()=>({}));throw Error(error.detail||'Λάθος PIN.')}
+   document.getElementById('pinInput').value='';note.textContent='';await refresh();
+  }catch(e){note.textContent=e.message}finally{button.disabled=false}
+ });
  document.getElementById('pairForm').addEventListener('submit',async ev=>{
   ev.preventDefault();const btn=document.getElementById('pairButton');btn.disabled=true;
   try{
