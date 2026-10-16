@@ -1,3 +1,4 @@
+import {localDay} from './timezone.mjs';
 import {occurrenceKey,occurrenceSql} from './occurrence.mjs';
 // Supervised child activity flow: parent session is required even for submissions.
 // Independent child PIN sessions are deliberately NOT implemented yet.
@@ -23,6 +24,7 @@ async function writeContext(request,env){
 export async function listActivities(request,env){
  const actor=await authorizedParent(request,env);
  if(!actor)return reply({detail:'Not authenticated'},401);
+ const today=localDay(actor.timezone);
  try{
   const results=await env.DB.prepare(`SELECT c.id AS child_id,c.display_name AS child_name,
    h.id AS habit_id,h.name_el AS habit_name,h.points,h.emoji,h.frequency_type,
@@ -35,8 +37,8 @@ export async function listActivities(request,env){
        AND x.occurrence_date=${occurrenceSql} ORDER BY x.submitted_at DESC LIMIT 1)
    WHERE a.family_id=? AND c.deleted_at IS NULL AND h.deleted_at IS NULL AND h.active=1
    ORDER BY c.display_name,h.name_el LIMIT 200`)
-    .bind(...Array(3).fill(new Date().toISOString().slice(0,10)),actor.family_id).all();
-  return reply({date:new Date().toISOString().slice(0,10),mode:'parent_supervised',
+    .bind(today,today,today,actor.family_id).all();
+  return reply({date:today,mode:'parent_supervised',
     activities:results.results||[]});
  }catch{return reply({detail:'Unable to load activities'},503)}
 }
@@ -53,7 +55,7 @@ export async function submitActivity(request,env){
     AND h.deleted_at IS NULL AND c.deleted_at IS NULL`)
     .bind(parent.family_id,body.habit_id,body.child_id).first();
   if(!entry)return reply({detail:'Activity not assigned to this child'},404);
-  const date=occurrenceKey(entry.frequency_type,now);
+  const date=occurrenceKey(entry.frequency_type,localDay(parent.timezone));
   await env.DB.prepare(`INSERT INTO completion_submissions
    (id,family_id,child_id,habit_id,occurrence_date,status,submitted_at,idempotency_key)
    VALUES (?,?,?,?,?,'pending',?,?)`)
