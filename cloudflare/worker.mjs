@@ -96,11 +96,11 @@ export default {
       if (request.method !== 'GET') return json({detail:'Method not allowed'},405);
       return googleLanding();
     }
-    if (url.pathname === '/habit-hero/parent' || url.pathname === '/habit-hero/parent/') {
+    if (['/habit-hero/parent','/habit-hero/parent/','/habit-hero/welcome/parent','/habit-hero/welcome/parent/'].includes(url.pathname)) {
       if (request.method !== 'GET') return json({detail:'Method not allowed'},405);
       return parentPage();
     }
-    if (url.pathname === '/habit-hero/child' || url.pathname === '/habit-hero/child/') {
+    if (['/habit-hero/child','/habit-hero/child/','/habit-hero/welcome/child','/habit-hero/welcome/child/'].includes(url.pathname)) {
       if(request.method!=='GET')return json({detail:'Method not allowed'},405);
       return childPage();
     }
