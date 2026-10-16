@@ -182,3 +182,38 @@ export async function reviewReward(req,env) {
   return json({detail:'Could not review reward'},503);
  }
 }
+
+export async function editReward(req,env){
+ const input=await readBody(req);if(input.error)return input.error;
+ const actor=await authorizedParent(req,env);
+ if(!actor)return json({detail:'Not authenticated'},401);
+ const v=input.body,id=v.reward_id,name=typeof v.name==='string'?v.name.trim():'',
+  description=typeof v.description==='string'?v.description.trim():'';
+ if(!uuid(id)||!name||name.length>100||description.length>500||
+    /[\u0000-\u001f\u007f]/.test(name+description)||
+    !Number.isInteger(v.points_cost)||v.points_cost<1||v.points_cost>100000||
+    typeof v.recurring!=='boolean')return json({detail:'Invalid reward'},400);
+ try{
+  const now=stamp();
+  const result=await env.DB.prepare(`UPDATE reward_catalog
+   SET name_el=?,description_el=?,points_cost=?,recurring=?,updated_at=?
+   WHERE family_id=? AND id=? AND active=1`)
+    .bind(name,description||null,v.points_cost,v.recurring?1:0,now,actor.family_id,id).run();
+  if(result.meta?.changes!==1)return json({detail:'Reward not found'},404);
+  return json({id,status:'updated'});
+ }catch{return json({detail:'Could not edit reward'},503)}
+}
+export async function archiveReward(req,env){
+ const input=await readBody(req);if(input.error)return input.error;
+ const actor=await authorizedParent(req,env);
+ if(!actor)return json({detail:'Not authenticated'},401);
+ const id=input.body.reward_id;
+ if(!uuid(id))return json({detail:'Invalid reward'},400);
+ try{
+  const result=await env.DB.prepare(`UPDATE reward_catalog SET active=0,updated_at=?
+   WHERE family_id=? AND id=? AND active=1`)
+   .bind(stamp(),actor.family_id,id).run();
+  if(result.meta?.changes!==1)return json({detail:'Reward not found'},404);
+  return json({id,status:'archived'});
+ }catch{return json({detail:'Could not archive reward'},503)}
+}
