@@ -1,6 +1,6 @@
 export function householdPage(){
  const html=`<!doctype html><html lang="el"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
- <meta name="referrer" content="no-referrer"><meta name="theme-color" content="#6456e8"><title>Habit Hero — Καλώς ήρθατε</title>
+ <meta name="referrer" content="no-referrer"><meta name="theme-color" content="#6456e8"><link rel="manifest" href="/habit-hero/app/parent.webmanifest"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Habit Hero"><title>Habit Hero — Καλώς ήρθατε</title>
  <style>*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:radial-gradient(circle at top left,#d5dcff,#f3eeff 45%,#fff4dd);font:16px system-ui,sans-serif;color:#2c285d;display:flex;justify-content:center;align-items:center;padding:18px}
  main{width:min(100%,540px);text-align:center}h1{font-size:clamp(36px,7vw,54px);margin:0 0 7px;letter-spacing:-2px}p{line-height:1.5;color:#625c81}
  .panel{background:#fff;border-radius:28px;padding:26px;margin:18px 0;box-shadow:0 18px 65px #3a327326}
