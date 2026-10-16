@@ -28,6 +28,14 @@ export function childPage(){
  button:active{transform:scale(.97)}
  [data-tab]:not([data-active="true"]){display:none!important}
  nav.quick-nav{display:none}
+ #questOverview{background:linear-gradient(135deg,#5144bc,#8b6ef4);color:white;border:0}
+ .quest-head{display:flex;align-items:center;gap:14px}.quest-emoji{font-size:46px}
+ .quest-kicker{font-size:11px;letter-spacing:1.1px;font-weight:850;opacity:.78;margin:0}
+ #questGreeting{margin:6px 0;color:white}
+ .quest-meter{height:16px;border-radius:30px;background:#ffffff40;overflow:hidden;margin:22px 0 11px}
+ #questMeterFill{height:100%;background:#ffc870;border-radius:30px;width:0;transition:width .5s ease}
+ .quest-footer{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px}
+ .quest-footer strong{font-size:20px}
  .child-tabs{position:fixed;bottom:0;left:0;right:0;z-index:50;display:flex;gap:6px;background:#fffefa;
   border-top:1px solid #e8e6fb;box-shadow:0 -8px 30px #2525771a;
   padding:9px 12px calc(9px + env(safe-area-inset-bottom))}
@@ -55,6 +63,11 @@ export function childPage(){
  <form id="pinUnlockForm"><label for="pinInput">4-ψήφιο PIN</label>
  <input id="pinInput" type="password" required inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="off">
  <button id="pinUnlockButton" type="submit">Ξεκλείδωμα</button></form><p id="pinMessage" role="status"></p></section>
+ <section id="questOverview" data-tab="quests" hidden>
+ <div class="quest-head"><span class="quest-emoji">🚀</span><div><p class="quest-kicker">Η ΣΗΜΕΡΙΝΗ ΣΟΥ ΠΕΡΙΠΕΤΕΙΑ</p><h2 id="questGreeting">Έτοιμος για αποστολές;</h2></div></div>
+ <div class="quest-meter"><div id="questMeterFill"></div></div>
+ <div class="quest-footer"><strong id="questCount">0 από 0</strong><span id="questMotivation">Κάθε προσπάθεια μετράει! ⭐</span></div>
+ </section>
  <section id="activitiesPanel" data-tab="quests" hidden><h2>🌟 Οι δραστηριότητές μου</h2>
  <p class="muted">Πάτησε «Το έκανα!» όταν ολοκληρώσεις μια δραστηριότητα. Οι πόντοι προστίθενται μετά από έγκριση γονέα.</p>
  <ul id="activities"></ul><p id="feedback" role="status"></p></section>
@@ -103,6 +116,7 @@ export function childPage(){
    document.getElementById('childTabs').hidden=true;
    document.getElementById('childTabTitle').hidden=true;
    document.getElementById('activitiesPanel').hidden=true;
+   document.getElementById('questOverview').hidden=true;
    document.getElementById('rewardsPanel').hidden=true;
    document.getElementById('progressPanel').hidden=true;
    document.getElementById('rewards').replaceChildren();
@@ -123,6 +137,7 @@ export function childPage(){
   document.getElementById('pinPanel').hidden=true;
   document.getElementById('quickNav').hidden=false;
   document.getElementById('childTabs').hidden=false;
+  document.getElementById('questOverview').hidden=false;
   document.getElementById('childTabTitle').hidden=false;
   document.getElementById('logout').hidden=false;
   document.getElementById('switchFamily').hidden=false;
