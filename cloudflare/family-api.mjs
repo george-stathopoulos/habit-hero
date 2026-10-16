@@ -16,9 +16,11 @@ export async function authorizedParent(req,env) {
  const token=cookie(req);
  if(!env.DB||!token||! /^[a-zA-Z0-9_-]{40,128}$/.test(token))return null;
  try {
-  const row=await env.DB.prepare(`SELECT s.parent_id,m.family_id,p.display_name,f.display_name AS family_name
+  const row=await env.DB.prepare(`SELECT s.parent_id,m.family_id,p.display_name,f.display_name AS family_name,
+    COALESCE(settings.timezone,'UTC') AS timezone
    FROM auth_sessions s JOIN parent_users p ON p.id=s.parent_id
    JOIN family_memberships m ON m.parent_id=s.parent_id JOIN families f ON f.id=m.family_id
+   LEFT JOIN family_settings settings ON settings.family_id=f.id
    WHERE s.token_hash=? AND s.role='parent' AND s.revoked_at IS NULL AND s.expires_at>?
    AND p.disabled_at IS NULL AND f.deleted_at IS NULL
    ORDER BY m.created_at LIMIT 1`).bind(await sha(token),new Date().toISOString()).first();
@@ -32,7 +34,7 @@ export async function familyOverview(req,env) {
   const children=await env.DB.prepare(`SELECT id,display_name,age_band,avatar_id,avatar_level,created_at
     FROM child_profiles WHERE family_id=? AND deleted_at IS NULL ORDER BY created_at,id LIMIT 100`)
     .bind(parent.family_id).all();
-  return out({family:{id:parent.family_id,name:parent.family_name},parent:{name:parent.display_name},
+  return out({family:{id:parent.family_id,name:parent.family_name,timezone:parent.timezone},parent:{name:parent.display_name},
    children:children.results||[]});
  }catch{return out({detail:'Service unavailable'},503)}
 }
