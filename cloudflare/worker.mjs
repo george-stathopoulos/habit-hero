@@ -1,3 +1,4 @@
+import {setFamilyTimezone} from './timezone.mjs';
 import {adjustPoints} from './points-api.mjs';
 import {exportFamily} from './export-api.mjs';
 import {parentProgress,childProgress} from './progress-api.mjs';
@@ -121,6 +122,7 @@ export default {
       return familyOverview(request,env);
     }
     if (url.pathname === '/api/family/export' && request.method === 'GET') return exportFamily(request,env);
+    if (url.pathname === '/api/family/timezone' && request.method === 'POST') return setFamilyTimezone(request,env);
     if (url.pathname === '/api/children' && request.method === 'POST') {
       return createChild(request,env);
     }
