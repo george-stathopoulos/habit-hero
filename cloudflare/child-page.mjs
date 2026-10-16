@@ -145,6 +145,12 @@ export function childPage(){
   const res=await fetch('/api/child/activities',{credentials:'same-origin',cache:'no-store'});
   if(!res.ok){status.textContent='Οι δραστηριότητες δεν είναι διαθέσιμες αυτή τη στιγμή.';return}
   const data=await res.json();
+  const total=data.activities.length;
+  const completed=data.activities.filter(item=>!!item.submission_status).length;
+  document.getElementById('questGreeting').textContent='Πάμε δυνατά, '+profile.name+'! 🌈';
+  document.getElementById('questCount').textContent=completed+' από '+total+' αποστολές';
+  document.getElementById('questMeterFill').style.width=(total?Math.round(100*completed/total):0)+'%';
+  document.getElementById('questMotivation').textContent=total===0?'Οι νέες αποστολές έρχονται σύντομα!':completed===total?'Μπράβο! Τα κατάφερες! 🏆':completed?'Συνέχισε έτσι! ⭐':'Η περιπέτεια ξεκινά! ✨';
   document.getElementById('activitiesPanel').hidden=false;
   await refreshRewards();
   await refreshProgress();
