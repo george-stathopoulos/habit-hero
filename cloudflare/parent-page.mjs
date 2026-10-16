@@ -266,6 +266,7 @@ export function parentPage() {
    document.getElementById('homeActions').hidden=false;
    document.getElementById('familySnapshot').hidden=false;
    document.getElementById('snapshotKids').textContent=data.children.length;
+   if(!data.children.length)document.getElementById('create').classList.add('expanded');
    document.getElementById('nextStep').textContent=data.children.length?'Δημιούργησε μια νέα αποστολή ή έλεγξε τις προσπάθειες των παιδιών! 🌟':'Ξεκίνα δημιουργώντας το πρώτο προφίλ παιδιού! 🌈';
    document.getElementById('privacyPanel').hidden=false;
    document.getElementById('familySettingsPanel').hidden=false;
