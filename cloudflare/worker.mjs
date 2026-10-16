@@ -1,3 +1,4 @@
+import {childAskHelp,childHelpStatus,parentHelpRequests,respondToHelp} from './help-api.mjs';
 import {householdPage} from './household-page.mjs';
 import {householdState,setupParentPin,unlockHousehold,exitToHousehold} from './household-auth.mjs';
 import {configureChildPin,childPinStatus,unlockChildPin,lockChildPin} from './child-pin.mjs';
@@ -81,6 +82,10 @@ export default {
       if(request.method!=='GET')return json({detail:'Method not allowed'},405);
       return householdPage();
     }
+    if(url.pathname==='/api/child/help'&&request.method==='POST')return childAskHelp(request,env);
+    if(url.pathname==='/api/child/help'&&request.method==='GET')return childHelpStatus(request,env);
+    if(url.pathname==='/api/parent/help'&&request.method==='GET')return parentHelpRequests(request,env);
+    if(url.pathname==='/api/parent/help/reply'&&request.method==='POST')return respondToHelp(request,env);
     if (url.pathname === '/api/household' && request.method === 'GET')return householdState(request,env);
     if (url.pathname === '/api/household/parent-pin' && request.method === 'POST')return setupParentPin(request,env);
     if (url.pathname === '/api/household/unlock' && request.method === 'POST')return unlockHousehold(request,env);
