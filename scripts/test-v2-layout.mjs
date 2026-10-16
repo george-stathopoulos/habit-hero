@@ -43,6 +43,15 @@ try{
    await page.locator('#greeting').waitFor();
    const horizontal=await page.evaluate(()=>({viewport:innerWidth,scroll:document.documentElement.scrollWidth}));
    assert(horizontal.scroll<=horizontal.viewport+1,role+' '+width+'px horizontal overflow '+JSON.stringify(horizontal));
+   const artwork=await page.evaluate(async()=>{
+    const hero=document.querySelector('#heroArt');
+    const bg=new Image();bg.src='/habit-hero/app/v2-world-'+document.body.dataset.theme+'.svg';
+    try{await bg.decode()}catch{}
+    return {hero:hero.naturalWidth,background:bg.naturalWidth}
+   });
+   assert(artwork.hero>0&&artwork.background>0,role+' '+width+'px artwork blocked or missing: '+JSON.stringify(artwork));
+   const labels=await page.locator('.nav button span:last-child').evaluateAll(items=>items.map(x=>Number.parseFloat(getComputedStyle(x).fontSize)));
+   assert(labels.every(px=>px<=12),role+' navigation labels are too large: '+JSON.stringify(labels));
    assert.equal(errors.length,0,role+' '+width+'px errors '+errors.join('; '));
    await page.screenshot({path:'v2-layout-shots/'+role+'-'+width+'.png',fullPage:true});
    if(width===390)await page.screenshot({path:'v2-layout-shots/preview-'+role+'.jpg',type:'jpeg',quality:30});
