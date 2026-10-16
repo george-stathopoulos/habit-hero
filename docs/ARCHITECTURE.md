@@ -1,7 +1,7 @@
 # Habit Hero — Approved Cloudflare-native architecture
 
 **Decision date:** 2026-10-16  
-**Status:** Architecture approved, migration **not started** (Step 7).  
+**Status:** Architecture approved in Step 7; EU D1 database provisioned and Worker binding configured in Step 8. API and schema migration **not started**.  
 **Production target:** Cloudflare Workers + Static Assets + D1. No Render, MongoDB, or persistent FastAPI service in production.
 
 ## Scope and current implementation
@@ -27,7 +27,7 @@ A separate Cloudflare deployment is not required for the API: a single Worker ca
 
 ## Data model — planned, NOT yet created
 
-A relational model with `families`, `parent_users`, `family_memberships`, `child_profiles`, `habits`, `habit_occurrences`, `completion_submissions`, `parent_approvals`, `point_ledger`, `reward_catalog`, `reward_redemptions`, `sessions`, and `audit_events`.
+The D1 database and `DB` binding exist, but no tables are created yet. A planned relational model with `families`, `parent_users`, `family_memberships`, `child_profiles`, `habits`, `habit_occurrences`, `completion_submissions`, `parent_approvals`, `point_ledger`, `reward_catalog`, `reward_redemptions`, `sessions`, and `audit_events`.
 
 Every tenant-owned record must include a family ID and enforce it **on the server for every read and write**. Never trust family/child IDs or role assertions supplied by clients. Point and reward changes must be atomic, idempotent, and backed by ledger records to avoid duplicate credits/debits. Plan migrations, indexes, constraints, and seed-only test fixtures before deployment.
 
@@ -43,7 +43,7 @@ Every tenant-owned record must include a family ID and enforce it **on the serve
 ## Delivery sequence
 
 1. **Step 7 (this change):** Record architecture decision, remove legacy production deployment assumptions, preserve the current working frontend.
-2. **Subsequent step, only after Step 7 verification:** Create a dedicated D1 database and explicit binding via controlled Wrangler configuration. No schema or data migration at Step 7.
+2. **Step 8 (completed):** Create a dedicated EU-jurisdiction D1 database and explicit `DB` binding via controlled Wrangler configuration. No schema or data migration at Step 8.
 3. Implement SQL schema migrations, constraints and tests.
 4. Implement parent authentication and family isolation.
 5. Migrate feature areas incrementally: parent/child profiles, habit definitions, completion + approvals, ledger/points, rewards/redemptions, and optional notifications/uploads.
@@ -57,4 +57,4 @@ The former `render.yaml` blueprint was removed to prevent accidental provisionin
 
 ## Cloudflare routing at Step 7
 
-`/` redirects to `/habit-hero/`; `/_health` reports healthy edge hosting but `apiConfigured: false`; `/api/*` returns an explicit 503 with no network access to third-party API origins. Future native routes must opt in through tested code and D1 bindings.
+`/` redirects to `/habit-hero/`; `/_health` reports healthy edge hosting but `apiConfigured: false`; `/api/*` returns an explicit 503 with no network access to third-party API origins. Future native routes must opt in through tested code and the configured D1 binding.
