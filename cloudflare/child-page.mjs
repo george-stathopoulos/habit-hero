@@ -119,6 +119,7 @@ export function childPage(){
  <section id="activitiesPanel" data-tab="quests" hidden><h2>🌟 Οι δραστηριότητές μου</h2>
  <p class="muted">Πάτησε «Το έκανα!» όταν ολοκληρώσεις μια δραστηριότητα. Οι πόντοι προστίθενται μετά από έγκριση γονέα.</p>
  <ul id="activities"></ul><p id="feedback" role="status"></p></section>
+ <section id="parentMessages" data-tab="quests" hidden><h2>💌 Μηνύματα από τους γονείς</h2><ul id="helpReplies"></ul></section>
  <section id="progressPanel" data-tab="hero" hidden><h2>📈 Η πρόοδός μου</h2>
  <p id="progressStats" class="muted"></p>
  <p id="heroLevel" class="muted"></p><div id="levelBar" style="height:14px;border-radius:20px;background:#e8eff9;overflow:hidden"><div id="levelFill" style="height:100%;width:0;background:#f5a623;transition:width .3s"></div></div>
@@ -219,6 +220,7 @@ export function childPage(){
   document.getElementById('questMeterFill').style.width=(total?Math.round(100*completed/total):0)+'%';
   document.getElementById('questMotivation').textContent=total===0?'Οι νέες αποστολές έρχονται σύντομα!':completed===total?'Μπράβο! Τα κατάφερες! 🏆':completed?'Συνέχισε έτσι! ⭐':'Η περιπέτεια ξεκινά! ✨';
   document.getElementById('activitiesPanel').hidden=false;
+  await refreshHelpReplies();
   await refreshRewards();
   await refreshProgress();
   const list=document.getElementById('activities');list.replaceChildren();
@@ -242,6 +244,17 @@ export function childPage(){
    backButton.addEventListener('click',()=>{li.classList.remove('flipped');li.dataset.open='false'});
    inner.append(front,back);li.append(inner);
    back.append(backButton);
+   const help=document.createElement('button');help.type='button';help.className='secondary';help.textContent='🙋 Χρειάζομαι βοήθεια';
+   help.addEventListener('click',async()=>{
+    help.disabled=true;
+    try{
+     const response=await fetch('/api/child/help',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({habit_id:item.habit_id})});
+     if(!response.ok&&response.status!==409)throw Error('Δεν στάλθηκε το αίτημα.');
+     help.textContent='💌 Ο γονέας ενημερώθηκε!';
+     document.getElementById('feedback').textContent='Ζήτησες βοήθεια. Ο γονέας σου θα δει το μήνυμά σου! 🌟';
+    }catch(error){help.disabled=false;document.getElementById('feedback').textContent=error.message}
+   });
+   back.append(help);
    if(!item.submission_status){
     const button=document.createElement('button');button.textContent='Το έκανα!';
     button.addEventListener('click',async()=>{
@@ -260,6 +273,17 @@ export function childPage(){
     back.append(label);front.classList.add('quest-done');
    }
    list.append(li);
+  }
+ }
+ async function refreshHelpReplies(){
+  const response=await fetch('/api/child/help',{credentials:'same-origin',cache:'no-store'});
+  if(!response.ok)return;
+  const result=await response.json(),box=document.getElementById('parentMessages'),list=document.getElementById('helpReplies');
+  list.replaceChildren();
+  const requests=(result.requests||[]).filter(r=>r.parent_message);
+  box.hidden=!requests.length;
+  for(const item of requests){
+   const li=document.createElement('li');li.textContent='💜 '+item.parent_message;list.append(li);
   }
  }
  async function refreshProgress(){
