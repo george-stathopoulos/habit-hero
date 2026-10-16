@@ -164,6 +164,14 @@ export function parentPage() {
  <form id="habitForm"><label for="habitName">Όνομα συνήθειας</label><input id="habitName" required maxlength="100" placeholder="π.χ. Βουρτσίζω τα δόντια μου">
  <label for="habitChild">Παιδί</label><select id="habitChild" required></select>
  <label for="habitFrequency">Συχνότητα</label><select id="habitFrequency"><option value="daily">Καθημερινά</option><option value="weekly">Εβδομαδιαία</option><option value="monthly">Μηνιαία</option><option value="once">Μία φορά</option></select>
+ <label for="habitCount">Πόσες φορές ανά περίοδο; (1–5)</label>
+ <input id="habitCount" type="number" min="1" max="5" value="1" required>
+ <label for="habitCooldown">Ελάχιστα λεπτά μεταξύ επαναλήψεων</label>
+ <input id="habitCooldown" type="number" min="0" max="1440" value="0" required>
+ <label for="habitDescription">Τι πρέπει να κάνει το παιδί;</label>
+ <textarea id="habitDescription" maxlength="500" rows="3" placeholder="Περιέγραψε τα βήματα της αποστολής..."></textarea>
+ <label for="habitBenefit">Γιατί είναι σημαντικό;</label>
+ <textarea id="habitBenefit" maxlength="500" rows="3" placeholder="Τι κερδίζει το παιδί μαθαίνοντας αυτή τη συνήθεια;"></textarea>
  <label for="habitPoints">Πόντοι</label><input id="habitPoints" type="number" min="1" max="1000" value="10" required>
  <button id="habitSave" type="submit">Δημιουργία και ανάθεση</button></form><p id="habitStatus" role="status" class="subtle"></p></section>
  <section class="panel" id="activitiesPanel" data-tab="habits" hidden>
@@ -650,6 +658,10 @@ export function parentPage() {
    const payload={name:document.getElementById('habitName').value,
     child_id:document.getElementById('habitChild').value,
     frequency:document.getElementById('habitFrequency').value,
+    frequency_count:Number(document.getElementById('habitCount').value),
+    retry_delay_minutes:Number(document.getElementById('habitCooldown').value),
+    description:document.getElementById('habitDescription').value,
+    benefit:document.getElementById('habitBenefit').value,
     points:Number(document.getElementById('habitPoints').value)};
    const response=await fetch('/api/habits',{method:'POST',credentials:'same-origin',
     headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
