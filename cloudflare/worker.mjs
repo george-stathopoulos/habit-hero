@@ -1,3 +1,4 @@
+import {parentPage} from './parent-page.mjs';
 import {familyOverview,createChild} from './family-api.mjs';
 import {begin,callback,me,logout} from './google-auth.mjs';
 // Habit Hero Cloudflare Worker: static PWA + protected API foundation.
@@ -69,6 +70,10 @@ export default {
         url.pathname === '/habit-hero/original-preview/auth/google-callback/') {
       if (request.method !== 'GET') return json({detail:'Method not allowed'},405);
       return googleLanding();
+    }
+    if (url.pathname === '/habit-hero/parent' || url.pathname === '/habit-hero/parent/') {
+      if (request.method !== 'GET') return json({detail:'Method not allowed'},405);
+      return parentPage();
     }
     if (url.pathname === '/_health') {
       return json({ service: 'habit-hero-edge', status: 'ok', apiConfigured: false });
