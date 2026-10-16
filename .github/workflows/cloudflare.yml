@@ -10,6 +10,7 @@ on:
       - "scripts/test-family-api.mjs"
       - "scripts/test-habits-api.mjs"
       - "scripts/test-activity-api.mjs"
+      - "scripts/test-child-auth.mjs"
       - "scripts/add-original-pwa.py"
       - "scripts/repair-original-web.cjs"
       - "original/frontend/**"
@@ -38,6 +39,9 @@ jobs:
           node scripts/test-habits-api.mjs
           node --check cloudflare/activity-api.mjs
           node scripts/test-activity-api.mjs
+          node --check cloudflare/child-auth.mjs
+          node --check cloudflare/child-page.mjs
+          node scripts/test-child-auth.mjs
           python3 scripts/generate-icons.py
           python3 scripts/prepare-original-assets.py
       - name: Build original Expo app for Cloudflare
@@ -137,3 +141,16 @@ jobs:
             test "$status" = "401" || { echo "::error::/$route returned HTTP $status to anonymous request"; exit 1; }
           done
           echo "Verified private completion, approval and points endpoints"
+
+      - name: Verify live child-only sign-in and protection
+        if: ${{ vars.HABIT_HERO_CLOUDFLARE_DEPLOY == 'true' }}
+        run: |
+          curl --fail --silent --show-error --retry 5 --retry-delay 3 --retry-all-errors \
+            "https://habit-hero-cloudflare.george-stathopoulos.workers.dev/habit-hero/child/" \
+            | grep -q 'id="pairForm"'
+          for route in child/me child/activities; do
+            status=$(curl --silent --show-error -o /dev/null -w '%{http_code}' \
+              "https://habit-hero-cloudflare.george-stathopoulos.workers.dev/api/$route")
+            test "$status" = "401" || { echo "::error::Unauthenticated /api/$route returned $status"; exit 1; }
+          done
+          echo "Verified independent child page and session guards"
