@@ -8,7 +8,19 @@
   "assets": {
     "directory": "../cloudflare-dist",
     "binding": "ASSETS",
-    "run_worker_first": ["/", "/api", "/api/*", "/_health"],
+    "run_worker_first": [
+      "/",
+      "/api",
+      "/api/*",
+      "/_health"
+    ],
     "not_found_handling": "single-page-application"
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "habit-hero-db",
+      "database_id": "0450de33-0812-45b4-8f52-62ed9947aaf3"
+    }
+  ]
 }
