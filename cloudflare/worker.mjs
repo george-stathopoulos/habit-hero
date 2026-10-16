@@ -1,3 +1,5 @@
+import {childPage} from './child-page.mjs';
+import {makePairing,pairDevice,childMe,childActivities,childSubmit,childLogout,revokeChildDevices} from './child-auth.mjs';
 import {listActivities,submitActivity,listApprovals,reviewActivity,listBalances} from './activity-api.mjs';
 import {listHabits,createHabit} from './habits-api.mjs';
 import {parentPage} from './parent-page.mjs';
@@ -79,6 +81,10 @@ export default {
       if (request.method !== 'GET') return json({detail:'Method not allowed'},405);
       return parentPage();
     }
+    if (url.pathname === '/habit-hero/child' || url.pathname === '/habit-hero/child/') {
+      if(request.method!=='GET')return json({detail:'Method not allowed'},405);
+      return childPage();
+    }
     if (url.pathname === '/_health') {
       return json({ service: 'habit-hero-edge', status: 'ok', apiConfigured: false });
     }
@@ -124,6 +130,13 @@ export default {
     if (url.pathname === '/api/approvals' && request.method === 'GET') return listApprovals(request,env);
     if (url.pathname === '/api/approvals/review' && request.method === 'POST') return reviewActivity(request,env);
     if (url.pathname === '/api/points' && request.method === 'GET') return listBalances(request,env);
+    if (url.pathname === '/api/child/pairing' && request.method === 'POST') return makePairing(request,env);
+    if (url.pathname === '/api/child/revoke' && request.method === 'POST') return revokeChildDevices(request,env);
+    if (url.pathname === '/api/child/pair' && request.method === 'POST') return pairDevice(request,env);
+    if (url.pathname === '/api/child/me' && request.method === 'GET') return childMe(request,env);
+    if (url.pathname === '/api/child/activities' && request.method === 'GET') return childActivities(request,env);
+    if (url.pathname === '/api/child/activities' && request.method === 'POST') return childSubmit(request,env);
+    if (url.pathname === '/api/child/logout' && request.method === 'POST') return childLogout(request,env);
     if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
       return json({ detail: 'Habit Hero API functionality is not available yet.' }, 503);
     }
