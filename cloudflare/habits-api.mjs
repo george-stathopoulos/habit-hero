@@ -34,9 +34,14 @@ export async function createHabit(request,env){
  const points=value?.points;
  const frequency=value?.frequency||'daily';
  const childId=value?.child_id;
+ const count=value?.frequency_count??1,retry=value?.retry_delay_minutes??0;
+ const description=typeof value?.description==='string'?value.description.trim():'';
+ const benefit=typeof value?.benefit==='string'?value.benefit.trim():'';
  if(!name||name.length>100||/[\u0000-\u001f\u007f]/.test(name)
     ||!Number.isInteger(points)||points<1||points>1000
     ||!['daily','weekly','monthly','once'].includes(frequency)
+    ||!Number.isInteger(count)||count<1||count>5||!Number.isInteger(retry)||retry<0||retry>1440
+    ||description.length>500||benefit.length>500
     ||typeof childId!=='string'||! /^[0-9a-f-]{36}$/i.test(childId))
     return respond({detail:'Invalid habit details'},400);
  try{
@@ -45,8 +50,8 @@ export async function createHabit(request,env){
   const id=crypto.randomUUID(),now=new Date().toISOString();
   const batch=await env.DB.batch([
     env.DB.prepare(`INSERT INTO habits
-      (id,family_id,name_el,name_en,points,frequency_type,created_at,updated_at)
-      VALUES (?,?,?,?,?,?,?,?)`).bind(id,actor.family_id,name,'',points,frequency,now,now),
+      (id,family_id,name_el,name_en,points,frequency_type,frequency_count,retry_delay_minutes,description_el,why_important_el,created_at,updated_at)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`).bind(id,actor.family_id,name,'',points,frequency,count,retry,description,benefit,now,now),
     env.DB.prepare(`INSERT INTO habit_assignments (family_id,habit_id,child_id,assigned_at)
       VALUES (?,?,?,?)`).bind(actor.family_id,id,childId,now)
   ]);
