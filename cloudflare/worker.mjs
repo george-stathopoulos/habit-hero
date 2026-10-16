@@ -1,3 +1,4 @@
+import {configureChildPin,childPinStatus,unlockChildPin} from './child-pin.mjs';
 import {setFamilyTimezone} from './timezone.mjs';
 import {adjustPoints} from './points-api.mjs';
 import {exportFamily} from './export-api.mjs';
@@ -145,6 +146,9 @@ export default {
     if (url.pathname === '/api/points/adjust' && request.method === 'POST') return adjustPoints(request,env);
     if (url.pathname === '/api/progress' && request.method === 'GET') return parentProgress(request,env);
     if (url.pathname === '/api/child/progress' && request.method === 'GET') return childProgress(request,env);
+    if (url.pathname === '/api/children/pin' && request.method === 'POST') return configureChildPin(request,env);
+    if (url.pathname === '/api/child/pin/status' && request.method === 'GET') return childPinStatus(request,env);
+    if (url.pathname === '/api/child/pin/unlock' && request.method === 'POST') return unlockChildPin(request,env);
     if (url.pathname === '/api/child/pairing' && request.method === 'POST') return makePairing(request,env);
     if (url.pathname === '/api/child/revoke' && request.method === 'POST') return revokeChildDevices(request,env);
     if (url.pathname === '/api/child/pair' && request.method === 'POST') return pairDevice(request,env);
