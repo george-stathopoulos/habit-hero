@@ -1,3 +1,4 @@
+import {localDay} from './timezone.mjs';
 // Read-only progress insights. All tenant and child access is derived from verified sessions.
 import {authorizedParent} from './family-api.mjs';
 import {authorizedChild} from './child-auth.mjs';
@@ -13,9 +14,9 @@ function streak(dates,today){
  }
  return count;
 }
-async function metrics(env,familyId,childId=null){
- const now=new Date(),today=day(now.toISOString());
- const from=new Date(now);from.setUTCDate(from.getUTCDate()-29);
+async function metrics(env,familyId,childId=null,timezone='UTC'){
+ const today=localDay(timezone);
+ const from=new Date(today+'T12:00:00.000Z');from.setUTCDate(from.getUTCDate()-29);
  const since=day(from.toISOString());
  const children=await env.DB.prepare(`SELECT id,display_name FROM child_profiles
   WHERE family_id=? AND deleted_at IS NULL AND (? IS NULL OR id=?)
@@ -63,14 +64,14 @@ async function metrics(env,familyId,childId=null){
 export async function parentProgress(req,env){
  const actor=await authorizedParent(req,env);
  if(!actor)return respond({detail:'Not authenticated'},401);
- try{return respond(await metrics(env,actor.family_id))}
+ try{return respond(await metrics(env,actor.family_id,null,actor.timezone))}
  catch{return respond({detail:'Could not load progress'},503)}
 }
 export async function childProgress(req,env){
  const actor=await authorizedChild(req,env);
  if(!actor)return respond({detail:'Not authenticated'},401);
  try{
-  const data=await metrics(env,actor.family_id,actor.child_id);
+  const data=await metrics(env,actor.family_id,actor.child_id,actor.timezone);
   return respond({as_of:data.as_of,window_days:30,progress:data.children[0]??null});
  }catch{return respond({detail:'Could not load progress'},503)}
 }
