@@ -11,7 +11,7 @@ const noStore = {'cache-control':'no-store','content-type':'application/json; ch
 const json = (obj,status=200,extra={}) => new Response(JSON.stringify(obj), {status,headers:{...noStore,...extra}});
 const err = (status=401) => json({detail: status===503?'Authentication unavailable':'Authentication failed'},status);
 const random = (n=32) => crypto.getRandomValues(new Uint8Array(n));
-function b64(bytes) {return btoa(String.fromCharCode(...bytes)).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=+$/,'');}
+function b64(bytes) {return btoa(String.fromCharCode(...bytes)).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');}
 function decode64(data) {const padded=data.replace(/-/g,'+').replace(/_/g,'/');return Uint8Array.from(atob(padded+'='.repeat((4-padded.length%4)%4)),c=>c.charCodeAt(0));}
 const hash = async value => b64(new Uint8Array(await crypto.subtle.digest('SHA-256',encoder.encode(value))));
 const clearFlow = flowCookie+'=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0';
