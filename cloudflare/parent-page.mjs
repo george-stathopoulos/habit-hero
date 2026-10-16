@@ -55,7 +55,7 @@ export function parentPage() {
  <button id="habitSave" type="submit">Δημιουργία και ανάθεση</button></form><p id="habitStatus" role="status" class="subtle"></p></section>
  <section class="panel" id="activitiesPanel" hidden>
  <h2>🌟 Ολοκλήρωση δραστηριοτήτων</h2>
- <p class="subtle">Δοκιμαστική λειτουργία με επίβλεψη γονέα: το παιδί επιλέγει «Το έκανα!» στη συσκευή του γονέα. Δεν έχει ακόμη δικό του PIN.</p>
+ <p class="subtle">Οι δραστηριότητες μπορούν να ολοκληρωθούν από τη συσκευή του παιδιού ή με επίβλεψη γονέα. Χρειάζεται έγκριση για να αποδοθούν πόντοι.</p>
  <ul id="activities"></ul><p id="activityNote" class="subtle" role="status"></p></section>
  <section class="panel" id="approvalsPanel" hidden>
  <h2>🛡️ Εγκρίσεις γονέα</h2><ul id="approvals"></ul>
@@ -95,7 +95,7 @@ export function parentPage() {
  <section class="panel" id="privacyPanel" hidden><h2>🔒 Τα δεδομένα της οικογένειας</h2>
  <p class="subtle">Μπορείτε να κατεβάσετε τα προφίλ, τις συνήθειες, τις εγκρίσεις, τους πόντους και τα έπαθλα της οικογένειάς σας ως αρχείο JSON. Το αρχείο περιέχει προσωπικά δεδομένα και πρέπει να φυλάσσεται με ασφάλεια.</p>
  <a href="/api/family/export" download="habit-hero-family-export.json">⬇️ Εξαγωγή οικογενειακών δεδομένων</a></section>
- <section class="panel"><h2>🚧 Επόμενες λειτουργίες</h2><p class="subtle">Επεξεργασία συνηθειών, υπενθυμίσεις, αναλυτικά στατιστικά και πλήρης σχεδίαση εφαρμογής βρίσκονται υπό ανάπτυξη.</p></section>
+ <section class="panel"><h2>🚧 Επόμενες λειτουργίες</h2><p class="subtle">Υπενθυμίσεις, επιπλέον στατιστικά και ο τελικός σχεδιασμός της εφαρμογής βρίσκονται υπό ανάπτυξη.</p></section>
  </main><script>
  const status=document.getElementById('status'),greeting=document.getElementById('greeting');
  const list=document.getElementById('children'),empty=document.getElementById('empty');
