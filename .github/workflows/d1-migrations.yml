@@ -1,0 +1,37 @@
+name: Step 9 - Verify and apply D1 schema
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "cloudflare/migrations/**"
+      - "scripts/test-d1-schema.py"
+      - ".github/workflows/d1-migrations.yml"
+permissions:
+  contents: read
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID || '3fc2c10ca86a2322b58f7daa16c77c6d' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Offline schema integrity tests (mandatory)
+        run: python3 -m unittest discover -s scripts -p 'test-d1-schema.py' -v
+      - name: Ensure D1 credentials
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+      - name: Apply reviewed migrations to EU remote D1
+        working-directory: cloudflare
+        run: npx --yes wrangler@4 d1 migrations apply habit-hero-db --remote --yes
+      - name: Verify applied schema (read-only)
+        working-directory: cloudflare
+        run: |
+          npx --yes wrangler@4 d1 execute habit-hero-db --remote --command "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('families','child_profiles','habit_assignments','point_ledger','auth_sessions') ORDER BY name;"
+          npx --yes wrangler@4 d1 execute habit-hero-db --remote --command "PRAGMA foreign_key_check;"
