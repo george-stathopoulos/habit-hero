@@ -1,3 +1,4 @@
+import {begin,callback,me,logout} from './google-auth.mjs';
 // Habit Hero Cloudflare Worker: static PWA + protected API foundation.
 // Never expose family data until a fully authenticated, tenant-scoped API is implemented.
 const JSON_HEADERS = { 'cache-control': 'no-store', 'content-type': 'application/json; charset=utf-8' };
@@ -24,6 +25,18 @@ export default {
         // Deliberately omit error details to avoid exposing the database setup.
       }
       return json({ status: 'unavailable' }, 503);
+    }
+    if (url.pathname === '/api/auth/google/start' && request.method === 'GET') {
+      return begin(request,env);
+    }
+    if (url.pathname === '/api/auth/google/callback' && request.method === 'GET') {
+      return callback(request,env);
+    }
+    if (url.pathname === '/api/auth/me' && request.method === 'GET') {
+      return me(request,env);
+    }
+    if (url.pathname === '/api/auth/logout' && request.method === 'POST') {
+      return logout(request,env);
     }
     if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
       return json({ detail: 'Habit Hero API functionality is not available yet.' }, 503);
