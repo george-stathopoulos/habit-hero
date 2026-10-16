@@ -145,8 +145,7 @@ export function v2Page(role='child'){
   if(!rewards.length)$('rewardsList').append(node('p','Οι θησαυροί σου θα εμφανιστούν εδώ!'));
   $('profileInfo').replaceChildren(node('h2','Ο δικός σου κόσμος'),node('p','Μικρά βήματα, μεγάλη περιπέτεια.'));
   try{const progress=progressData;
-   if(progress){
-    if(progress){const streak=Number(progress.current_streak_days)||0;
+   if(progress){const streak=Number(progress.current_streak_days)||0;
      $('eggArt').textContent=streak>=30?'🐲':streak>=21?'🐣':streak>=10?'🥚✨':'🥚';
      $('eggProgress').textContent=streak+' / 30 ημέρες συνέπειας για να εκκολαφθεί!';
      $('profileInfo').append(node('div','🏅 Επίπεδο '+progress.level+'  ·  🔥 '+streak+' ημέρες σερί','notice'));
