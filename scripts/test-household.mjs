@@ -22,4 +22,8 @@ assert.equal(response.status,401,'Cannot lock someone else\'s household');
 response=await worker.fetch(new Request(origin+'/habit-hero/'),env);
 assert.equal(response.status,302);
 assert.equal(response.headers.get('location'),origin+'/habit-hero/welcome/');
+for(const route of ['/habit-hero/welcome/parent/','/habit-hero/welcome/child/']){
+ const view=await worker.fetch(new Request(origin+route),env);
+ assert.equal(view.status,200,route+' should load inside installed app path');
+}
 console.log('PASS shared-device launcher, PIN gate, CSRF and app entry');
