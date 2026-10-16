@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: '22'
       - name: Offline schema integrity tests (mandatory)
-        run: python3 -m unittest discover -s scripts -p 'test-d1-schema.py' -v
+        run: python3 scripts/test-d1-schema.py -v
       - name: Ensure D1 credentials
         run: |
           test -n "$CLOUDFLARE_API_TOKEN"
