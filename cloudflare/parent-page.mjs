@@ -45,6 +45,12 @@ export function parentPage() {
  <section class="panel" id="devicesPanel" hidden><h2>📱 Συσκευές παιδιών</h2>
  <p class="subtle">Ενεργοποιήστε την ανεξάρτητη πρόσβαση του παιδιού από άλλη συσκευή ή ξεχωριστό προφίλ browser, χωρίς να δώσετε πρόσβαση στον λογαριασμό γονέα.</p>
  <label for="deviceChild">Παιδί</label><select id="deviceChild"></select>
+ <form id="pinForm"><label for="childPin">4-ψήφιος κωδικός παιδιού (PIN)</label>
+ <input id="childPin" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="new-password" required placeholder="••••">
+ <label for="confirmChildPin">Επιβεβαίωση PIN</label>
+ <input id="confirmChildPin" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="new-password" required>
+ <button id="saveChildPin" type="submit">Ορισμός / επαναφορά PIN</button></form>
+ <p id="pinStatus" role="status" class="subtle"></p>
  <button id="createPair">Δημιουργία κωδικού σύνδεσης (10 λεπτά)</button>
  <button id="revokeDevice" class="secondary">Ανάκληση πρόσβασης παιδιού</button>
  <p id="deviceStatus" role="status" class="subtle"></p>
@@ -351,6 +357,21 @@ export function parentPage() {
    if(!r.ok)throw Error('Δεν αποθηκεύτηκε το προφίλ. Ελέγξτε τα στοιχεία.');
    document.getElementById('form').reset();note.textContent='Το παιδί προστέθηκε!';await refresh();
   }catch(e){note.textContent=e.message}finally{btn.disabled=false}
+ });
+ document.getElementById('pinForm').addEventListener('submit',async event=>{
+  event.preventDefault();
+  const pin=document.getElementById('childPin').value;
+  const confirmPin=document.getElementById('confirmChildPin').value;
+  const note=document.getElementById('pinStatus'),button=document.getElementById('saveChildPin');
+  if(!/^[0-9]{4}$/.test(pin)||pin!==confirmPin){note.textContent='Το PIN πρέπει να έχει 4 ψηφία και να ταιριάζει.';return}
+  button.disabled=true;
+  try{
+   const res=await fetch('/api/children/pin',{method:'POST',credentials:'same-origin',
+    headers:{'content-type':'application/json'},body:JSON.stringify({child_id:document.getElementById('deviceChild').value,pin})});
+   if(!res.ok)throw Error('Δεν αποθηκεύτηκε το PIN.');
+   note.textContent='Το PIN ενημερώθηκε. Το παιδί θα το χρειάζεται στη συσκευή του.';
+   document.getElementById('pinForm').reset();
+  }catch(e){note.textContent=e.message}finally{button.disabled=false}
  });
  document.getElementById('createPair').addEventListener('click',async()=>{
   const btn=document.getElementById('createPair'),note=document.getElementById('deviceStatus');
