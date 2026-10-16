@@ -38,6 +38,7 @@ jobs:
           node --check cloudflare/timezone.mjs
           node scripts/test-occurrence.mjs
           node scripts/test-child-auth.mjs
+          node scripts/test-child-pin.mjs
           python3 scripts/generate-icons.py
           python3 scripts/prepare-original-assets.py
       - name: Build original Expo app for Cloudflare
