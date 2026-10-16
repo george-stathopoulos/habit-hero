@@ -38,10 +38,21 @@ export async function setupParentPin(req,env){
  const input=await body(req);if(input.error)return input.error;
  const pin=input.value?.pin;
  if(typeof pin!=='string'||!/^\d{4}$/.test(pin))return out({detail:'Four digits required'},400);
+ let actor;
+ try{actor=await anchor(req,env)}
+ catch(error){
+  console.error('Parent PIN household session lookup failed',String(error));
+  return out({detail:'Household session database lookup failed. Please check database migrations.',code:'PIN_SESSION_LOOKUP_FAILED'},503);
+ }
+ if(!actor)return out({detail:'Sign in with Google first'},401);
+ if(actor.pin_hash)return out({detail:'Parent PIN already configured'},409);
+ let verifier;
+ try{verifier=await createPinVerifier(pin)}
+ catch(error){
+  console.error('Parent PIN key derivation failed',String(error));
+  return out({detail:'Secure PIN generation failed on the server.',code:'PIN_CRYPTO_FAILED'},503);
+ }
  try{
-  const actor=await anchor(req,env);if(!actor)return out({detail:'Sign in with Google first'},401);
-  if(actor.pin_hash)return out({detail:'Parent PIN already configured'},409);
-  const verifier=await createPinVerifier(pin);
   let result;
   try{
    result=await env.DB.prepare('UPDATE parent_users SET pin_hash=?,pin_attempts=0,pin_locked_until=NULL WHERE id=? AND pin_hash IS NULL')
