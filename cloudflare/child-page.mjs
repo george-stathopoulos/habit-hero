@@ -1,7 +1,7 @@
 // Child-only screen with a restricted child cookie; parent APIs never accept it.
 export function childPage(){
  const html=`<!doctype html><html lang="el"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
- <title>Habit Hero — Το προφίλ μου</title><meta name="referrer" content="no-referrer">
+ <title>Habit Hero — Το προφίλ μου</title><meta name="referrer" content="no-referrer"><link rel="manifest" href="/habit-hero/app/child.webmanifest"><meta name="theme-color" content="#448be7"><meta name="apple-mobile-web-app-capable" content="yes">
  <style>:root{font-family:system-ui,sans-serif;background:#f3f6ff;color:#18334f}
  body{margin:0;padding:18px}main{max-width:650px;margin:24px auto}
  section{background:white;border-radius:18px;padding:24px;margin:16px 0;box-shadow:0 8px 25px #21396514}
