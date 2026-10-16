@@ -494,7 +494,6 @@ export function parentPage() {
    const li=document.createElement('li');li.textContent='🏅 '+child.child_name+': '+child.points+' πόντοι';balanceList.append(li);
   }
  }
- document.getElementById('form').addEventListener('submit',()=>document.getElementById('create').classList.remove('expanded'));
  document.getElementById('habitTemplates').addEventListener('click',event=>{
   const button=event.target.closest('button[data-name]');
   if(!button)return;
