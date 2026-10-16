@@ -194,11 +194,11 @@ export function childPage(){
  const worlds=[['space','🌌','Διάστημα'],['forest','🌳','Μαγικό δάσος'],['ocean','🐬','Βυθός'],['sunset','🌅','Ηλιοβασίλεμα'],['noir','◼','Studio Noir'],['paper','✦','Minimal'],['neon','⚡','Neon Arcade']];
  const themeChoices=document.getElementById('themeChoices');
  let activeWorld='space';
- try{activeWorld=localStorage.getItem('habitHero:world')||'space'}catch{}
+ try{activeWorld=localStorage.getItem('habitHero:world:'+ (sessionStorage.getItem('habitHero:activeChild')||'default'))||'space'}catch{}
  function chooseWorld(id){
   activeWorld=worlds.some(x=>x[0]===id)?id:'space';document.body.dataset.world=activeWorld;
   for(const button of themeChoices.querySelectorAll('button'))button.setAttribute('aria-pressed',String(button.dataset.world===activeWorld));
-  try{localStorage.setItem('habitHero:world',activeWorld)}catch{}
+  try{localStorage.setItem('habitHero:world:'+ (sessionStorage.getItem('habitHero:activeChild')||'default'),activeWorld)}catch{}
  }
  for(const [id,emoji,title] of worlds){
   const button=document.createElement('button');button.type='button';button.dataset.world=id;button.textContent=emoji+' '+title;
@@ -235,6 +235,7 @@ export function childPage(){
    return;
   }
   const profile=await me.json();
+  try{const previous=sessionStorage.getItem('habitHero:activeChild');if(previous!==profile.id){sessionStorage.setItem('habitHero:activeChild',profile.id);chooseWorld(localStorage.getItem('habitHero:world:'+profile.id)||'space')}}catch{}
   const icons={hero:'🦸',unicorn:'🦄',robot:'🤖',dragon:'🐉',astronaut:'🧑‍🚀',cat:'🐱',ninja:'🥷',wizard:'🧙'};
   status.textContent=(icons[profile.avatar_id]||'🦸')+' Γεια σου, '+profile.name+'!';
   document.getElementById('pairPanel').hidden=true;
