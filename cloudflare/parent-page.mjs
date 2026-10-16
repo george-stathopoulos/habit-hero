@@ -211,6 +211,12 @@ export function parentPage() {
  <section class="panel" id="progressPanel" data-tab="progress" hidden><h2>📈 Η πρόοδός μας</h2>
  <p class="subtle">Οι τελευταίες 30 ημέρες · οι συνεχόμενες ημέρες βασίζονται σε εγκεκριμένες δραστηριότητες.</p>
  <ul id="progressList"></ul><p id="progressMessage" role="status" class="subtle"></p></section>
+ <section class="panel" id="releaseInfo" data-tab="settings" hidden>
+ <h2>🛠️ Έκδοση εφαρμογής</h2><p class="subtle">Habit Hero · Family Adventure beta</p>
+ <p id="buildDate">Ενημέρωση: 16 Οκτωβρίου 2026</p>
+ <p class="subtle">Οι ενημερώσεις εγκαθίστανται μετά την ανάπτυξη της νέας έκδοσης στο Cloudflare. Κλείσε και άνοιξε ξανά την εφαρμογή για να ελέγξεις νέες αλλαγές.</p>
+ <button type="button" class="secondary" id="refreshAppVersion">🔄 Έλεγχος ενημέρωσης</button>
+ </section>
  <section class="panel" id="privacyPanel" data-tab="settings" hidden><h2>🔒 Τα δεδομένα της οικογένειας</h2>
  <p class="subtle">Μπορείτε να κατεβάσετε τα προφίλ, τις συνήθειες, τις εγκρίσεις, τους πόντους και τα έπαθλα της οικογένειάς σας ως αρχείο JSON. Το αρχείο περιέχει προσωπικά δεδομένα και πρέπει να φυλάσσεται με ασφάλεια.</p>
  <a href="/api/family/export" download="habit-hero-family-export.json">⬇️ Εξαγωγή οικογενειακών δεδομένων</a></section>
@@ -324,6 +330,7 @@ export function parentPage() {
   document.getElementById('goalSuggestions').hidden=false;
   document.getElementById('goalSuggestions').scrollIntoView({behavior:'smooth',block:'nearest'});
  });
+ document.getElementById('refreshAppVersion').addEventListener('click',()=>location.reload());
  const status=document.getElementById('status'),greeting=document.getElementById('greeting');
  const list=document.getElementById('children'),empty=document.getElementById('empty');
  async function refresh() {
@@ -342,6 +349,7 @@ export function parentPage() {
    document.getElementById('nextStep').textContent=data.children.length?'Δημιούργησε μια νέα αποστολή ή έλεγξε τις προσπάθειες των παιδιών! 🌟':'Ξεκίνα δημιουργώντας το πρώτο προφίλ παιδιού! 🌈';
    document.getElementById('privacyPanel').hidden=false;
    document.getElementById('familySettingsPanel').hidden=false;
+   document.getElementById('releaseInfo').hidden=false;
    document.getElementById('familyTimezone').value=data.family.timezone||'UTC';
    list.replaceChildren();
    for(const child of data.children) {
