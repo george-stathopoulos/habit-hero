@@ -125,3 +125,23 @@ export async function assignHabit(request,env){
   return respond({status:'assigned'},201);
  }catch{return respond({detail:'Unable to assign habit'},503)}
 }
+
+export async function unassignHabit(request,env){
+ if(request.headers.get('origin')!==origin)return respond({detail:'Forbidden'},403);
+ if(!(request.headers.get('content-type')||'').toLowerCase().startsWith('application/json'))
+  return respond({detail:'JSON required'},415);
+ const actor=await authorizedParent(request,env);
+ if(!actor)return respond({detail:'Not authenticated'},401);
+ let body;
+ try{const raw=await request.text();if(raw.length>512)return respond({detail:'Request too large'},413);body=JSON.parse(raw)}
+ catch{return respond({detail:'Invalid JSON'},400)}
+ const valid=x=>typeof x==='string'&&/^[a-f\d]{8}(-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(x);
+ if(!valid(body?.habit_id)||!valid(body?.child_id))return respond({detail:'Invalid assignment'},400);
+ try{
+  const result=await env.DB.prepare(`DELETE FROM habit_assignments
+   WHERE family_id=? AND habit_id=? AND child_id=?`)
+   .bind(actor.family_id,body.habit_id,body.child_id).run();
+  if(result.meta?.changes!==1)return respond({detail:'Assignment not found'},404);
+  return respond({status:'unassigned'});
+ }catch{return respond({detail:'Could not remove assignment'},503)}
+}
