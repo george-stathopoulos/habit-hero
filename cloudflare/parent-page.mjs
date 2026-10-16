@@ -24,7 +24,7 @@ export function parentPage() {
   h1{font-size:27px}h2{font-size:20px}button{padding:11px 13px}nav.quick-nav{margin:0 0 12px}}
  </style></head><body><main><header><div><h1>🏆 Habit Hero</h1><div class="subtle">Οικογενειακός πίνακας</div></div><button id="logout" class="secondary">Αποσύνδεση</button></header>
  <nav class="quick-nav" aria-label="Γρήγορη πλοήγηση">
- <a href="#family">👨‍👩‍👧 Παιδιά</a><a href="#habitPanel">🎯 Συνήθειες</a>
+ <a href="#family">👨‍👩‍👧 Παιδιά</a><a href="#pinPanel">🔐 PIN παιδιού</a><a href="#habitPanel">🎯 Συνήθειες</a>
  <a href="#approvalsPanel">✅ Εγκρίσεις</a><a href="#rewardsPanel">🎁 Έπαθλα</a>
  <a href="#redemptionsPanel">📩 Αιτήματα</a><a href="#progressPanel">📈 Πρόοδος</a>
  <a href="#privacyPanel">🔒 Δεδομένα</a></nav>
@@ -47,15 +47,18 @@ export function parentPage() {
  <label for="initialChildPinConfirm">Επιβεβαίωση PIN (προαιρετικό)</label><input id="initialChildPinConfirm" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="new-password">
  <label for="age">Ηλικιακή ομάδα (προαιρετική)</label><select id="age"><option value="">Δεν θέλω να δηλώσω</option><option value="6-8">6–8</option><option value="9-11">9–11</option><option value="12-14">12–14</option></select>
  <button id="save" type="submit">Προσθήκη παιδιού</button></form><p id="formStatus" role="status" class="subtle"></p></section>
- <section class="panel" id="devicesPanel" hidden><h2>📱 Συσκευές παιδιών</h2>
- <p class="subtle">Ενεργοποιήστε την ανεξάρτητη πρόσβαση του παιδιού από άλλη συσκευή ή ξεχωριστό προφίλ browser, χωρίς να δώσετε πρόσβαση στον λογαριασμό γονέα.</p>
- <label for="deviceChild">Παιδί</label><select id="deviceChild"></select>
- <form id="pinForm"><label for="childPin">4-ψήφιος κωδικός παιδιού (PIN)</label>
+ <section class="panel" id="pinPanel" hidden><h2>🔐 Ορισμός PIN παιδιού</h2><p class="subtle">Δημιούργησε ή άλλαξε τον προσωπικό τετραψήφιο κωδικό του παιδιού. Χρησιμοποιείται μετά τη σύνδεση της συσκευής του.</p>
+ <label for="pinChild">Παιδί</label><select id="pinChild"></select>
+  <form id="pinForm"><label for="deviceChild">Επιλεγμένο παιδί</label><p class="subtle">Επίλεξε παιδί στην ενότητα «Συσκευές παιδιών» ή πάτησε «Ορισμός PIN» δίπλα στο προφίλ του.</p><label for="childPin">4-ψήφιος κωδικός παιδιού (PIN)</label>
  <input id="childPin" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="new-password" required placeholder="••••">
  <label for="confirmChildPin">Επιβεβαίωση PIN</label>
  <input id="confirmChildPin" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="new-password" required>
  <button id="saveChildPin" type="submit">Ορισμός / επαναφορά PIN</button></form>
  <p id="pinStatus" role="status" class="subtle"></p>
+</section>
+ <section class="panel" id="devicesPanel" hidden><h2>📱 Συσκευές παιδιών</h2>
+ <p class="subtle">Ενεργοποιήστε την ανεξάρτητη πρόσβαση του παιδιού από άλλη συσκευή ή ξεχωριστό προφίλ browser, χωρίς να δώσετε πρόσβαση στον λογαριασμό γονέα.</p>
+ <label for="deviceChild">Παιδί</label><select id="deviceChild"></select>
  <button id="createPair">Δημιουργία κωδικού σύνδεσης (10 λεπτά)</button>
  <button id="revokeDevice" class="secondary">Ανάκληση πρόσβασης παιδιού</button>
  <p id="deviceStatus" role="status" class="subtle"></p>
@@ -165,17 +168,30 @@ export function parentPage() {
       document.getElementById('formStatus').textContent='Το προφίλ ενημερώθηκε.';
       await refresh();
      }catch(e){document.getElementById('formStatus').textContent=e.message;edit.disabled=false}
-    });li.append(edit);list.append(li);
+    });li.append(edit);
+    const pinButton=document.createElement('button');pinButton.className='secondary';
+    pinButton.textContent=child.pin_configured?'🔐 Αλλαγή PIN':'🔐 Ορισμός PIN';
+    pinButton.addEventListener('click',()=>{
+      document.getElementById('pinChild').value=child.id;
+      document.getElementById('pinPanel').scrollIntoView({behavior:'smooth',block:'start'});
+      document.getElementById('childPin').focus({preventScroll:true});
+    });
+    li.append(pinButton);list.append(li);
    }
    empty.hidden=data.children.length>0;
    const select=document.getElementById('habitChild');select.replaceChildren();
    for(const child of data.children){
     const option=document.createElement('option');option.value=child.id;option.textContent=child.display_name;select.append(option);
    }
+   const pinSelect=document.getElementById('pinChild');pinSelect.replaceChildren();
+   for(const child of data.children){
+    const option=document.createElement('option');option.value=child.id;option.textContent=child.display_name;pinSelect.append(option);
+   }
    const deviceSelect=document.getElementById('deviceChild');deviceSelect.replaceChildren();
    for(const child of data.children){
     const opt=document.createElement('option');opt.value=child.id;opt.textContent=child.display_name;deviceSelect.append(opt);
    }
+   document.getElementById('pinPanel').hidden=data.children.length===0;
    document.getElementById('devicesPanel').hidden=data.children.length===0;
    document.getElementById('habitPanel').hidden=data.children.length===0;
    if(data.children.length)await refreshHabits();
@@ -407,7 +423,7 @@ export function parentPage() {
   button.disabled=true;
   try{
    const res=await fetch('/api/children/pin',{method:'POST',credentials:'same-origin',
-    headers:{'content-type':'application/json'},body:JSON.stringify({child_id:document.getElementById('deviceChild').value,pin})});
+    headers:{'content-type':'application/json'},body:JSON.stringify({child_id:document.getElementById('pinChild').value,pin})});
    if(!res.ok)throw Error('Δεν αποθηκεύτηκε το PIN.');
    note.textContent='Το PIN ενημερώθηκε. Το παιδί θα το χρειάζεται στη συσκευή του.';
    document.getElementById('pinForm').reset();
