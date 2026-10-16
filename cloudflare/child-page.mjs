@@ -205,7 +205,13 @@ export function childPage(){
   button.addEventListener('click',()=>chooseWorld(id));themeChoices.append(button);
  }
  chooseWorld(activeWorld);
- document.getElementById('notificationBell').addEventListener('click',()=>openChildTab('messages'));
+ document.getElementById('notificationBell').addEventListener('click',()=>{
+  const seen=document.getElementById('notificationBell').dataset.latestMessage||'';
+  try{localStorage.setItem('habitHero:seenHelp:'+ (sessionStorage.getItem('habitHero:activeChild')||'default'),seen)}catch{}
+  document.getElementById('notificationBell').classList.remove('ringing');
+  document.getElementById('unreadCount').hidden=true;
+  openChildTab('messages');
+ });
  const status=document.getElementById('status');
  async function refresh(){
   const me=await fetch('/api/child/me',{credentials:'same-origin',cache:'no-store'});
@@ -322,9 +328,15 @@ export function childPage(){
   const result=await response.json(),box=document.getElementById('parentMessages'),list=document.getElementById('helpReplies');
   list.replaceChildren();
   const requests=(result.requests||[]).filter(r=>r.parent_message);
-  document.getElementById('unreadCount').hidden=!requests.length;
-  document.getElementById('unreadCount').textContent=String(requests.length);
-  document.getElementById('notificationBell').classList.toggle('ringing',requests.length>0);
+  const latest=requests[0]?.id||'';
+  const bell=document.getElementById('notificationBell');
+  bell.dataset.latestMessage=latest;
+  let seen='';
+  try{seen=localStorage.getItem('habitHero:seenHelp:'+ (sessionStorage.getItem('habitHero:activeChild')||'default'))||''}catch{}
+  const unread=!!latest&&latest!==seen;
+  document.getElementById('unreadCount').hidden=!unread;
+  document.getElementById('unreadCount').textContent=unread?String(requests.length):'';
+  bell.classList.toggle('ringing',unread);
   box.hidden=!requests.length;
   for(const item of requests){
    const li=document.createElement('li');li.textContent='💜 '+item.parent_message;list.append(li);
