@@ -22,5 +22,8 @@
       "database_name": "habit-hero-db",
       "database_id": "0450de33-0812-45b4-8f52-62ed9947aaf3"
     }
-  ]
+  ],
+  "vars": {
+    "GOOGLE_CLIENT_ID": "375981700231-lrhrp78kndrq2dbnpummj32kaapgu9e9.apps.googleusercontent.com"
+  }
 }
