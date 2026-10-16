@@ -11,5 +11,5 @@ export function v2Page(role='child'){
  <section id="profileTab" hidden><div class="panel"><h2>🦸 Διάλεξε ήρωα</h2><p class="muted">Όλοι μπορούν να επιλέξουν τον ήρωα που τους εκφράζει.</p><div id="heroChoices" class="hero-select"></div></div><div class="panel"><h2>🎨 Διάλεξε τον κόσμο σου</h2><div id="themeChoices" class="themes"></div></div><div id="profileInfo" class="panel"></div></section>
  <nav class="nav" id="tabs" aria-label="Πλοήγηση"></nav><p id="error" role="status" class="muted"></p></main><div id="modal" class="dialog" hidden><div class="sheet"><button id="closeModal" class="secondary" style="float:right">✕</button><div id="modalBody"></div></div></div>
  <script src="/habit-hero/app/v2/app.js" defer></script></body></html>`;
- return new Response(html,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store, private','content-security-policy':"default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'"}});
+ return new Response(html,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store, private','content-security-policy':"default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'"}});
 }
