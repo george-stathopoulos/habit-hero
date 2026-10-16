@@ -24,7 +24,7 @@ export function childPage(){
  <p id="progressStats" class="muted"></p><h3>Οι πρόσφατες προσπάθειές μου</h3><ul id="activityHistory"></ul></section>
  <section id="rewardsPanel" hidden><h2>🎁 Τα έπαθλά μου</h2>
  <p id="balance" class="muted"></p><ul id="rewards"></ul>
- <p id="rewardMessage" role="status"></p></section>
+ <p id="rewardMessage" role="status"></p><h3>Τα αιτήματά μου</h3><ul id="redemptionHistory"></ul></section>
  </main><script>
  const status=document.getElementById('status');
  async function refresh(){
@@ -34,6 +34,7 @@ export function childPage(){
    document.getElementById('rewardsPanel').hidden=true;
    document.getElementById('progressPanel').hidden=true;
    document.getElementById('rewards').replaceChildren();
+   document.getElementById('redemptionHistory').replaceChildren();
    document.getElementById('progressStats').textContent='';
    document.getElementById('activityHistory').replaceChildren();
    document.getElementById('logout').hidden=true;
@@ -98,6 +99,14 @@ export function childPage(){
   const data=await response.json();
   document.getElementById('rewardsPanel').hidden=false;
   document.getElementById('balance').textContent='Διαθέσιμοι πόντοι: '+data.balance;
+  const previous=document.getElementById('redemptionHistory');previous.replaceChildren();
+  for(const request of data.redemption_history||[]){
+   const item=document.createElement('li');
+   const state=request.status==='requested'?'⏳ Σε αναμονή':request.status==='approved'?'✅ Εγκρίθηκε':
+     request.status==='fulfilled'?'🎉 Παραδόθηκε':'❌ Απορρίφθηκε';
+   item.textContent=request.reward_name+' · '+state+' · '+request.points_spent+' πόντοι';
+   previous.append(item);
+  }
   const list=document.getElementById('rewards');list.replaceChildren();
   if(!data.rewards.length){
     const item=document.createElement('li');item.textContent='Δεν υπάρχουν ακόμη έπαθλα.';list.append(item);
