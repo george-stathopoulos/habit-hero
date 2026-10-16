@@ -94,7 +94,7 @@ export async function authorizedChild(request,env){
 }
 export async function childMe(request,env){
  const actor=await authorizedChild(request,env);
- return actor?json({role:'child',name:actor.child_name,avatar_id:actor.avatar_id,pin_enabled:!!actor.pin_enabled}):json({detail:'Not authenticated'},401);
+ return actor?json({role:'child',id:actor.child_id,name:actor.child_name,avatar_id:actor.avatar_id,pin_enabled:!!actor.pin_enabled}):json({detail:'Not authenticated'},401);
 }
 export async function childActivities(request,env){
  const child=await authorizedChild(request,env);
