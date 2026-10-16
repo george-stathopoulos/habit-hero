@@ -60,7 +60,12 @@ export function parentPage() {
  <p id="noApprovals" class="subtle">Δεν υπάρχουν εκκρεμείς εγκρίσεις.</p>
  <p id="approvalNote" role="status" class="subtle"></p></section>
  <section class="panel" id="pointsPanel" hidden><h2>🏆 Πόντοι παιδιών</h2>
- <ul id="balances"></ul><p class="subtle">Οι πόντοι προστίθενται μόνο μετά από έγκριση γονέα.</p></section>
+ <ul id="balances"></ul><p class="subtle">Οι πόντοι των συνηθειών προστίθενται μετά από έγκριση γονέα.</p>
+ <form id="pointsForm"><label for="pointsChild">Παιδί</label><select id="pointsChild" required></select>
+ <label for="pointsDelta">Προσθήκη (+) ή αφαίρεση (-) πόντων</label>
+ <input id="pointsDelta" type="number" required step="1" min="-1000" max="1000" placeholder="+10 ή -5">
+ <button type="submit" id="pointsSave">Καταχώρηση διόρθωσης</button></form>
+ <p id="pointsStatus" role="status" class="subtle"></p></section>
  <section class="panel" id="rewardsPanel" hidden>
   <h2>🎁 Έπαθλα & ανταμοιβές</h2>
   <p class="subtle">Δημιουργήστε έπαθλα για τα παιδιά. Η εξαργύρωση αφαιρεί πόντους μόνο όταν την εγκρίνετε.</p>
@@ -137,6 +142,10 @@ export function parentPage() {
    document.getElementById('habitPanel').hidden=data.children.length===0;
    if(data.children.length)await refreshHabits();
    if(data.children.length)await refreshActivityWorkflow();
+   const pointsChild=document.getElementById('pointsChild');pointsChild.replaceChildren();
+   for(const child of data.children){
+     const option=document.createElement('option');option.value=child.id;option.textContent=child.display_name;pointsChild.append(option);
+   }
    const rewardChild=document.getElementById('rewardChild');rewardChild.replaceChildren();
    for(const child of data.children){const option=document.createElement('option');option.value=child.id;option.textContent=child.display_name;rewardChild.append(option)}
    document.getElementById('rewardsPanel').hidden=data.children.length===0;
@@ -472,6 +481,24 @@ export function parentPage() {
   }
   document.getElementById('noRedemptions').hidden=requests.length>0;
  }
+ document.getElementById('pointsForm').addEventListener('submit',async event=>{
+  event.preventDefault();
+  const button=document.getElementById('pointsSave'),status=document.getElementById('pointsStatus');
+  const delta=Number(document.getElementById('pointsDelta').value);
+  if(!Number.isInteger(delta)||delta===0||delta< -1000||delta>1000){
+   status.textContent='Επιλέξτε ακέραιο αριθμό από -1000 έως +1000 (όχι μηδέν).';return;
+  }
+  button.disabled=true;
+  try{
+   const response=await fetch('/api/points/adjust',{method:'POST',credentials:'same-origin',
+    headers:{'content-type':'application/json'},body:JSON.stringify({
+     child_id:document.getElementById('pointsChild').value,delta,request_id:crypto.randomUUID()})});
+   if(!response.ok)throw Error('Η αλλαγή απέτυχε. Ελέγξτε το διαθέσιμο υπόλοιπο.');
+   status.textContent='Η διόρθωση καταχωρήθηκε στο ιστορικό πόντων.';
+   document.getElementById('pointsDelta').value='';
+   await refreshActivityWorkflow();await refreshProgress();
+  }catch(e){status.textContent=e.message}finally{button.disabled=false}
+ });
  document.getElementById('rewardForm').addEventListener('submit',async event=>{
   event.preventDefault();const save=document.getElementById('rewardSave');save.disabled=true;
   const status=document.getElementById('rewardStatus');
