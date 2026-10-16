@@ -28,6 +28,12 @@ export function childPage(){
  button:active{transform:scale(.97)}
  [data-tab]:not([data-active="true"]){display:none!important}
  nav.quick-nav{display:none}
+ .hero-particles{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+ .hero-particles span{position:absolute;top:50%;left:50%;font-size:26px;animation:heroBurst 1.45s ease-out forwards;animation-delay:var(--delay)}
+ .hero-particles .hero-smoke{filter:grayscale(1);opacity:.6;font-size:35px}
+ @keyframes heroBurst{0%{opacity:0;transform:translate(-50%,-50%) rotate(var(--angle)) translateY(0) scale(.25)}
+  25%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--angle)) translateY(-230px) scale(1.7)}}
+ @media(prefers-reduced-motion:reduce){.hero-particles{display:none}}
  .mission-toast{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#21195db8;padding:20px;animation:fadeHero .25s ease}
  .mission-toast-content{border-radius:30px;background:#fff;padding:32px 25px;max-width:420px;text-align:center;box-shadow:0 30px 100px #1d164966}
  .mission-toast-emoji{font-size:74px;display:block;animation:heroPop .45s ease}
@@ -132,7 +138,13 @@ export function childPage(){
   const description=document.createElement('p');description.textContent='Η αποστολή σου στάλθηκε για έγκριση. Οι πόντοι σου περιμένουν! 🚀';
   const close=document.createElement('button');close.textContent='Συνέχισε την περιπέτεια!';close.type='button';
   close.addEventListener('click',()=>overlay.remove());card.append(star,title,description,close);
-  overlay.append(card);document.body.append(overlay);close.focus();
+  const particles=document.createElement('div');particles.className='hero-particles';particles.setAttribute('aria-hidden','true');
+  for(let i=0;i<15;i++){
+   const puff=document.createElement('span');puff.className=i%3===0?'hero-smoke':'hero-spark';
+   puff.style.setProperty('--angle',String(i*24)+'deg');puff.style.setProperty('--delay',String((i%5)*50)+'ms');
+   puff.textContent=i%3===0?'☁️':i%2===0?'✨':'⭐';particles.append(puff);
+  }
+  overlay.append(particles,card);document.body.append(overlay);close.focus();
  }
  const status=document.getElementById('status');
  async function refresh(){
