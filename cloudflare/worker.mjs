@@ -1,3 +1,4 @@
+import {parentProgress,childProgress} from './progress-api.mjs';
 import {parentRewards,createReward,childRewards,childRequestReward,parentRedemptions,reviewReward} from './rewards-api.mjs';
 import {childPage} from './child-page.mjs';
 import {makePairing,pairDevice,childMe,childActivities,childSubmit,childLogout,revokeChildDevices} from './child-auth.mjs';
@@ -133,6 +134,8 @@ export default {
     if (url.pathname === '/api/approvals' && request.method === 'GET') return listApprovals(request,env);
     if (url.pathname === '/api/approvals/review' && request.method === 'POST') return reviewActivity(request,env);
     if (url.pathname === '/api/points' && request.method === 'GET') return listBalances(request,env);
+    if (url.pathname === '/api/progress' && request.method === 'GET') return parentProgress(request,env);
+    if (url.pathname === '/api/child/progress' && request.method === 'GET') return childProgress(request,env);
     if (url.pathname === '/api/child/pairing' && request.method === 'POST') return makePairing(request,env);
     if (url.pathname === '/api/child/revoke' && request.method === 'POST') return revokeChildDevices(request,env);
     if (url.pathname === '/api/child/pair' && request.method === 'POST') return pairDevice(request,env);
