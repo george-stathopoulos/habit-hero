@@ -28,6 +28,11 @@ async function metrics(env,familyId,childId=null){
    WHERE family_id=? AND child_id=? AND status='approved' AND occurrence_date>=?
    GROUP BY occurrence_date ORDER BY occurrence_date DESC`)
     .bind(familyId,child.id,since).all();
+  const lifetime=await env.DB.prepare(`SELECT COUNT(*) AS approved_total
+   FROM completion_submissions WHERE family_id=? AND child_id=? AND status='approved'`)
+   .bind(familyId,child.id).first();
+  const earned=await env.DB.prepare(`SELECT COALESCE(SUM(CASE WHEN delta>0 THEN delta ELSE 0 END),0) AS earned_total
+   FROM point_ledger WHERE family_id=? AND child_id=?`).bind(familyId,child.id).first();
   const history=await env.DB.prepare(`SELECT s.id,s.occurrence_date,s.status,
    h.name_el AS habit_name,s.points_awarded,s.submitted_at,s.reviewed_at
    FROM completion_submissions s JOIN habits h ON h.id=s.habit_id AND h.family_id=s.family_id
@@ -36,7 +41,15 @@ async function metrics(env,familyId,childId=null){
   const balance=await env.DB.prepare(`SELECT COALESCE(SUM(delta),0) AS balance
    FROM point_ledger WHERE family_id=? AND child_id=?`).bind(familyId,child.id).first();
   const calendar=completed.results||[];
+  const earnedTotal=earned?.earned_total??0,approvedTotal=lifetime?.approved_total??0;
+  const badges=[];
+  if(approvedTotal>=1)badges.push({id:'first_quest',name:'Πρώτη αποστολή',emoji:'🌟'});
+  if(approvedTotal>=10)badges.push({id:'ten_quests',name:'10 αποστολές',emoji:'🥉'});
+  if(approvedTotal>=50)badges.push({id:'fifty_quests',name:'50 αποστολές',emoji:'🥈'});
+  if(approvedTotal>=100)badges.push({id:'hundred_quests',name:'100 αποστολές',emoji:'🥇'});
   data.push({child_id:child.id,child_name:child.display_name,
+   level:Math.floor(earnedTotal/100)+1,level_points:earnedTotal%100,
+   lifetime_points_earned:earnedTotal,lifetime_approved:approvedTotal,badges,
    approved_last_30_days:calendar.reduce((sum,r)=>sum+r.total,0),
    earned_last_30_days:calendar.reduce((sum,r)=>sum+r.points_earned,0),
    active_days_last_30_days:calendar.length,
