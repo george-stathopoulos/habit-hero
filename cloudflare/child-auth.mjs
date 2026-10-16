@@ -87,7 +87,8 @@ export async function authorizedChild(request,env){
    LEFT JOIN family_settings settings ON settings.family_id=f.id
    WHERE s.token_hash=? AND s.role='child' AND s.parent_id IS NULL
     AND s.revoked_at IS NULL AND s.expires_at>?
-    AND c.deleted_at IS NULL AND f.deleted_at IS NULL`)
+    AND c.deleted_at IS NULL AND f.deleted_at IS NULL
+    AND (c.pin_hash IS NULL OR s.pin_verified_at IS NOT NULL)`)
     .bind(await sha(token),new Date().toISOString()).first();
  }catch{return null}
 }
