@@ -57,7 +57,8 @@ export function childPage(){
    return;
   }
   const profile=await me.json();
-  status.textContent='Γεια σου, '+profile.name+'!';
+  const icons={hero:'🦸',unicorn:'🦄',robot:'🤖',dragon:'🐉',astronaut:'🧑‍🚀',cat:'🐱',ninja:'🥷',wizard:'🧙'};
+  status.textContent=(icons[profile.avatar_id]||'🦸')+' Γεια σου, '+profile.name+'!';
   document.getElementById('pairPanel').hidden=true;
   document.getElementById('quickNav').hidden=false;
   document.getElementById('logout').hidden=false;
