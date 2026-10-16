@@ -115,11 +115,18 @@ export async function childRequestReward(req,env) {
    if(exists)return json({detail:'This reward is available once only'},409);
   }
   const id=crypto.randomUUID(),now=stamp();
-  await env.DB.prepare(`INSERT INTO reward_redemptions
+  const created=await env.DB.prepare(`INSERT INTO reward_redemptions
     (id,family_id,reward_id,child_id,points_spent,status,requested_at,idempotency_key)
-    VALUES (?,?,?,?,?,'requested',?,?)`)
+    SELECT ?,?,?,?,?, 'requested',?,?
+    WHERE NOT EXISTS (
+      SELECT 1 FROM reward_redemptions existing
+      WHERE existing.family_id=? AND existing.child_id=? AND existing.reward_id=?
+       AND (existing.status IN ('requested','approved') OR
+            (?=0 AND existing.status='fulfilled'))
+    )`)
     .bind(id,actor.family_id,rewardId,actor.child_id,reward.points_cost,now,
-      'child-request-'+id).run();
+      'child-request-'+id,actor.family_id,actor.child_id,rewardId,reward.recurring).run();
+  if(created.meta?.changes!==1)return json({detail:'Reward request already in progress or previously used'},409);
   return json({id,status:'requested',points_cost:reward.points_cost},201);
  }catch{return json({detail:'Could not request reward'},503)}
 }
