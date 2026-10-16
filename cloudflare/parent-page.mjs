@@ -27,7 +27,17 @@ export function parentPage() {
  <label for="habitFrequency">Συχνότητα</label><select id="habitFrequency"><option value="daily">Καθημερινά</option><option value="weekly">Εβδομαδιαία</option><option value="monthly">Μηνιαία</option><option value="once">Μία φορά</option></select>
  <label for="habitPoints">Πόντοι</label><input id="habitPoints" type="number" min="1" max="1000" value="10" required>
  <button id="habitSave" type="submit">Δημιουργία και ανάθεση</button></form><p id="habitStatus" role="status" class="subtle"></p></section>
- <section class="panel"><h2>🚧 Επόμενες λειτουργίες</h2><p class="subtle">Η καταχώριση ολοκληρώσεων, οι πόντοι και οι επιβραβεύσεις θα ενεργοποιηθούν σε επόμενο βήμα.</p></section>
+ <section class="panel" id="activitiesPanel" hidden>
+ <h2>🌟 Ολοκλήρωση δραστηριοτήτων</h2>
+ <p class="subtle">Δοκιμαστική λειτουργία με επίβλεψη γονέα: το παιδί επιλέγει «Το έκανα!» στη συσκευή του γονέα. Δεν έχει ακόμη δικό του PIN.</p>
+ <ul id="activities"></ul><p id="activityNote" class="subtle" role="status"></p></section>
+ <section class="panel" id="approvalsPanel" hidden>
+ <h2>🛡️ Εγκρίσεις γονέα</h2><ul id="approvals"></ul>
+ <p id="noApprovals" class="subtle">Δεν υπάρχουν εκκρεμείς εγκρίσεις.</p>
+ <p id="approvalNote" role="status" class="subtle"></p></section>
+ <section class="panel" id="pointsPanel" hidden><h2>🏆 Πόντοι παιδιών</h2>
+ <ul id="balances"></ul><p class="subtle">Οι πόντοι προστίθενται μόνο μετά από έγκριση γονέα.</p></section>
+ <section class="panel"><h2>🚧 Επόμενες λειτουργίες</h2><p class="subtle">Η αυτόνομη σύνδεση παιδιών, οι εξαργυρώσεις και οι επιβραβεύσεις παραμένουν κλειδωμένες έως ότου ελεγχθούν.</p></section>
  </main><script>
  const status=document.getElementById('status'),greeting=document.getElementById('greeting');
  const list=document.getElementById('children'),empty=document.getElementById('empty');
@@ -50,6 +60,7 @@ export function parentPage() {
    }
    document.getElementById('habitPanel').hidden=data.children.length===0;
    if(data.children.length)await refreshHabits();
+   if(data.children.length)await refreshActivityWorkflow();
   }catch(e){
    greeting.textContent='Habit Hero';status.textContent=e.message;
    const a=document.createElement('a');a.href='/api/auth/google/start';a.textContent='Σύνδεση με Google';
@@ -68,6 +79,68 @@ export function parentPage() {
   }
   document.getElementById('noHabits').hidden=data.habits.length>0;
  }
+ async function refreshActivityWorkflow(){
+  const [a,p,b]=await Promise.all([
+    fetch('/api/activities',{credentials:'same-origin',cache:'no-store'}),
+    fetch('/api/approvals',{credentials:'same-origin',cache:'no-store'}),
+    fetch('/api/points',{credentials:'same-origin',cache:'no-store'})
+  ]);
+  if(!a.ok||!p.ok||!b.ok)throw Error('Δεν φορτώθηκαν οι δραστηριότητες.');
+  const activities=(await a.json()).activities,pending=(await p.json()).pending,balances=(await b.json()).balances;
+  for(const id of ['activitiesPanel','approvalsPanel','pointsPanel'])document.getElementById(id).hidden=false;
+  const activitiesList=document.getElementById('activities');activitiesList.replaceChildren();
+  for(const activity of activities){
+    const li=document.createElement('li'),label=document.createElement('span');
+    label.textContent=(activity.emoji||'⭐')+' '+activity.child_name+' — '+activity.habit_name+' ('+activity.points+' πόντοι) ';
+    li.append(label);
+    if(!activity.submission_status){
+      const btn=document.createElement('button');btn.textContent='Το έκανα!';
+      btn.addEventListener('click',async()=>{
+        btn.disabled=true;
+        try{
+          const r=await fetch('/api/activities',{method:'POST',credentials:'same-origin',
+            headers:{'content-type':'application/json'},
+            body:JSON.stringify({child_id:activity.child_id,habit_id:activity.habit_id})});
+          if(!r.ok)throw Error('Δεν καταχωρήθηκε. Ίσως έχει ήδη υποβληθεί σήμερα.');
+          document.getElementById('activityNote').textContent='Η δραστηριότητα περιμένει έγκριση.';
+          await refreshActivityWorkflow();
+        }catch(e){document.getElementById('activityNote').textContent=e.message;btn.disabled=false}
+      });li.append(btn);
+    }else{
+      const flag=document.createElement('small');
+      flag.textContent=activity.submission_status==='pending'?'⏳ Σε αναμονή':activity.submission_status==='approved'?'✅ Εγκρίθηκε':'❌ Απορρίφθηκε';
+      li.append(flag);
+    }
+    activitiesList.append(li);
+  }
+  const approvalsList=document.getElementById('approvals');approvalsList.replaceChildren();
+  for(const completion of pending){
+    const li=document.createElement('li'),label=document.createElement('span');
+    label.textContent=completion.child_name+' — '+completion.habit_name+' ('+completion.points+' πόντοι) ';
+    li.append(label);
+    for(const decision of ['approved','rejected']){
+      const btn=document.createElement('button');btn.className=decision==='rejected'?'secondary':'';
+      btn.textContent=decision==='approved'?'Έγκριση':'Απόρριψη';
+      btn.addEventListener('click',async()=>{
+        li.querySelectorAll('button').forEach(b=>b.disabled=true);
+        try{
+          const r=await fetch('/api/approvals/review',{method:'POST',credentials:'same-origin',
+           headers:{'content-type':'application/json'},
+           body:JSON.stringify({completion_id:completion.id,decision})});
+          if(!r.ok)throw Error('Η απόφαση δεν αποθηκεύτηκε. Δοκιμάστε ανανέωση.');
+          document.getElementById('approvalNote').textContent=decision==='approved'?'Η έγκριση καταχωρήθηκε και οι πόντοι ενημερώθηκαν.':'Η δραστηριότητα απορρίφθηκε.';
+          await refreshActivityWorkflow();
+        }catch(e){document.getElementById('approvalNote').textContent=e.message;li.querySelectorAll('button').forEach(b=>b.disabled=false)}
+      });li.append(btn);
+    }
+    approvalsList.append(li);
+  }
+  document.getElementById('noApprovals').hidden=pending.length>0;
+  const balanceList=document.getElementById('balances');balanceList.replaceChildren();
+  for(const child of balances){
+   const li=document.createElement('li');li.textContent='🏅 '+child.child_name+': '+child.points+' πόντοι';balanceList.append(li);
+  }
+ }
  document.getElementById('habitForm').addEventListener('submit',async event=>{
   event.preventDefault();
   const button=document.getElementById('habitSave'),status=document.getElementById('habitStatus');
@@ -82,7 +155,7 @@ export function parentPage() {
    if(!response.ok)throw Error('Η αποθήκευση απέτυχε. Παρακαλώ δοκιμάστε ξανά.');
    status.textContent='Η συνήθεια δημιουργήθηκε και ανατέθηκε!';
    document.getElementById('habitName').value='';
-   await refreshHabits();
+   await refreshHabits();await refreshActivityWorkflow();
   }catch(e){status.textContent=e.message}finally{button.disabled=false}
  });
  document.getElementById('form').addEventListener('submit',async ev=>{
