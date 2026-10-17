@@ -125,9 +125,10 @@ export default {
     }
     if(url.pathname==='/api/version'&&request.method==='GET'){
       const current=typeof env.APP_VERSION==='string'?env.APP_VERSION:'unknown';
+      const releaseRef=typeof env.APP_RELEASE_REF==='string'?env.APP_RELEASE_REF:'main';
       let latest=null,updatedAt=null;
       try{
-        const response=await fetch('https://api.github.com/repos/george-stathopoulos/habit-hero/commits/main',{
+        const response=await fetch('https://api.github.com/repos/george-stathopoulos/habit-hero/commits/'+encodeURIComponent(releaseRef),{
           headers:{'user-agent':'habit-hero-version-check','accept':'application/vnd.github+json'},
           cf:{cacheTtl:180,cacheEverything:true}
         });
@@ -136,7 +137,7 @@ export default {
           updatedAt=data.commit?.committer?.date||null;
         }
       }catch{}
-      return new Response(JSON.stringify({current,latest,updated_at:updatedAt,
+      return new Response(JSON.stringify({current,latest,release_ref:releaseRef,updated_at:updatedAt,
         update_available:!!(latest&&current!=='unknown'&&latest!==current),
         check_available:!!latest}),{headers:{'content-type':'application/json','cache-control':'no-store'}});
     }

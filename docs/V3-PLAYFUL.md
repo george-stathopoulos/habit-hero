@@ -41,7 +41,7 @@ Production WebP assets retain transparency and are self-hosted. Home's backgroun
 
 Use the existing routing, child-authorization and recurrence checks plus `node scripts/v3/check.mjs` for new routes and packaged assets. Review actual browser layouts at 320, 390, 430 and tablet widths, then one mission/help/submit journey. Do not rebuild the legacy Expo frontend repeatedly for visual edits.
 
-The `cloudflare.yml` dispatch input `v3_preview=true` invokes the focused deployment workflow. It reuses the last successful main static artifact, overlays the current app, and deploys the current Worker. Legacy static routes are retained; no migrations run. An expired baseline fails explicitly and requires a full build. Normal main builds retain the original workflow.
+The `cloudflare.yml` dispatch input `v3_preview=true` invokes the focused deployment workflow. It reuses the last successful main static artifact, overlays the current app, and deploys the current Worker. Legacy static routes are retained; no migrations run. The version endpoint reports `release_ref` and checks the deployed source branch, so a preview is not incorrectly offered the older main build as an update. Normal builds use `main`. An expired baseline fails explicitly and requires a full build. Normal main builds retain the original workflow.
 
 Before calling the whole v3 product complete: verify a signed-in child → parent approval → updated balance journey on live test-family data; test an actual iPhone home-screen installation, VoiceOver, reduced motion and offline behavior. Complete and review the rest of the blueprint, including parent onboarding, scheduling UI, all character states and the other three worlds. A passing build or a visual sandbox is not proof of those flows.
 
