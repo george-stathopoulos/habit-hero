@@ -33,6 +33,12 @@ jobs:
           node scripts/test-child-auth.mjs
           node scripts/test-household.mjs
           node scripts/test-occurrence.mjs
+          node scripts/v3/test-schedule.mjs
+          node scripts/test-habits-api.mjs
+          node scripts/test-activity-api.mjs
+          node scripts/test-child-pin.mjs
+          node scripts/test-pin-roundtrip.mjs
+          python3 scripts/test-d1-schema.py
           node scripts/v3/check.mjs
           node scripts/v3/test-tilt.mjs
           node scripts/v3/test-profile-switch.mjs

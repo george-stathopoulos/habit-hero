@@ -107,3 +107,15 @@ Parent validation: browser sandbox mission creation increased the mission count 
 - Goal selections are browser-local, keyed by the authenticated family ID. Legacy unscoped `hh2-family-goals` is deliberately not imported across households. The sample route does not persist goals. Storage failure is reported and selections continue in memory.
 - Focus remains on the chosen goal after toggling; switching from suggestions to the builder moves focus to the dialog header and resets its scroll position.
 - Focused checks cover 20 unique IDs, all three age groups, field limits, Greek capitalization/accent/whitespace normalization and child-specific matches. Browser sandbox checked duplicate notice and a suggestion through editor to saved mission, without production writes. No database migrations or artwork changes.
+
+### Scheduling and history · preview.7
+
+The existing `habits.frequency_days_json` stores a versioned object `{version:1,weekdays:[1..7],start:'HH:mm',end:'HH:mm'}`. Empty hours mean all day; null legacy values mean every day without a window. Nonempty hours require both values and start < end on the same day; closing time is exclusive. Invalid stored schedules fail closed. The family timezone determines both weekday and clock, including DST. No schema changes are introduced. Changing recurrence/schedule leaves historical submissions and ledger entries untouched.
+
+Parent mission listing now includes all editable details, and updates preserve omitted fields for legacy callers. Child and supervised submission routes reject out-of-schedule requests. The child Today view excludes other-day missions; a separate filter exposes them, and detail views explain timing while keeping help available. Server validation remains authoritative when the clock changes while a page is open.
+
+Child Hero exposes existing API milestone badges and recent attempts. Rewards expose request history. Paired children can lock a configured PIN and see an in-v3 unlock form; a PIN never becomes an independent remote login. Credential input is cleared after submission. Unlock/locking were not tested against a real family during visual QA.
+
+Validation: focused schedule tests cover timezone/DST, start/end boundaries, malformed schedules, both submission gates and full update fields. Existing PIN roundtrip, child privilege/pairing, habits, supervised activity and 11 SQLite schema checks pass. The old SQLite fixture assumed a six-column parent table; it now names its original columns explicitly, allowing subsequent PIN columns to take defaults. Browser sandbox verified edited text/time/day persistence, calendar/history, badges, planned missions with disabled submission and local paired-PIN form rendering. No production test mutations. Screenshots are in `docs/screenshots/v3-progress-calendar.png`, `v3-scheduled-mission.png` and `v3-child-history.png`.
+
+Remaining functional work and original-source comparisons are tracked in `docs/V3-FEATURE-PARITY.md`; v3 is not claimed to have full feature parity.

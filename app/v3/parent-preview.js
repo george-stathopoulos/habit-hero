@@ -11,6 +11,8 @@ const store={
  '/api/rewards/redemptions':{redemptions:[{id:'request-1',child_name:'Σοφία',reward_name:'Μια βόλτα με ποδήλατο μαζί',points_spent:100,status:'requested',requested_at:now()}]},
  '/api/version':{current:'sample-preview',check_available:false}
 };
+store['/api/progress'].as_of=new Date().toISOString().slice(0,10);
+for(const m of store['/api/progress'].children)m.activity_by_day=Array.from({length:12},(_,i)=>{const d=new Date();d.setUTCDate(d.getUTCDate()-i*2);return {date:d.toISOString().slice(0,10),completed:i%2+1}});
 export async function previewApi(path,method='GET',body){
  if(method==='GET'){if(path==='/api/family/export')return structuredClone(store);if(!store[path])throw Error('Μη διαθέσιμη ενέργεια στην προεπισκόπηση.');return structuredClone(store[path])}
  const people=store['/api/family/overview'].children;

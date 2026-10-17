@@ -46,3 +46,13 @@
 - Add 20 family goals and age-adjusted mission starting points directly to v3.
 - Open each suggestion as an editable mission before saving; flag matching assigned titles.
 - Store goal preferences locally per family, with isolated sample behaviour and storage-failure feedback.
+
+## 3.0.0-preview.7 — Scheduling and child feature parity
+
+- Edit existing mission instructions, benefits, repetitions and cooldowns.
+- Add selected weekdays and same-day time windows with family-timezone server enforcement; preserve unrestricted legacy schedules.
+- Use family-local days for weekly/monthly repetition checks.
+- Separate child missions for other days and explain unavailable windows.
+- Restore child badges, recent attempts, reward history and paired-device PIN lock/unlock.
+- Add the parent 30-day activity calendar and an explicit feature parity backlog; additional themes are last.
+- Fix newline rendering and a stale schema-test fixture. No database migration required.

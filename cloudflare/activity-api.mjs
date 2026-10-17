@@ -1,3 +1,4 @@
+import {scheduleStatus} from './schedule.mjs';
 import {localDay} from './timezone.mjs';
 import {occurrenceKey,occurrenceSql} from './occurrence.mjs';
 // Supervised child activity flow: parent session is required even for submissions.
@@ -48,13 +49,15 @@ export async function submitActivity(request,env){
  if(!uuid(body.child_id)||!uuid(body.habit_id))return reply({detail:'Invalid habit or child'},400);
  const now=new Date().toISOString(),id=crypto.randomUUID();
  try{
-  const entry=await env.DB.prepare(`SELECT h.id,h.frequency_type FROM habits h
+  const entry=await env.DB.prepare(`SELECT h.id,h.frequency_type,h.frequency_days_json FROM habits h
     JOIN habit_assignments a ON a.habit_id=h.id AND a.family_id=h.family_id
     JOIN child_profiles c ON c.id=a.child_id AND c.family_id=a.family_id
     WHERE h.family_id=? AND h.id=? AND c.id=? AND h.active=1
     AND h.deleted_at IS NULL AND c.deleted_at IS NULL`)
     .bind(parent.family_id,body.habit_id,body.child_id).first();
   if(!entry)return reply({detail:'Activity not assigned to this child'},404);
+  const schedule=scheduleStatus(entry.frequency_days_json,parent.timezone);
+  if(!schedule.schedule_available)return reply({detail:'Η αποστολή είναι διαθέσιμη: '+schedule.schedule_label},409);
   const date=occurrenceKey(entry.frequency_type,localDay(parent.timezone));
   await env.DB.prepare(`INSERT INTO completion_submissions
    (id,family_id,child_id,habit_id,occurrence_date,status,submitted_at,idempotency_key)

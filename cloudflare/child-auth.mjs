@@ -1,3 +1,4 @@
+import {scheduleStatus} from './schedule.mjs';
 import {localDay} from './timezone.mjs';
 import {occurrenceKey,occurrenceSql} from './occurrence.mjs';
 // Child access via parent-approved pairing, never the parent's authentication cookie.
@@ -102,7 +103,7 @@ export async function childActivities(request,env){
  try{
   const today=localDay(child.timezone);
   const rows=await env.DB.prepare(`SELECT h.id AS habit_id,h.name_el AS habit_name,h.points,h.emoji,
-    h.description_el,h.why_important_el,h.frequency_type,h.frequency_count,h.retry_delay_minutes,
+    h.description_el,h.why_important_el,h.frequency_type,h.frequency_count,h.retry_delay_minutes,h.frequency_days_json,
     s.slot_index,s.status AS submission_status,s.submitted_at
     FROM habit_assignments a JOIN habits h ON h.id=a.habit_id AND h.family_id=a.family_id
     LEFT JOIN completion_submissions s ON s.family_id=a.family_id AND s.child_id=a.child_id AND s.habit_id=a.habit_id
@@ -120,7 +121,7 @@ export async function childActivities(request,env){
    const target=first.frequency_type==='once'?1:Math.min(5,Math.max(1,Number(first.frequency_count)||1));
    for(let slot=1;slot<=target;slot++){
     const existing=group.find(x=>x.slot_index===slot);
-    activities.push({...first,slot_index:slot,slot_total:target,
+    activities.push({...first,...scheduleStatus(first.frequency_days_json,child.timezone),slot_index:slot,slot_total:target,
       submission_status:existing?.submission_status||null,
       submitted_at:existing?.submitted_at||null});
    }
@@ -134,11 +135,13 @@ export async function childSubmit(request,env){
  const habitId=parsed.body.habit_id,slot=parsed.body.slot_index??1;
  if(!validUUID(habitId)||!Number.isInteger(slot)||slot<1||slot>5)return json({detail:'Invalid habit slot'},400);
  try{
-  const assigned=await env.DB.prepare(`SELECT h.id,h.frequency_type,h.frequency_count,h.retry_delay_minutes
+  const assigned=await env.DB.prepare(`SELECT h.id,h.frequency_type,h.frequency_count,h.retry_delay_minutes,h.frequency_days_json
    FROM habit_assignments a JOIN habits h ON h.id=a.habit_id AND h.family_id=a.family_id
    WHERE a.family_id=? AND a.child_id=? AND a.habit_id=? AND h.active=1 AND h.deleted_at IS NULL`)
    .bind(child.family_id,child.child_id,habitId).first();
   if(!assigned)return json({detail:'Habit not assigned'},404);
+  const schedule=scheduleStatus(assigned.frequency_days_json,child.timezone);
+  if(!schedule.schedule_available)return json({detail:'Η αποστολή είναι διαθέσιμη: '+schedule.schedule_label},409);
   const maximum=assigned.frequency_type==='once'?1:Math.min(5,Math.max(1,Number(assigned.frequency_count)||1));
   if(slot>maximum)return json({detail:'Habit slot not configured'},400);
   const now=new Date().toISOString(),period=occurrenceKey(assigned.frequency_type,localDay(child.timezone));
@@ -151,7 +154,7 @@ export async function childSubmit(request,env){
    const previous=entries.find(x=>x.slot_index===slot-1);
    if(!previous)return json({detail:'Complete the previous occurrence first'},409);
    if(['weekly','monthly'].includes(assigned.frequency_type)&&
-      previous.submitted_at.slice(0,10)===now.slice(0,10))
+      localDay(child.timezone,new Date(previous.submitted_at))===localDay(child.timezone,new Date(now)))
     return json({detail:'Wait until another day for the next weekly or monthly completion'},429);
    const delay=Math.max(maximum>1?30:0,Number(assigned.retry_delay_minutes)||0);
    if(delay>0&&Date.now()-Date.parse(previous.submitted_at)<delay*60000)
