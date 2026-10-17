@@ -1,6 +1,11 @@
 name: Step 9 - Verify and apply D1 schema
 on:
   workflow_dispatch:
+    inputs:
+      messages_only:
+        description: Apply only the additive encouragement table after verifying legacy schema
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -24,6 +29,7 @@ jobs:
           test -n "$CLOUDFLARE_API_TOKEN"
           test -n "$CLOUDFLARE_ACCOUNT_ID"
       - name: Refuse unrelated pending legacy migrations
+        if: ${{ inputs.messages_only != true }}
         working-directory: cloudflare
         run: |
           npx --yes wrangler@4 d1 execute habit-hero-db --remote --command "SELECT name FROM d1_migrations ORDER BY name;" --json > /tmp/hh-applied-migrations.json
@@ -36,8 +42,34 @@ jobs:
           if(pending.some(file=>file!=='0007_family_messages.sql'))throw Error('Unrelated legacy migrations require inspection before applying the message table.');
           JS
       - name: Apply reviewed migrations to EU remote D1
+        if: ${{ inputs.messages_only != true }}
         working-directory: cloudflare
         run: printf 'y\n' | npx --yes wrangler@4 d1 migrations apply habit-hero-db --remote
+      - name: Verify legacy columns before scoped message migration
+        if: ${{ inputs.messages_only == true }}
+        working-directory: cloudflare
+        run: |
+          npx --yes wrangler@4 d1 execute habit-hero-db --remote --command "SELECT 'timezone' AS component,COUNT(*) AS present FROM pragma_table_info('family_settings') WHERE name='timezone' UNION ALL SELECT 'child_pin',COUNT(*) FROM pragma_table_info('auth_sessions') WHERE name='pin_verified_at' UNION ALL SELECT 'parent_pin',COUNT(*) FROM pragma_table_info('parent_users') WHERE name='pin_hash' UNION ALL SELECT 'household_mode',COUNT(*) FROM pragma_table_info('auth_sessions') WHERE name='household_mode' UNION ALL SELECT 'help',COUNT(*) FROM pragma_table_info('habit_help_requests') WHERE name='parent_message' UNION ALL SELECT 'slots',COUNT(*) FROM pragma_table_info('completion_submissions') WHERE name='slot_index' UNION ALL SELECT 'schedule',COUNT(*) FROM pragma_table_info('habits') WHERE name='frequency_days_json';" --json > /tmp/hh-existing-schema.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const report=JSON.parse(fs.readFileSync('/tmp/hh-existing-schema.json','utf8'));
+          const rows=report.flatMap(part=>part.results||[]);
+          console.log('Existing schema:',rows);
+          if(rows.length!==7||rows.some(row=>row.present!==1))throw Error('Existing schema does not match the current Worker. Stop for inspection.');
+          JS
+      - name: Apply only reviewed message table without replaying legacy migrations
+        if: ${{ inputs.messages_only == true }}
+        working-directory: cloudflare
+        run: |
+          mkdir -p .message-migrations
+          cp migrations/0007_family_messages.sql .message-migrations/
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const config=JSON.parse(fs.readFileSync('wrangler.jsonc','utf8'));
+          config.d1_databases=config.d1_databases.map(database=>({...database,migrations_dir:'.message-migrations'}));
+          fs.writeFileSync('.messages-wrangler.json',JSON.stringify(config));
+          JS
+          printf 'y\n' | npx --yes wrangler@4 d1 migrations apply habit-hero-db --remote --config .messages-wrangler.json
       - name: Verify applied schema (read-only)
         working-directory: cloudflare
         run: |
