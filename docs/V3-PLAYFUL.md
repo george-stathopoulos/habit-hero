@@ -80,3 +80,11 @@ Open the family entry point, sign in as the parent, create/select a child, and u
 Focused verification includes automatic tilt reconnection/opt-out/denied-grant tests and profile cancellation/failed-PIN/verified-switch session tests. Browser inspection covered Cancel on the PIN form, the brushing illustration, the egg's animation, scroll-driven transforms, and layouts at 320/390/768/1280px with no horizontal overflow and valid navigation touch targets. Layout measurements are recorded in `screenshots/v3-responsive-check.json`.
 
 ![Brushing activity in the desktop layout](screenshots/v3-brushing-activity.png)
+
+### Parent workspace · preview.4
+
+- `/habit-hero/v3/parent/` uses real parent APIs and the existing Google/PIN session; parent unlock and first-child entry now open this workspace.
+- `/habit-hero/v3/parent-preview/` is a labelled, browser-memory-only sandbox. It imports isolated sample data and never sends mutations to the family API.
+- Calm cream/sage layout, responsive navigation, family dashboard, child creation/editing, recent progress, custom missions, assignment changes, approvals and help replies, reward creation and redemption review, timezone and data export.
+- Advanced PIN/device controls, point adjustments, existing goal picker, reward edits and archiving remain accessible via **Πλήρης διαχείριση οικογένειας**. These are not yet redesigned in v3. Mission editing currently changes name, points and recurrence, matching the existing update API; detailed instructions are entered during creation. Weekday/time-window scheduling remains outside this release.
+- No schema changes, new service or production-family test writes. Child scenery, tilt, scroll curtain and egg animations remain independent of the parent shell.

@@ -20,7 +20,7 @@ export function householdPage(){
  <form id="parentPinSetup" hidden><label for="newPin">Δημιούργησε PIN γονέα</label><input id="newPin" type="text" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="off" required>
  <label for="repeatPin">Επιβεβαίωση PIN</label><input id="repeatPin" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="new-password" required>
  <p id="pinMismatch" role="alert" style="color:#a82844;font-weight:700" hidden>Τα δύο PIN δεν ταιριάζουν.</p><p><button id="saveParentPin" type="submit">Αποθήκευση PIN</button></p></form>
- <a id="addChild" class="action" href="/habit-hero/welcome/v2/parent/" hidden style="display:block;text-decoration:none">Προσθήκη πρώτου παιδιού →</a>
+ <a id="addChild" class="action" href="/habit-hero/v3/parent/" hidden style="display:block;text-decoration:none">Προσθήκη πρώτου παιδιού →</a>
  </section>
  <section class="panel" id="choose" hidden><h2>👋 Ποιος παίζει σήμερα;</h2><p>Επίλεξε το προφίλ σου.</p>
  <div class="profiles" id="profiles"></div></section>

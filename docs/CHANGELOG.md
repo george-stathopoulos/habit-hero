@@ -26,3 +26,10 @@
 - Added an explicitly isolated visual sandbox and a lean GitHub Actions deployment path that reuses the existing static build.
 - Made version checks compare against the deployed source branch, with an explicit release reference for preview builds.
 - Preserved the existing family entry point and v2 interface. This is a preview of the first theme, not the full v3 launch.
+
+## 3.0.0-preview.4 — Parent workspace
+
+- Add a responsive cream/sage parent dashboard using existing family APIs and PIN security.
+- Add v3 child/profile forms, custom missions and assignment controls, progress, approval/help inbox, reward creation/review, timezone and export.
+- Route parent unlock to v3; retain full legacy administration through a visible link.
+- Provide an isolated, labelled parent sandbox for review without changing family data.

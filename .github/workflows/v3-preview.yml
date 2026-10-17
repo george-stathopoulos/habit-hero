@@ -24,6 +24,9 @@ jobs:
           node --check app/v3/tilt.js
           node --check app/v3/icons.js
           node --check app/v3/preview.js
+          node --check app/v3/parent.js
+          node --check app/v3/parent-preview.js
+          node --check cloudflare/v3-parent-page.mjs
           node scripts/test-cloudflare.mjs
           node scripts/test-child-auth.mjs
           node scripts/test-household.mjs
@@ -78,6 +81,10 @@ jobs:
           for(const path of ['/habit-hero/v3/preview/','/habit-hero/v3/child/']){
             const response=await fetch(base+path);assert.equal(response.status,200);
             assert.match(await response.text(),/\/habit-hero\/app\/v3\/app.js/);
+          }
+          for(const path of ['/habit-hero/v3/parent/','/habit-hero/v3/parent-preview/']){
+            const response=await fetch(base+path);assert.equal(response.status,200);
+            assert.match(await response.text(),/\/habit-hero\/app\/v3\/parent.js/);
           }
           const health=await fetch(base+'/api/health').then(r=>r.json());
           assert.equal(health.database,'connected');

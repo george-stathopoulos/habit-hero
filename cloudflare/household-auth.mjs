@@ -107,7 +107,7 @@ export async function unlockHousehold(req,env){
   }
   // Child cookies cannot authorize parent routes; parent unlock resets household profile selection.
   await env.DB.batch([...revokePrevious,env.DB.prepare(`UPDATE auth_sessions SET pin_verified_at=? WHERE id=? AND role='parent'`).bind(now,actor.session_id)]);
-  return out({role:'parent',url:'/habit-hero/welcome/v2/parent/'},200,{'set-cookie':'__Host-hh_child=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0'});
+  return out({role:'parent',url:'/habit-hero/v3/parent/'},200,{'set-cookie':'__Host-hh_child=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0'});
  }catch{return out({detail:'PIN verification unavailable'},503)}
 }
 export async function exitToHousehold(req,env){
