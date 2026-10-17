@@ -49,13 +49,14 @@ jobs:
         if: ${{ inputs.messages_only == true }}
         working-directory: cloudflare
         run: |
-          npx --yes wrangler@4 d1 execute habit-hero-db --remote --command "SELECT 'timezone' AS component,COUNT(*) AS present FROM pragma_table_info('family_settings') WHERE name='timezone' UNION ALL SELECT 'child_pin',COUNT(*) FROM pragma_table_info('auth_sessions') WHERE name='pin_verified_at' UNION ALL SELECT 'parent_pin',COUNT(*) FROM pragma_table_info('parent_users') WHERE name='pin_hash' UNION ALL SELECT 'household_mode',COUNT(*) FROM pragma_table_info('auth_sessions') WHERE name='household_mode' UNION ALL SELECT 'help',COUNT(*) FROM pragma_table_info('habit_help_requests') WHERE name='parent_message' UNION ALL SELECT 'slots',COUNT(*) FROM pragma_table_info('completion_submissions') WHERE name='slot_index' UNION ALL SELECT 'schedule',COUNT(*) FROM pragma_table_info('habits') WHERE name='frequency_days_json';" --json > /tmp/hh-existing-schema.json
+          npx --yes wrangler@4 d1 execute habit-hero-db --remote --command "PRAGMA table_info(family_settings); PRAGMA table_info(auth_sessions); PRAGMA table_info(parent_users); PRAGMA table_info(habit_help_requests); PRAGMA table_info(completion_submissions); PRAGMA table_info(habits);" --json > /tmp/hh-existing-schema.json || { cat /tmp/hh-existing-schema.json; exit 1; }
           node --input-type=module <<'JS'
           import fs from 'node:fs';
           const report=JSON.parse(fs.readFileSync('/tmp/hh-existing-schema.json','utf8'));
-          const rows=report.flatMap(part=>part.results||[]);
-          console.log('Existing schema:',rows);
-          if(rows.length!==7||rows.some(row=>row.present!==1))throw Error('Existing schema does not match the current Worker. Stop for inspection.');
+          const required=[['timezone'],['pin_verified_at','household_mode'],['pin_hash'],['parent_message'],['slot_index'],['frequency_days_json']];
+          const fields=report.map(part=>new Set((part.results||[]).map(row=>row.name)));
+          console.log('Inspected schema fields:',fields.map(set=>[...set]));
+          if(fields.length!==required.length||required.some((names,index)=>names.some(name=>!fields[index]?.has(name))))throw Error('Existing schema does not match the current Worker. Stop for inspection.');
           JS
       - name: Apply only reviewed message table without replaying legacy migrations
         if: ${{ inputs.messages_only == true }}
