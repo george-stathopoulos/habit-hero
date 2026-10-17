@@ -4,7 +4,7 @@ Habit Hero is a family habit-and-rewards Progressive Web App (PWA).
 
 ## Playful v3 preview
 
-The first v3 child experience adds original layered artwork and scroll/pointer depth effects while using the existing Cloudflare APIs. See [the v3 scope, routes and verification limits](docs/V3-PLAYFUL.md) and [changelog](docs/CHANGELOG.md). It does not replace the default v2 family flow yet.
+The first v3 child experience adds original layered artwork and scroll/pointer depth effects while using the existing Cloudflare APIs. See [the v3 scope, routes and verification limits](docs/V3-PLAYFUL.md) and [changelog](docs/CHANGELOG.md). The family entry point opens v3 for children after PIN unlock; parents keep their existing workspace.
 
 ## Live builds
 

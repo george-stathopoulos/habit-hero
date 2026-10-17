@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.0.0-preview.2 — 2026-10-17
+
+- Replaced the mature-looking first-preview characters with reconstructions based directly on the mockup hero cards, preserving childlike proportions, reference outfits and companions.
+- Replaced habit/activity scene thumbnails with colourful rounded Playful SVG badges; larger artwork is reserved for mission detail.
+- Added optional, permission-aware device tilt with calibration, smoothing, screen-rotation handling and reduced-motion support.
+- Connected family child selection to the real v3 child application; parent workflows remain available.
+- Added scenery-specific ambient background animation: drifting clouds and soft daylight, paused off Home and disabled for reduced motion.
+- Updated the scenery and foreground to the mockup’s softer Playful art style while preserving independent depth layers.
+
 ## 3.0.0-preview.1 — 2026-10-17
 
 - Added the first Playful child experience with original illustrated landscape, transparent hero/companion appearances and foreground foliage.

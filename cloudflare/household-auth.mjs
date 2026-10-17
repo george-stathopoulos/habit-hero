@@ -97,7 +97,7 @@ export async function unlockHousehold(req,env){
     env.DB.prepare(`INSERT INTO auth_sessions (id,child_id,family_id,role,token_hash,created_at,expires_at,pin_verified_at)
        VALUES (?,?,?,'child',?,?,?,?)`).bind(crypto.randomUUID(),child.id,actor.family_id,nowHash,now,expires,now)
    ]);
-   return out({role:'child',url:'/habit-hero/welcome/v2/child/'},200,{'set-cookie':'__Host-hh_child='+key+'; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=43200'});
+   return out({role:'child',url:'/habit-hero/v3/child/'},200,{'set-cookie':'__Host-hh_child='+key+'; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=43200'});
   }
   // Child cookies cannot authorize parent routes; parent unlock resets household profile selection.
   await env.DB.prepare(`UPDATE auth_sessions SET pin_verified_at=? WHERE id=? AND role='parent'`).bind(now,actor.session_id).run();

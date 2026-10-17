@@ -5,29 +5,30 @@
 ## Open it
 
 - Visual sandbox: `/habit-hero/v3/preview/` — clearly labelled example data. Help, submissions and reward requests simulate UI states only; no API writes.
-- Existing-account version: `/habit-hero/v3/child/` — reads and writes through the existing child APIs. Unlock the child in the existing family screen first, then open this URL. This slice does not change the family's default v2 destination.
+- Existing-account version: `/habit-hero/v3/child/` — reads and writes through the existing child APIs. Unlock the child in the existing family screen; child selection now opens this v3 route. The parent workspace remains v2.
 - Local: `node scripts/v3/preview.mjs`, then http://127.0.0.1:4173/habit-hero/v3/preview/.
 - Phone composition review: http://127.0.0.1:4173/qa (development server only).
 
 ## The visual foundation
 
-The supplied Habit Hero v3 Visual Implementation Blueprint is the visual reference. Playful has a sunny garden kingdom, a dimensional illustrated hero and companion, foreground flowers, warm paper cards, and five navigation destinations. Artwork is generated specifically for this world rather than using the v2 geometric SVG scenes.
+The supplied Habit Hero v3 Visual Implementation Blueprint is the visual reference. Playful has a sunny pastel garden kingdom, mockup-based childlike hero and companion reconstructions, foreground flowers, warm paper cards, and five navigation destinations. Artwork is generated specifically for this world rather than using the v2 geometric SVG scenes.
 
 Three independently composited illustrated planes establish the scene:
 
 1. Distant castle, mountains, waterfalls and garden landscape.
-2. Transparent hero and kitten, with separate boy/girl appearances available to everyone.
+2. Transparent hero and companion: the reference girl with her white kitten, or reference boy with his blue dragon. Both appearances are available to everyone.
 3. Transparent flowers, foliage and rocks in front of the hero.
 
-The near plants overlap the character; the character sits in front of the scenery. Atmospheric perspective and light give depth while still. Pointer movement shifts scenery and foreground opposite the hero, with the near plane moving most. Scrolling supplies parallax on touch devices without device-motion permissions. Reduced motion disables decorative animation and layer transforms. Motion is frame-scheduled and transforms do not change layout. Particles are restrained, with no full-screen canvas or continuous JS animation loop.
+The near plants overlap the character; the character sits in front of the scenery. Atmospheric perspective and light give depth while still. Pointer movement shifts scenery and foreground opposite the hero, with the near plane moving most. Scrolling supplies parallax on touch devices without device-motion permissions. Supported touch devices also offer relative device-tilt parallax; iOS requests orientation permission only after tapping “Κίνηση με κλίση”. Reduced motion disables tilt. The sensor stream is ignored off Home and while hidden, values are clamped and smoothed, and axes follow screen rotation. Reduced motion disables decorative animation and layer transforms. Motion is frame-scheduled and transforms do not change layout. Background clouds drift continuously and daylight gently shifts; ambient motion pauses outside Home or while the page is hidden. Background pollen glints remain behind the characters. Heroes, foreground foliage and controls have no idle animation. There is no full-screen canvas or continuous JS animation loop.
 
 `app/v3/worlds/playful.js` owns art mappings and depth coefficients; `worlds/playful.css` owns base palette/type tokens. The shared client owns navigation, data, and interaction behavior. Future worlds should supply original matching artwork and additional art direction; changing colors alone is insufficient.
 
-Production WebP assets retain transparency and are self-hosted. Home's background, active hero and foreground together are approximately 615 KB. The second hero and task scenes load when used. No runtime AI service or per-image generation call is required for families.
+Production WebP assets retain transparency and are self-hosted. Home's background, active hero and foreground together are approximately 292 KB. The second hero and task scenes load when used. No runtime AI service or per-image generation call is required for families.
 
 ## Working slice
 
 - Home with actual mission statuses, level progress, and consistency-based companion progress when signed in.
+- Colourful Playful SVG activity badges in the Home and mission lists, with larger illustrations reserved for focused mission detail.
 - Separate mission list and focused mission detail, instructions, benefit, help and submit actions. Submission never grants immediate points.
 - All-done state distinguishes waiting-for-approval from approved days.
 - Rewards respect balance, backend previous-request state and parent review.
@@ -56,3 +57,13 @@ Before calling the whole v3 product complete: verify a signed-in child → paren
 - No live family records were created or changed for this visual review. Real authenticated approval and actual iPhone installation remain unverified.
 
 ![Deployed Playful Home with layered scenery](screenshots/v3-playful-home.png)
+
+## Reference artwork correction — 2026-10-17
+
+The first-preview mature art is replaced by reconstructions using the dedicated Girl Hero/Boy Hero cards and first Playful phone in the supplied PDF as direct references. These are close reconstructions, not pixel-identical original source assets. The girl keeps her pink outfit, purple leggings and kitten; the boy keeps his blue cape and little dragon. See [the art direction](PLAYFUL-ART-DIRECTION.md) and [reference prompts](PLAYFUL-REFERENCE-PROMPTS.md).
+
+Activity rows now use shaded, colourful native SVG bed/toothbrush/book/outdoor badges instead of scene thumbnails. Browser inspection confirmed zero row images and three Playful icons in the sample Home. Clouds were confirmed running while Home was visible and paused after changing tabs; heroes and foreground had no idle animation. All scene images loaded successfully, and both hero choices were inspected in the browser.
+
+## Device testing
+
+Open the family entry point, sign in as the parent, create/select a child, and unlock that child to enter v3 with actual API data. On supported iPhones, tap “Κίνηση με κλίση” and grant the orientation prompt to test layer movement. On devices that do not require permission it activates automatically. Turning it off or enabling reduced motion stops tilt. Real-device sensor response remains for user testing; browser checks cannot verify physical hardware.

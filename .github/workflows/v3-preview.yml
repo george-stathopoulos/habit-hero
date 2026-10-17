@@ -21,10 +21,12 @@ jobs:
         run: |
           node --check cloudflare/v3-page.mjs
           node --check app/v3/app.js
+          node --check app/v3/tilt.js
           node --check app/v3/icons.js
           node --check app/v3/preview.js
           node scripts/test-cloudflare.mjs
           node scripts/test-child-auth.mjs
+          node scripts/test-household.mjs
           node scripts/test-occurrence.mjs
           node scripts/v3/check.mjs
       - name: Find the last successful main deployment artifact
@@ -48,9 +50,10 @@ jobs:
           run-id: ${{ steps.baseline.outputs.run_id }}
       - name: Overlay the current frontend without removing legacy routes
         run: |
+          rm -rf cloudflare-dist/habit-hero/app/v3
           cp -a app/. cloudflare-dist/habit-hero/app/
           test -f cloudflare-dist/habit-hero/original-preview/index.html
-          test -f cloudflare-dist/habit-hero/app/v3/assets/world.webp
+          test -f cloudflare-dist/habit-hero/app/v3/assets/world-reference.webp
           python3 scripts/generate-icons.py
           cp app/icon-192.png app/icon-512.png cloudflare-dist/habit-hero/app/
       - name: Deploy additive v3 routes using the existing Worker and D1
