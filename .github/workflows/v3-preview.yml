@@ -76,7 +76,13 @@ jobs:
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
           const base='https://habit-hero-cloudflare.george-stathopoulos.workers.dev';
-          const version=await fetch(base+'/api/version').then(r=>r.json());
+          let version;
+          for(let attempt=0;attempt<8;attempt++){
+            version=await fetch(base+'/api/version',{cache:'no-store'}).then(r=>r.json());
+            if(version.current===process.env.DEPLOY_SHA)break;
+            console.log('Waiting for Cloudflare deployment propagation: '+(attempt+1));
+            await new Promise(resolve=>setTimeout(resolve,4000));
+          }
           assert.equal(version.current,process.env.DEPLOY_SHA);
           for(const path of ['/habit-hero/v3/preview/','/habit-hero/v3/child/']){
             const response=await fetch(base+path);assert.equal(response.status,200);
