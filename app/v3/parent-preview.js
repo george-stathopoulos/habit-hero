@@ -24,6 +24,14 @@ export async function previewApi(path,method='GET',body){
  else if(path==='/api/habits/assign')store['/api/habits'].habits.find(x=>x.id===body.habit_id).children.push({id:body.child_id,name:people.find(x=>x.id===body.child_id).display_name});
  else if(path==='/api/habits/unassign'){const h=store['/api/habits'].habits.find(x=>x.id===body.habit_id);h.children=h.children.filter(x=>x.id!==body.child_id)}
  else if(path==='/api/rewards')store[path].rewards.push({...body,id:crypto.randomUUID(),active:true,children:[{id:body.child_id,name:people.find(x=>x.id===body.child_id).display_name}]});
+ else if(path==='/api/rewards/update')Object.assign(store['/api/rewards'].rewards.find(x=>x.id===body.reward_id),body);
+ else if(path==='/api/rewards/assign')store['/api/rewards'].rewards.find(x=>x.id===body.reward_id).children.push({id:body.child_id,name:people.find(x=>x.id===body.child_id).display_name});
+ else if(path==='/api/rewards/unassign'){const r=store['/api/rewards'].rewards.find(x=>x.id===body.reward_id);r.children=r.children.filter(x=>x.id!==body.child_id)}
+ else if(path==='/api/rewards/archive')store['/api/rewards'].rewards.find(x=>x.id===body.reward_id).active=false;
+ else if(path==='/api/habits/archive')store['/api/habits'].habits=store['/api/habits'].habits.filter(x=>x.id!==body.habit_id);
+ else if(path==='/api/children/pin'||path==='/api/child/revoke')return {ok:true};
+ else if(path==='/api/child/pairing')return {pairing_code:'SAMPLE-ONLY-NOT-A-REAL-PAIRING-CODE',expires_at:new Date(Date.now()+600000).toISOString()};
+ else if(path==='/api/points/adjust'){const m=store['/api/progress'].children.find(x=>x.child_id===body.child_id);if(!m||m.points_balance+body.delta<0)throw Error('Δεν υπάρχουν αρκετοί πόντοι.');m.points_balance+=body.delta}
  else if(path==='/api/family/timezone')store['/api/family/overview'].family.timezone=body.timezone;
  else throw Error('Μη διαθέσιμη ενέργεια στην προεπισκόπηση.');return {ok:true};
 }

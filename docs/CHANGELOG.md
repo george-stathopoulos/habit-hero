@@ -33,3 +33,10 @@
 - Add v3 child/profile forms, custom missions and assignment controls, progress, approval/help inbox, reward creation/review, timezone and export.
 - Route parent unlock to v3; retain full legacy administration through a visible link.
 - Provide an isolated, labelled parent sandbox for review without changing family data.
+
+## 3.0.0-preview.5 — Parent management
+
+- Bring child PIN reset, device pairing/revocation and manual point adjustments into v3.
+- Add reward editing, child assignment management and archive confirmations; add mission archiving.
+- Clear sensitive dialog fields on close and report successful changes.
+- Keep existing server authorization, expiry, history and idempotency rules.
