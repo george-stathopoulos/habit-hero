@@ -1,0 +1,74 @@
+# Changelog
+
+## 3.0.0-preview.3 — 2026-10-17
+
+- Remember tilt preference, reconnect to existing browser grants automatically, and retry after an ordinary page gesture when iOS requires one. Explicitly disabled tilt stays off.
+- Strengthen scroll parallax and add a reversible flower/leaf canopy over the Playful scene.
+- Add character illustrations for making the bed, brushing teeth and reading; retain themed activity icons in lists.
+- Make switching profiles cancellable from both selection and PIN entry. Keep the current child session until a replacement PIN is verified, then revoke it atomically.
+- Add tablet scene/content columns and a desktop navigation rail with wider activity and mission-detail layouts.
+- Animate the magic egg with a gentle wobble and shine, respecting reduced motion.
+
+## 3.0.0-preview.2 — 2026-10-17
+
+- Replaced the mature-looking first-preview characters with reconstructions based directly on the mockup hero cards, preserving childlike proportions, reference outfits and companions.
+- Replaced habit/activity scene thumbnails with colourful rounded Playful SVG badges; larger artwork is reserved for mission detail.
+- Added optional, permission-aware device tilt with calibration, smoothing, screen-rotation handling and reduced-motion support.
+- Connected family child selection to the real v3 child application; parent workflows remain available.
+- Added scenery-specific ambient background animation: drifting clouds and soft daylight, paused off Home and disabled for reduced motion.
+- Updated the scenery and foreground to the mockup’s softer Playful art style while preserving independent depth layers.
+
+## 3.0.0-preview.1 — 2026-10-17
+
+- Added the first Playful child experience with original illustrated landscape, transparent hero/companion appearances and foreground foliage.
+- Added independently moving depth planes, touch-scroll parallax, soft atmospheric light and reduced-motion behavior.
+- Added a five-destination mobile shell, Home progress, mission list/detail, help and approval-aware submission, rewards, hero choice and messages using existing Cloudflare APIs.
+- Added an explicitly isolated visual sandbox and a lean GitHub Actions deployment path that reuses the existing static build.
+- Made version checks compare against the deployed source branch, with an explicit release reference for preview builds.
+- Preserved the existing family entry point and v2 interface. This is a preview of the first theme, not the full v3 launch.
+
+## 3.0.0-preview.4 — Parent workspace
+
+- Add a responsive cream/sage parent dashboard using existing family APIs and PIN security.
+- Add v3 child/profile forms, custom missions and assignment controls, progress, approval/help inbox, reward creation/review, timezone and export.
+- Route parent unlock to v3; retain full legacy administration through a visible link.
+- Provide an isolated, labelled parent sandbox for review without changing family data.
+
+## 3.0.0-preview.5 — Parent management
+
+- Bring child PIN reset, device pairing/revocation and manual point adjustments into v3.
+- Add reward editing, child assignment management and archive confirmations; add mission archiving.
+- Clear sensitive dialog fields on close and report successful changes.
+- Keep existing server authorization, expiry, history and idempotency rules.
+
+## 3.0.0-preview.6 — Family goals
+
+- Add 20 family goals and age-adjusted mission starting points directly to v3.
+- Open each suggestion as an editable mission before saving; flag matching assigned titles.
+- Store goal preferences locally per family, with isolated sample behaviour and storage-failure feedback.
+
+## 3.0.0-preview.7 — Scheduling and child feature parity
+
+- Edit existing mission instructions, benefits, repetitions and cooldowns.
+- Add selected weekdays and same-day time windows with family-timezone server enforcement; preserve unrestricted legacy schedules.
+- Use family-local days for weekly/monthly repetition checks.
+- Separate child missions for other days and explain unavailable windows.
+- Restore child badges, recent attempts, reward history and paired-device PIN lock/unlock.
+- Add the parent 30-day activity calendar and an explicit feature parity backlog; additional themes are last.
+- Fix newline rendering and a stale schema-test fixture. No database migration required.
+
+## 3.0.0-preview.8 — Encouragement and Love Credits
+
+- Add durable personal parent-to-child encouragement with optional 0–100 Love Credits.
+- Children explicitly receive gifts; unique ledger keys prevent repeated claims from awarding extra points.
+- Add parent sent history and server-backed read/claim receipts; include messages in family export.
+- Keep normal encouragement free of point requirements and separate from manual corrections.
+- Add migration 0007, verified against SQLite transaction rollback, retries and family boundaries before manual migration/deployment.
+
+## 3.0.0-preview.9 — Message layout fix and routines
+
+- Put message text, timestamp and gift action in separate spaced rows; verify no overlap at 320/390/768/1280px.
+- Add morning, after-school and bedtime mission grouping with parent-defined step order.
+- Add child routine progress cards, routine filters and next-available-step navigation.
+- Show missing-previous-attempt, cooldown, next-day and rejected-attempt explanations before submission.
+- Reuse versioned schedule storage; no new database migration or theme work.

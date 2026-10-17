@@ -1,3 +1,4 @@
+import {readSchedule,validateSchedule} from './schedule.mjs';
 import {authorizedParent} from './family-api.mjs';
 const origin='https://habit-hero-cloudflare.george-stathopoulos.workers.dev';
 const respond=(value,status=200)=>Response.json(value,{status,headers:{'cache-control':'no-store'}});
@@ -5,7 +6,7 @@ export async function listHabits(request,env){
  const actor=await authorizedParent(request,env);
  if(!actor)return respond({detail:'Not authenticated'},401);
  try{
-  const result=await env.DB.prepare(`SELECT h.id,h.name_el,h.name_en,h.points,h.emoji,h.frequency_type,
+  const result=await env.DB.prepare(`SELECT h.id,h.name_el,h.name_en,h.points,h.emoji,h.frequency_type,h.frequency_count,h.retry_delay_minutes,h.description_el,h.why_important_el,h.frequency_days_json,
    a.child_id,c.display_name AS child_name
    FROM habits h LEFT JOIN habit_assignments a ON a.family_id=h.family_id AND a.habit_id=h.id
    LEFT JOIN child_profiles c ON c.id=a.child_id AND c.family_id=h.family_id AND c.deleted_at IS NULL
@@ -13,7 +14,7 @@ export async function listHabits(request,env){
    .bind(actor.family_id).all();
   const habits=new Map();
   for(const r of result.results||[]){
-   if(!habits.has(r.id))habits.set(r.id,{id:r.id,name:r.name_el,points:r.points,emoji:r.emoji,frequency:r.frequency_type,children:[]});
+   if(!habits.has(r.id))habits.set(r.id,{id:r.id,name:r.name_el,points:r.points,emoji:r.emoji,frequency:r.frequency_type,frequency_count:r.frequency_count??1,retry_delay_minutes:r.retry_delay_minutes??0,description:r.description_el||'',benefit:r.why_important_el||'',schedule:readSchedule(r.frequency_days_json),children:[]});
    if(r.child_id&&r.child_name)habits.get(r.id).children.push({id:r.child_id,name:r.child_name});
   }
   return respond({habits:[...habits.values()]});
@@ -34,6 +35,7 @@ export async function createHabit(request,env){
  const points=value?.points;
  const frequency=value?.frequency||'daily';
  const childId=value?.child_id;
+ let schedule;try{schedule=validateSchedule(value.schedule??{})}catch(error){return respond({detail:error.message},400)}
  const count=value?.frequency_count??1,retry=value?.retry_delay_minutes??0;
  const description=typeof value?.description==='string'?value.description.trim():'';
  const benefit=typeof value?.benefit==='string'?value.benefit.trim():'';
@@ -50,8 +52,8 @@ export async function createHabit(request,env){
   const id=crypto.randomUUID(),now=new Date().toISOString();
   const batch=await env.DB.batch([
     env.DB.prepare(`INSERT INTO habits
-      (id,family_id,name_el,name_en,points,frequency_type,frequency_count,retry_delay_minutes,description_el,why_important_el,created_at,updated_at)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`).bind(id,actor.family_id,name,'',points,frequency,count,retry,description,benefit,now,now),
+      (id,family_id,name_el,name_en,points,frequency_type,frequency_count,retry_delay_minutes,description_el,why_important_el,frequency_days_json,created_at,updated_at)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(id,actor.family_id,name,'',points,frequency,count,retry,description,benefit,JSON.stringify(schedule),now,now),
     env.DB.prepare(`INSERT INTO habit_assignments (family_id,habit_id,child_id,assigned_at)
       VALUES (?,?,?,?)`).bind(actor.family_id,id,childId,now)
   ]);
@@ -76,10 +78,13 @@ export async function updateHabit(request,env){
     !Number.isInteger(points)||points<1||points>1000||
     !['daily','weekly','monthly','once'].includes(frequency))
   return respond({detail:'Invalid habit details'},400);
+ let schedule=null;try{if(data.schedule!==undefined)schedule=JSON.stringify(validateSchedule(data.schedule))}catch(error){return respond({detail:error.message},400)}
+ const count=data.frequency_count??null,retry=data.retry_delay_minutes??null,description=data.description??null,benefit=data.benefit??null;
+ if((count!==null&&(!Number.isInteger(count)||count<1||count>5))||(retry!==null&&(!Number.isInteger(retry)||retry<0||retry>1440))||[description,benefit].some(v=>v!==null&&(typeof v!=='string'||v.length>500)))return respond({detail:'Invalid mission instructions or repetition'},400);
  try{
-  const result=await env.DB.prepare(`UPDATE habits SET name_el=?,points=?,frequency_type=?,updated_at=?
+  const result=await env.DB.prepare(`UPDATE habits SET name_el=?,points=?,frequency_type=?,frequency_count=COALESCE(?,frequency_count),retry_delay_minutes=COALESCE(?,retry_delay_minutes),description_el=COALESCE(?,description_el),why_important_el=COALESCE(?,why_important_el),frequency_days_json=COALESCE(?,frequency_days_json),updated_at=?
     WHERE family_id=? AND id=? AND deleted_at IS NULL AND active=1`)
-   .bind(name,points,frequency,new Date().toISOString(),actor.family_id,id).run();
+   .bind(name,points,frequency,count,retry,description,benefit,schedule,new Date().toISOString(),actor.family_id,id).run();
   if(result.meta?.changes!==1)return respond({detail:'Habit not found'},404);
   return respond({id,name,points,frequency});
  }catch{return respond({detail:'Could not update habit'},503)}

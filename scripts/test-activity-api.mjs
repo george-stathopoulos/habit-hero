@@ -7,7 +7,7 @@ const queries=[];
 const bindable=(sql)=>({bind:(...args)=>{queries.push({sql,args});return {
  first:async()=>{
   if(sql.includes('FROM auth_sessions'))return {parent_id:'parent1',family_id:'family1',display_name:'Parent',family_name:'Family'};
-  if(sql.includes('SELECT h.id,h.frequency_type FROM habits'))return {id:uuid,frequency_type:'daily'};
+  if(sql.includes('SELECT h.id,h.frequency_type,h.frequency_days_json FROM habits'))return {id:uuid,frequency_type:'daily'};
   if(sql.includes('SELECT s.id,s.child_id,s.status,h.points'))return {id:other,child_id:uuid,status:'pending',points:15};
   return null;
  },

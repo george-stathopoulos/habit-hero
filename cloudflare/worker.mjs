@@ -1,5 +1,8 @@
+import {parentMessages,sendMessage,childMessages,readMessage,claimLove} from './messages-api.mjs';
 import {childAskHelp,childHelpStatus,parentHelpRequests,respondToHelp} from './help-api.mjs';
 import {v2Page} from './v2-page.mjs';
+import {v3Page} from './v3-page.mjs';
+import {v3ParentPage} from './v3-parent-page.mjs';
 import {householdPage} from './household-page.mjs';
 import {householdState,setupParentPin,unlockHousehold,exitToHousehold} from './household-auth.mjs';
 import {configureChildPin,childPinStatus,unlockChildPin,lockChildPin} from './child-pin.mjs';
@@ -79,6 +82,14 @@ h1{font-size:29px;margin:10px 0}p{line-height:1.6}a,button{display:inline-block;
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (/^\/habit-hero\/v3\/(parent|parent-preview)\/?$/.test(url.pathname)) {
+      if(request.method!=='GET')return json({detail:'Method not allowed'},405);
+      return v3ParentPage(url.pathname.includes('parent-preview'));
+    }
+    if (/^\/habit-hero\/v3\/(child|preview)\/?$/.test(url.pathname)) {
+      if(request.method!=='GET')return json({detail:'Method not allowed'},405);
+      return v3Page(url.pathname.includes('/preview'));
+    }
     if(['/habit-hero/v2/child','/habit-hero/v2/child/','/habit-hero/welcome/v2/child','/habit-hero/welcome/v2/child/'].includes(url.pathname)){
       if(request.method!=='GET')return json({detail:'Method not allowed'},405);
       return v2Page('child');
@@ -91,6 +102,11 @@ export default {
       if(request.method!=='GET')return json({detail:'Method not allowed'},405);
       return householdPage();
     }
+    if(url.pathname==='/api/messages'&&request.method==='GET')return parentMessages(request,env);
+    if(url.pathname==='/api/messages'&&request.method==='POST')return sendMessage(request,env);
+    if(url.pathname==='/api/child/messages'&&request.method==='GET')return childMessages(request,env);
+    if(url.pathname==='/api/child/messages/read'&&request.method==='POST')return readMessage(request,env);
+    if(url.pathname==='/api/child/messages/claim'&&request.method==='POST')return claimLove(request,env);
     if(url.pathname==='/api/child/help'&&request.method==='POST')return childAskHelp(request,env);
     if(url.pathname==='/api/child/help'&&request.method==='GET')return childHelpStatus(request,env);
     if(url.pathname==='/api/parent/help'&&request.method==='GET')return parentHelpRequests(request,env);
@@ -120,9 +136,10 @@ export default {
     }
     if(url.pathname==='/api/version'&&request.method==='GET'){
       const current=typeof env.APP_VERSION==='string'?env.APP_VERSION:'unknown';
+      const releaseRef=typeof env.APP_RELEASE_REF==='string'?env.APP_RELEASE_REF:'main';
       let latest=null,updatedAt=null;
       try{
-        const response=await fetch('https://api.github.com/repos/george-stathopoulos/habit-hero/commits/main',{
+        const response=await fetch('https://api.github.com/repos/george-stathopoulos/habit-hero/commits/'+encodeURIComponent(releaseRef),{
           headers:{'user-agent':'habit-hero-version-check','accept':'application/vnd.github+json'},
           cf:{cacheTtl:180,cacheEverything:true}
         });
@@ -131,7 +148,7 @@ export default {
           updatedAt=data.commit?.committer?.date||null;
         }
       }catch{}
-      return new Response(JSON.stringify({current,latest,updated_at:updatedAt,
+      return new Response(JSON.stringify({current,latest,release_ref:releaseRef,updated_at:updatedAt,
         update_available:!!(latest&&current!=='unknown'&&latest!==current),
         check_available:!!latest}),{headers:{'content-type':'application/json','cache-control':'no-store'}});
     }

@@ -1,6 +1,11 @@
 name: Build and deploy Cloudflare Habit Hero
 on:
   workflow_dispatch:
+    inputs:
+      v3_preview:
+        description: Deploy additive v3 using the last successful static build
+        type: boolean
+        default: false
   push:
     branches: [main]
 concurrency:
@@ -8,8 +13,14 @@ concurrency:
   cancel-in-progress: true
 permissions:
   contents: read
+  actions: read
 jobs:
+  v3-preview:
+    if: ${{ inputs.v3_preview == true }}
+    uses: ./.github/workflows/v3-preview.yml
+    secrets: inherit
   build:
+    if: ${{ inputs.v3_preview != true }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -20,6 +31,9 @@ jobs:
       - name: Test Cloudflare routing and fail-closed API
         run: |
           node --check cloudflare/worker.mjs
+          node --check app/v3/app.js
+          node --check cloudflare/v3-page.mjs
+          node scripts/v3/check.mjs
           node --check cloudflare/google-auth.mjs
           node scripts/test-cloudflare.mjs
           node scripts/test-google-auth.mjs

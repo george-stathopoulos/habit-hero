@@ -16,7 +16,7 @@ class SchemaTests(unittest.TestCase):
             self.db.executescript(migration.read_text(encoding="utf-8"))
         self.db.execute("INSERT INTO families VALUES (?, ?, ?, ?, NULL)", ("f1", "Family 1", NOW, NOW))
         self.db.execute("INSERT INTO families VALUES (?, ?, ?, ?, NULL)", ("f2", "Family 2", NOW, NOW))
-        self.db.execute("INSERT INTO parent_users VALUES (?, ?, ?, ?, ?, NULL)", ("p1", "parent1@example.test", "Parent", NOW, NOW))
+        self.db.execute("INSERT INTO parent_users (id,email_normalized,display_name,created_at,updated_at,disabled_at) VALUES (?, ?, ?, ?, ?, NULL)", ("p1", "parent1@example.test", "Parent", NOW, NOW))
         self.db.execute("INSERT INTO family_memberships VALUES (?, ?, ?, ?)", ("f1", "p1", "owner", NOW))
         self.db.execute("INSERT INTO child_profiles (id,family_id,display_name,created_at,updated_at) VALUES (?,?,?,?,?)", ("c1", "f1", "Kid", NOW, NOW))
         self.db.execute("INSERT INTO child_profiles (id,family_id,display_name,created_at,updated_at) VALUES (?,?,?,?,?)", ("c2", "f2", "Kid", NOW, NOW))
