@@ -1,5 +1,6 @@
 import {childAskHelp,childHelpStatus,parentHelpRequests,respondToHelp} from './help-api.mjs';
 import {v2Page} from './v2-page.mjs';
+import {v3Page} from './v3-page.mjs';
 import {householdPage} from './household-page.mjs';
 import {householdState,setupParentPin,unlockHousehold,exitToHousehold} from './household-auth.mjs';
 import {configureChildPin,childPinStatus,unlockChildPin,lockChildPin} from './child-pin.mjs';
@@ -79,6 +80,10 @@ h1{font-size:29px;margin:10px 0}p{line-height:1.6}a,button{display:inline-block;
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (/^\/habit-hero\/v3\/(child|preview)\/?$/.test(url.pathname)) {
+      if(request.method!=='GET')return json({detail:'Method not allowed'},405);
+      return v3Page(url.pathname.includes('/preview'));
+    }
     if(['/habit-hero/v2/child','/habit-hero/v2/child/','/habit-hero/welcome/v2/child','/habit-hero/welcome/v2/child/'].includes(url.pathname)){
       if(request.method!=='GET')return json({detail:'Method not allowed'},405);
       return v2Page('child');

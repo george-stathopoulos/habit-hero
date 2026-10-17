@@ -1,0 +1,80 @@
+name: Deploy Playful v3 preview
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      CLOUDFLARE_API_TOKEN:
+        required: true
+permissions:
+  contents: read
+  actions: read
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate the changed presentation and existing API boundaries
+        run: |
+          node --check cloudflare/v3-page.mjs
+          node --check app/v3/app.js
+          node --check app/v3/icons.js
+          node --check app/v3/preview.js
+          node scripts/test-cloudflare.mjs
+          node scripts/test-child-auth.mjs
+          node scripts/test-occurrence.mjs
+          node scripts/v3/check.mjs
+      - name: Find the last successful main deployment artifact
+        id: baseline
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runs = await github.rest.actions.listWorkflowRuns({owner: context.repo.owner, repo: context.repo.repo, workflow_id: 'cloudflare.yml', branch: 'main', status: 'success', per_page: 1});
+            const run = runs.data.workflow_runs[0];
+            if (!run) throw new Error('No successful main deployment is available. Run the full Cloudflare workflow first.');
+            const result = await github.rest.actions.listWorkflowRunArtifacts({owner: context.repo.owner, repo: context.repo.repo, run_id: run.id});
+            const artifact = result.data.artifacts.find(a => a.name === 'habit-hero-cloudflare' && !a.expired);
+            if (!artifact) throw new Error('The baseline static artifact expired. Run the full Cloudflare workflow first.');
+            core.setOutput('run_id', run.id);
+            core.info(`Reusing static build ${run.head_sha}; no legacy Expo rebuild needed.`);
+      - uses: actions/download-artifact@v4
+        with:
+          name: habit-hero-cloudflare
+          path: cloudflare-dist
+          github-token: ${{ github.token }}
+          run-id: ${{ steps.baseline.outputs.run_id }}
+      - name: Overlay the current frontend without removing legacy routes
+        run: |
+          cp -a app/. cloudflare-dist/habit-hero/app/
+          test -f cloudflare-dist/habit-hero/original-preview/index.html
+          test -f cloudflare-dist/habit-hero/app/v3/assets/world.webp
+          python3 scripts/generate-icons.py
+          cp app/icon-192.png app/icon-512.png cloudflare-dist/habit-hero/app/
+      - name: Deploy additive v3 routes using the existing Worker and D1
+        working-directory: cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: '3fc2c10ca86a2322b58f7daa16c77c6d'
+        run: |
+          node -e 'const fs=require("fs");const p="wrangler.jsonc";const c=JSON.parse(fs.readFileSync(p,"utf8"));c.vars={...c.vars,APP_VERSION:process.env.GITHUB_SHA};fs.writeFileSync(p,JSON.stringify(c,null,2));'
+          npx --yes wrangler@4 deploy --config wrangler.jsonc
+      - name: Check the deployed build and new route
+        env:
+          DEPLOY_SHA: ${{ github.sha }}
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          const base='https://habit-hero-cloudflare.george-stathopoulos.workers.dev';
+          const version=await fetch(base+'/api/version').then(r=>r.json());
+          assert.equal(version.current,process.env.DEPLOY_SHA);
+          for(const path of ['/habit-hero/v3/preview/','/habit-hero/v3/child/']){
+            const response=await fetch(base+path);assert.equal(response.status,200);
+            assert.match(await response.text(),/\/habit-hero\/app\/v3\/app.js/);
+          }
+          const health=await fetch(base+'/api/health').then(r=>r.json());
+          assert.equal(health.database,'connected');
+          console.log('Verified v3 routes, deployed SHA and D1 connection.');
+          JS
