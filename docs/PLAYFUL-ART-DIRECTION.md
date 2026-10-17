@@ -32,3 +32,5 @@ Habit and activity rows use colourful rounded vector badges, not miniature scene
 ## Background movement
 
 Every theme should have continuous gentle ambient movement that fits its scenery. Playful uses drifting cloud layers and subtle daylight changes. A waterfall scene should animate its water; a night sky should animate its stars. Idle movement belongs to the background: do not bob the characters, foliage, habit icons or controls. Keep user-driven multiplane parallax. Pause ambient motion when Home or the page is not visible, and respect reduced motion.
+
+The magic egg may wobble and glow as a progression object, per the user’s later request. Scrolling can close a Playful leaf/flower canopy over the world. These effects must remain reversible and respect reduced motion. Larger screens should use the available width for scene/content columns rather than displaying a narrow phone frame.

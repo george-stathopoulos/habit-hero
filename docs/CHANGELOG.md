@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.0.0-preview.3 — 2026-10-17
+
+- Remember tilt preference, reconnect to existing browser grants automatically, and retry after an ordinary page gesture when iOS requires one. Explicitly disabled tilt stays off.
+- Strengthen scroll parallax and add a reversible flower/leaf canopy over the Playful scene.
+- Add character illustrations for making the bed, brushing teeth and reading; retain themed activity icons in lists.
+- Make switching profiles cancellable from both selection and PIN entry. Keep the current child session until a replacement PIN is verified, then revoke it atomically.
+- Add tablet scene/content columns and a desktop navigation rail with wider activity and mission-detail layouts.
+- Animate the magic egg with a gentle wobble and shine, respecting reduced motion.
+
 ## 3.0.0-preview.2 — 2026-10-17
 
 - Replaced the mature-looking first-preview characters with reconstructions based directly on the mockup hero cards, preserving childlike proportions, reference outfits and companions.

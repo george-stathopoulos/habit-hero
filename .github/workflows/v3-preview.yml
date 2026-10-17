@@ -29,6 +29,8 @@ jobs:
           node scripts/test-household.mjs
           node scripts/test-occurrence.mjs
           node scripts/v3/check.mjs
+          node scripts/v3/test-tilt.mjs
+          node scripts/v3/test-profile-switch.mjs
       - name: Find the last successful main deployment artifact
         id: baseline
         uses: actions/github-script@v7

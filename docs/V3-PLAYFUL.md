@@ -67,3 +67,16 @@ Activity rows now use shaded, colourful native SVG bed/toothbrush/book/outdoor b
 ## Device testing
 
 Open the family entry point, sign in as the parent, create/select a child, and unlock that child to enter v3 with actual API data. On supported iPhones, tap “Κίνηση με κλίση” and grant the orientation prompt to test layer movement. On devices that do not require permission it activates automatically. Turning it off or enabling reduced motion stops tilt. Real-device sensor response remains for user testing; browser checks cannot verify physical hardware.
+
+## Usability pass — preview.3
+
+- Tilt preference is stored per device/browser. On page load the client attempts to reuse the browser's existing grant, and remembers an explicit off choice. If a retained grant still needs activation, it reconnects after a normal page gesture rather than requiring the dedicated button again. The browser controls whether consent is retained; the app cannot override a revoked grant or mandatory permission prompt.
+- Scroll changes foreground/hero/background transforms at visibly different rates and closes a themed flower-and-leaf canopy; upward scrolling reverses it. Reduced motion removes the curtain and decorative transforms.
+- Mission detail now shows the reference child actually making a bed, brushing teeth or reading. Lists keep their Playful SVG icons. Other custom missions use the existing coherent world/icon fallback.
+- The switch icon opens profile selection without logging out first. Cancel/× returns to the current child; opening the picker and failed PINs preserve the child session. A successful switch revokes that session in the same transaction as the new unlock. Parent entry also clears the child cookie.
+- Tablet screens use two scene/content columns. Desktop screens use a navigation rail and wider Home, rewards and mission-detail layouts. The mobile layout remains compact.
+- The magic egg gently wobbles and glimmers. This is the requested exception to background-only idle animation; reduced motion disables it.
+
+Focused verification includes automatic tilt reconnection/opt-out/denied-grant tests and profile cancellation/failed-PIN/verified-switch session tests. Browser inspection covered Cancel on the PIN form, the brushing illustration, the egg's animation, scroll-driven transforms, and layouts at 320/390/768/1280px with no horizontal overflow and valid navigation touch targets. Layout measurements are recorded in `screenshots/v3-responsive-check.json`.
+
+![Brushing activity in the desktop layout](screenshots/v3-brushing-activity.png)
