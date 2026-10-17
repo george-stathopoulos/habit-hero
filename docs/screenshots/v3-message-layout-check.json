@@ -1,0 +1,162 @@
+[
+  {
+    "type": "habit-hero-layout",
+    "width": 320,
+    "viewport": 320,
+    "scrollWidth": 320,
+    "scene": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    },
+    "content": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    },
+    "navigation": {
+      "x": 0,
+      "y": 830,
+      "width": 320,
+      "height": 70
+    },
+    "targetsOK": true,
+    "icons": 3,
+    "messages": [
+      {
+        "textBottom": 355.1015625,
+        "timeBottom": 392.1015625,
+        "buttonTop": 406.1015625,
+        "buttonHeight": 65,
+        "overlap": false
+      },
+      {
+        "textBottom": 610.2890625,
+        "timeBottom": 647.2890625,
+        "overlap": false
+      }
+    ]
+  },
+  {
+    "type": "habit-hero-layout",
+    "width": 390,
+    "viewport": 390,
+    "scrollWidth": 390,
+    "scene": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    },
+    "content": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    },
+    "navigation": {
+      "x": 0,
+      "y": 830,
+      "width": 390,
+      "height": 70
+    },
+    "targetsOK": true,
+    "icons": 3,
+    "messages": [
+      {
+        "textBottom": 355.1015625,
+        "timeBottom": 392.1015625,
+        "buttonTop": 406.1015625,
+        "buttonHeight": 48,
+        "overlap": false
+      },
+      {
+        "textBottom": 593.2890625,
+        "timeBottom": 630.2890625,
+        "overlap": false
+      }
+    ]
+  },
+  {
+    "type": "habit-hero-layout",
+    "width": 768,
+    "viewport": 768,
+    "scrollWidth": 768,
+    "scene": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    },
+    "content": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    },
+    "navigation": {
+      "x": 16,
+      "y": 812,
+      "width": 736,
+      "height": 78
+    },
+    "targetsOK": true,
+    "icons": 3,
+    "messages": [
+      {
+        "textBottom": 355.2109375,
+        "timeBottom": 392.2109375,
+        "buttonTop": 406.2109375,
+        "buttonHeight": 48,
+        "overlap": false
+      },
+      {
+        "textBottom": 572.6015625,
+        "timeBottom": 609.6015625,
+        "overlap": false
+      }
+    ]
+  },
+  {
+    "type": "habit-hero-layout",
+    "width": 1280,
+    "viewport": 1280,
+    "scrollWidth": 1280,
+    "scene": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    },
+    "content": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    },
+    "navigation": {
+      "x": 49,
+      "y": 176,
+      "width": 142,
+      "height": 292
+    },
+    "targetsOK": true,
+    "icons": 3,
+    "messages": [
+      {
+        "textBottom": 375.015625,
+        "timeBottom": 412.015625,
+        "buttonTop": 426.015625,
+        "buttonHeight": 48,
+        "overlap": false
+      },
+      {
+        "textBottom": 592.40625,
+        "timeBottom": 629.40625,
+        "overlap": false
+      }
+    ]
+  }
+]

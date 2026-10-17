@@ -9,6 +9,7 @@ Updated 2026-10-18. Features take priority over additional themes. Source inspec
 - Weekdays and same-day time windows in family timezone; server enforcement in child and supervised submission APIs. Unsupported overnight windows are rejected.
 - Submission/approval/help flow, points, reward creation/editing/eligibility/archive/request/review/fulfillment, point adjustments and family export.
 - Durable parent encouragement messages, optional claim-once Love Credits, read/claim receipts and message export.
+- Ordered morning/after-school/bedtime routines, child progress cards, routine filters and next-available-step navigation.
 - Goals and editable suggestions, parent 30-day activity calendar, child milestone badges and recent attempts, child reward-request history.
 - One Playful world with independent depth planes, scenery animation, pointer/tilt/scroll movement, garden curtain and animated egg.
 
@@ -17,7 +18,7 @@ Updated 2026-10-18. Features take priority over additional themes. Source inspec
 The original `original/backend/server.py` and `original/frontend/src/` contain functionality beyond the current Cloudflare implementation. These services are not used as a production backend for v3.
 
 1. **Encouragement improvements:** basic personal messages and Love Credits now exist. Further work includes better message organisation and optional parent-configured notification delivery. Manual point adjustments remain separate.
-2. **Routines:** named morning/after-school/bedtime collections with an ordered “what next” flow. Individual scheduled missions are not a routine system.
+2. **Routine expansion:** the three common ordered routines and next-step flow are implemented. Custom routine names, bulk routine creation and child-specific ordering for shared missions remain future work.
 3. **Reminders:** parent-controlled timing, quiet hours and permission-aware delivery. In-app messages currently update on refresh/foreground; no background push delivery is claimed.
 4. **Family review:** weekly recap of effort, help requests and improvement, with useful per-habit insight. Current metrics are recent activity, counts, levels and streaks.
 5. **Resilience controls:** reversible pauses, recoverable archives, parent-guided retry of rejected attempts, and forgiving progress semantics. Rejected slots currently retain the server's existing unique-occurrence rule.

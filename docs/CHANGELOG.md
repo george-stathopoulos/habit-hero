@@ -64,3 +64,11 @@
 - Add parent sent history and server-backed read/claim receipts; include messages in family export.
 - Keep normal encouragement free of point requirements and separate from manual corrections.
 - Add migration 0007, verified against SQLite transaction rollback, retries and family boundaries before manual migration/deployment.
+
+## 3.0.0-preview.9 — Message layout fix and routines
+
+- Put message text, timestamp and gift action in separate spaced rows; verify no overlap at 320/390/768/1280px.
+- Add morning, after-school and bedtime mission grouping with parent-defined step order.
+- Add child routine progress cards, routine filters and next-available-step navigation.
+- Show missing-previous-attempt, cooldown, next-day and rejected-attempt explanations before submission.
+- Reuse versioned schedule storage; no new database migration or theme work.

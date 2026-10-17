@@ -1,4 +1,4 @@
-import {scheduleStatus} from './schedule.mjs';
+import {scheduleStatus,slotAvailability} from './schedule.mjs';
 import {localDay} from './timezone.mjs';
 import {occurrenceKey,occurrenceSql} from './occurrence.mjs';
 // Child access via parent-approved pairing, never the parent's authentication cookie.
@@ -121,7 +121,7 @@ export async function childActivities(request,env){
    const target=first.frequency_type==='once'?1:Math.min(5,Math.max(1,Number(first.frequency_count)||1));
    for(let slot=1;slot<=target;slot++){
     const existing=group.find(x=>x.slot_index===slot);
-    activities.push({...first,...scheduleStatus(first.frequency_days_json,child.timezone),slot_index:slot,slot_total:target,
+    activities.push({...first,...slotAvailability(first,group,slot,child.timezone),slot_index:slot,slot_total:target,
       submission_status:existing?.submission_status||null,
       submitted_at:existing?.submitted_at||null});
    }

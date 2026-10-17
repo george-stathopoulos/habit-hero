@@ -27,6 +27,7 @@ jobs:
           node --check app/v3/parent.js
           node --check app/v3/goals.js
           node scripts/v3/test-goals.mjs
+          node scripts/v3/test-routines.mjs
           node --check app/v3/parent-preview.js
           node --check cloudflare/v3-parent-page.mjs
           node scripts/test-cloudflare.mjs

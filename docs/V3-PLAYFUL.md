@@ -131,3 +131,13 @@ Migration `0007_family_messages.sql` is additive and uses existing family/child/
 Checks use actual in-memory SQLite for message SQL: send retry, deferred claim, duplicate claim, forced batch rollback, zero-point message, CSRF, parent/child privilege boundaries and cross-family access. Browser QA uses isolated sample data for composer/history and claim-to-disabled state. No messages or gifts are sent to real families as part of QA. Screenshots: `v3-parent-encouragement.png`, `v3-love-credits.png`.
 
 Migration audit: the remote tracker predates several already-deployed legacy changes (timezone, PIN/household, help and slots). The normal migration guard stopped without replaying them. A `messages_only` manual mode checks those seven required schema components and points Wrangler at a temporary directory containing only `0007_family_messages.sql`. This records the new migration normally without replaying or marking legacy migrations as applied. No existing family records are altered.
+
+### Message spacing and routines · preview.9
+
+Message bodies use an explicit column layout with independent heading, body, timestamp and gift button rows. The button has at least a 48px target, a wrapping label and normal document flow. `docs/screenshots/v3-message-layout-check.json` records browser measurements at 320/390/768/1280px: no text/time intersection and no horizontal document overflow. `v3-message-spacing-fixed.png` is the corrected screenshot.
+
+Parents can assign a mission to morning, after-school or bedtime, with step order 1–50. This optional metadata lives in the existing versioned schedule JSON (`routine`, `order`) and is returned by the child API; no migration is needed. Routine configuration belongs to the mission, so shared missions share their routine/order. This first routine model uses three common groups, not arbitrary custom routines.
+
+Children see submitted/total progress, choose a routine, and continue to the next available step after submitting. This is supportive ordering, not a mandatory task gate. Points still require normal parent approval. The next-step helper skips other-day, waiting and submitted attempts. Server activity availability now explains missing prior repetition, cooldown, family-local next-day spacing and rejected attempts (which still require parent guidance under the existing occurrence rule).
+
+Checks: focused routine ordering/filter/availability tests and existing scheduling/auth checks passed. Browser sandbox verified parent routine assignment and displayed step order, child first-step submission → next mission, and updated 1/2 progress. No production family mutations. Screenshots include `v3-routine-progress.png`. Background artwork and depth effects were not changed.

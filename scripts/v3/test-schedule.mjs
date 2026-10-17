@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {validateSchedule,scheduleStatus} from '../../cloudflare/schedule.mjs';
+import {validateSchedule,scheduleStatus,slotAvailability} from '../../cloudflare/schedule.mjs';
 import worker from '../../cloudflare/worker.mjs';
 const window=JSON.stringify(validateSchedule({weekdays:[1,2,3,4,5],start:'08:00',end:'18:00'}));
 for(const [instant,expected]of [['2026-10-19T04:59:00Z',false],['2026-10-19T05:00:00Z',true],['2026-10-19T14:59:00Z',true],['2026-10-19T15:00:00Z',false],['2026-10-18T09:00:00Z',false],['2026-10-26T06:00:00Z',true]])assert.equal(scheduleStatus(window,'Europe/Athens',new Date(instant)).schedule_available,expected,instant);
@@ -16,3 +16,5 @@ assert.equal((await post('/api/habits/update',{habit_id:id,name:'Read',points:10
 assert.equal(updates[0][3],2);assert.equal(updates[0][5],'Step one\nStep two');assert.deepEqual(JSON.parse(updates[0][7]).weekdays,[1,3,5]);
 assert.equal((await post('/api/habits/update',{habit_id:id,name:'Read',points:10,frequency:'daily',schedule:{weekdays:[]}})).status,400);
 console.log('PASS timezone/DST windows, end boundary, invalid schedules, both submission gates and full mission update');
+
+const moment=new Date('2026-10-19T09:10:00Z'),habit={frequency_type:'daily',retry_delay_minutes:30};assert.equal(slotAvailability(habit,[],2,'UTC',moment).schedule_available,false);assert.equal(slotAvailability(habit,[{slot_index:1,submitted_at:'2026-10-19T09:00:00Z'}],2,'UTC',moment).schedule_available,false);assert.equal(slotAvailability(habit,[{slot_index:1,submitted_at:'2026-10-19T08:00:00Z'}],2,'UTC',moment).schedule_available,true);assert.equal(slotAvailability(habit,[{slot_index:1,submission_status:'rejected'}],1,'UTC',moment).schedule_available,false);
