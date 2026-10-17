@@ -40,3 +40,9 @@
 - Add reward editing, child assignment management and archive confirmations; add mission archiving.
 - Clear sensitive dialog fields on close and report successful changes.
 - Keep existing server authorization, expiry, history and idempotency rules.
+
+## 3.0.0-preview.6 — Family goals
+
+- Add 20 family goals and age-adjusted mission starting points directly to v3.
+- Open each suggestion as an editable mission before saving; flag matching assigned titles.
+- Store goal preferences locally per family, with isolated sample behaviour and storage-failure feedback.
