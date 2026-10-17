@@ -56,3 +56,11 @@
 - Restore child badges, recent attempts, reward history and paired-device PIN lock/unlock.
 - Add the parent 30-day activity calendar and an explicit feature parity backlog; additional themes are last.
 - Fix newline rendering and a stale schema-test fixture. No database migration required.
+
+## 3.0.0-preview.8 — Encouragement and Love Credits
+
+- Add durable personal parent-to-child encouragement with optional 0–100 Love Credits.
+- Children explicitly receive gifts; unique ledger keys prevent repeated claims from awarding extra points.
+- Add parent sent history and server-backed read/claim receipts; include messages in family export.
+- Keep normal encouragement free of point requirements and separate from manual corrections.
+- Add migration 0007, verified against SQLite transaction rollback, retries and family boundaries before manual migration/deployment.

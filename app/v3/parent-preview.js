@@ -9,6 +9,7 @@ const store={
  '/api/progress':{children:[{child_id:child,level:3,points_balance:145,current_streak_days:6,approved_last_30_days:18,active_days_last_30_days:12,recent_activity:[{habit_name:'Διαβάζω για 15 λεπτά',status:'approved',submitted_at:now()}]},{child_id:other,level:4,points_balance:220,current_streak_days:9,approved_last_30_days:24,active_days_last_30_days:16}]},
  '/api/rewards':{rewards:[{id:'reward-1',name:'Μια βόλτα με ποδήλατο μαζί',description:'Διαλέγουμε τη διαδρομή και παίρνουμε ένα μικρό πικνίκ.',points_cost:100,active:true,children:[{id:child,name:'Σοφία'},{id:other,name:'Νικόλας'}]}]},
  '/api/rewards/redemptions':{redemptions:[{id:'request-1',child_name:'Σοφία',reward_name:'Μια βόλτα με ποδήλατο μαζί',points_spent:100,status:'requested',requested_at:now()}]},
+ '/api/messages':{messages:[]},
  '/api/version':{current:'sample-preview',check_available:false}
 };
 store['/api/progress'].as_of=new Date().toISOString().slice(0,10);
@@ -34,6 +35,7 @@ export async function previewApi(path,method='GET',body){
  else if(path==='/api/children/pin'||path==='/api/child/revoke')return {ok:true};
  else if(path==='/api/child/pairing')return {pairing_code:'SAMPLE-ONLY-NOT-A-REAL-PAIRING-CODE',expires_at:new Date(Date.now()+600000).toISOString()};
  else if(path==='/api/points/adjust'){const m=store['/api/progress'].children.find(x=>x.child_id===body.child_id);if(!m||m.points_balance+body.delta<0)throw Error('Δεν υπάρχουν αρκετοί πόντοι.');m.points_balance+=body.delta}
+ else if(path==='/api/messages'){if(!store[path].messages.some(m=>m.request_id===body.request_id))store[path].messages.unshift({...body,id:crypto.randomUUID(),child_name:people.find(c=>c.id===body.child_id).display_name,created_at:now(),read_at:null,claimed_at:null})}
  else if(path==='/api/family/timezone')store['/api/family/overview'].family.timezone=body.timezone;
  else throw Error('Μη διαθέσιμη ενέργεια στην προεπισκόπηση.');return {ok:true};
 }

@@ -1,3 +1,4 @@
+import {parentMessages,sendMessage,childMessages,readMessage,claimLove} from './messages-api.mjs';
 import {childAskHelp,childHelpStatus,parentHelpRequests,respondToHelp} from './help-api.mjs';
 import {v2Page} from './v2-page.mjs';
 import {v3Page} from './v3-page.mjs';
@@ -101,6 +102,11 @@ export default {
       if(request.method!=='GET')return json({detail:'Method not allowed'},405);
       return householdPage();
     }
+    if(url.pathname==='/api/messages'&&request.method==='GET')return parentMessages(request,env);
+    if(url.pathname==='/api/messages'&&request.method==='POST')return sendMessage(request,env);
+    if(url.pathname==='/api/child/messages'&&request.method==='GET')return childMessages(request,env);
+    if(url.pathname==='/api/child/messages/read'&&request.method==='POST')return readMessage(request,env);
+    if(url.pathname==='/api/child/messages/claim'&&request.method==='POST')return claimLove(request,env);
     if(url.pathname==='/api/child/help'&&request.method==='POST')return childAskHelp(request,env);
     if(url.pathname==='/api/child/help'&&request.method==='GET')return childHelpStatus(request,env);
     if(url.pathname==='/api/parent/help'&&request.method==='GET')return parentHelpRequests(request,env);

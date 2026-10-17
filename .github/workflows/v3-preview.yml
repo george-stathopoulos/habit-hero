@@ -34,6 +34,7 @@ jobs:
           node scripts/test-household.mjs
           node scripts/test-occurrence.mjs
           node scripts/v3/test-schedule.mjs
+          node scripts/v3/test-messages.mjs
           node scripts/test-habits-api.mjs
           node scripts/test-activity-api.mjs
           node scripts/test-child-pin.mjs

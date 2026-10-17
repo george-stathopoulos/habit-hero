@@ -16,16 +16,30 @@ jobs:
         with:
           node-version: '22'
       - name: Offline schema integrity tests (mandatory)
-        run: python3 scripts/test-d1-schema.py -v
+        run: |
+          python3 scripts/test-d1-schema.py -v
+          node scripts/v3/test-messages.mjs
       - name: Ensure D1 credentials
         run: |
           test -n "$CLOUDFLARE_API_TOKEN"
           test -n "$CLOUDFLARE_ACCOUNT_ID"
+      - name: Refuse unrelated pending legacy migrations
+        working-directory: cloudflare
+        run: |
+          npx --yes wrangler@4 d1 execute habit-hero-db --remote --command "SELECT name FROM d1_migrations ORDER BY name;" --json > /tmp/hh-applied-migrations.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const report=JSON.parse(fs.readFileSync('/tmp/hh-applied-migrations.json','utf8'));
+          const applied=new Set(report.flatMap(part=>part.results||[]).map(row=>row.name));
+          const pending=fs.readdirSync('migrations').filter(file=>file.endsWith('.sql')&&!applied.has(file));
+          console.log('Pending migrations:',pending);
+          if(pending.some(file=>file!=='0007_family_messages.sql'))throw Error('Unrelated legacy migrations require inspection before applying the message table.');
+          JS
       - name: Apply reviewed migrations to EU remote D1
         working-directory: cloudflare
-        run: printf 'y\\n' | npx --yes wrangler@4 d1 migrations apply habit-hero-db --remote
+        run: printf 'y\n' | npx --yes wrangler@4 d1 migrations apply habit-hero-db --remote
       - name: Verify applied schema (read-only)
         working-directory: cloudflare
         run: |
-          npx --yes wrangler@4 d1 execute habit-hero-db --remote --command "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('families','child_profiles','habit_assignments','point_ledger','auth_sessions') ORDER BY name;"
+          npx --yes wrangler@4 d1 execute habit-hero-db --remote --command "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('families','child_profiles','habit_assignments','point_ledger','auth_sessions','family_messages') ORDER BY name;"
           npx --yes wrangler@4 d1 execute habit-hero-db --remote --command "PRAGMA foreign_key_check;"

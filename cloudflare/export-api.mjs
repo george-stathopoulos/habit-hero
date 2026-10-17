@@ -2,6 +2,7 @@
 // Do not include session tokens, pairing codes, OAuth claims or authentication secrets.
 import {authorizedParent} from './family-api.mjs';
 const specs=[
+ ['messages','family_messages','id,child_id,created_by,body,gift_points,created_at,read_at,claimed_at'],
  ['children','child_profiles','id,display_name,age_band,avatar_id,avatar_level,created_at,updated_at'],
  ['habits','habits','id,name_el,name_en,points,emoji,frequency_type,active,created_at,updated_at,deleted_at'],
  ['habit_assignments','habit_assignments','habit_id,child_id,assigned_at'],
