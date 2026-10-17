@@ -44,3 +44,15 @@ Use the existing routing, child-authorization and recurrence checks plus `node s
 The `cloudflare.yml` dispatch input `v3_preview=true` invokes the focused deployment workflow. It reuses the last successful main static artifact, overlays the current app, and deploys the current Worker. Legacy static routes are retained; no migrations run. An expired baseline fails explicitly and requires a full build. Normal main builds retain the original workflow.
 
 Before calling the whole v3 product complete: verify a signed-in child → parent approval → updated balance journey on live test-family data; test an actual iPhone home-screen installation, VoiceOver, reduced motion and offline behavior. Complete and review the rest of the blueprint, including parent onboarding, scheduling UI, all character states and the other three worlds. A passing build or a visual sandbox is not proof of those flows.
+
+## Preview verification record — 2026-10-17
+
+- Browser reviewed the composed Home at 320, 390 and 430px, with tablet layout also available in the local review harness.
+- Confirmed all three production illustrated planes loaded. Browser inspection measured different pointer transforms: landscape x=-2.665px, hero x=+4.797px, foreground x=-8.528px for the same pointer position.
+- Verified the sandbox mission detail → help → submit → approval confirmation journey. Home updated from 1/3 to 2/3, and points remained unchanged.
+- Opening Messages cleared its unread indicator; returning to the preview retained the read state.
+- Existing Worker routing, child access/isolation and recurrence checks passed. V3 route and local asset checks passed in GitHub Actions.
+- The additive Cloudflare deployment completed successfully using the previous static artifact; its built-in checks verified the deployed source SHA and D1 connection.
+- No live family records were created or changed for this visual review. Real authenticated approval and actual iPhone installation remain unverified.
+
+![Deployed Playful Home with layered scenery](screenshots/v3-playful-home.png)
