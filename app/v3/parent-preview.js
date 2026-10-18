@@ -20,7 +20,7 @@ export async function previewApi(path,method='GET',body){
  if(path==='/api/approvals/review')store['/api/approvals'].pending=store['/api/approvals'].pending.filter(x=>x.id!==body.completion_id);
  else if(path==='/api/parent/help/reply')store['/api/parent/help'].requests.find(x=>x.id===body.request_id).status=body.status;
  else if(path==='/api/rewards/review')store['/api/rewards/redemptions'].redemptions.find(x=>x.id===body.redemption_id).status=body.decision;
- else if(path==='/api/children'){const id=crypto.randomUUID();people.push({id,display_name:body.name,age_band:body.age_band});return {id}}
+ else if(path==='/api/children'){const id=crypto.randomUUID();people.push({id,display_name:body.name,age_band:body.age_band,avatar_id:body.avatar_id});return {id}}
  else if(path==='/api/children/update')Object.assign(people.find(x=>x.id===body.child_id),{display_name:body.name,age_band:body.age_band,avatar_id:body.avatar_id});
  else if(path==='/api/habits')store[path].habits.push({...body,id:crypto.randomUUID(),children:[{id:body.child_id,name:people.find(x=>x.id===body.child_id).display_name}]});
  else if(path==='/api/habits/update')Object.assign(store['/api/habits'].habits.find(x=>x.id===body.habit_id),body);

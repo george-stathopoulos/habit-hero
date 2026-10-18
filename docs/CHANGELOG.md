@@ -72,3 +72,12 @@
 - Add child routine progress cards, routine filters and next-available-step navigation.
 - Show missing-previous-attempt, cooldown, next-day and rejected-attempt explanations before submission.
 - Reuse versioned schedule storage; no new database migration or theme work.
+
+## 3.0.0-preview.10 — Readable mobile UI and parent-controlled profile category
+
+- Enlarge child/parent text, touch targets, forms and navigation; add a readable collapsible parent menu.
+- Add a prominent parent-to-child switch that locks parent access before opening profile/PIN selection.
+- Require the parent to choose girl/boy at profile creation/editing and save it atomically.
+- Remove the child category selector and old local overrides; reserve future child selection for characters inside the parent-set collection.
+
+Greek typography correction: both v3 interfaces now use bundled Noto Sans with genuine variable weights and Greek/Latin coverage, including accented Greek. Removed misleading local Nunito aliases and mixed parent serif/system families. Fonts are served locally under the existing content security policy.

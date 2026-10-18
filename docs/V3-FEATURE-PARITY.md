@@ -5,7 +5,7 @@ Updated 2026-10-18. Features take priority over additional themes. Source inspec
 ## Available in v3
 
 - Child/parent session separation, household PIN selection, device pairing and revocation, child PIN reset, child lock/unlock.
-- Child profiles, hero selection, custom missions and assignments, instructions and benefits, daily/weekly/monthly/one-time recurrence, repetition counts and cooldowns.
+- Child profiles with parent-set girl/boy collection (one character per collection), custom missions and assignments, instructions and benefits, daily/weekly/monthly/one-time recurrence, repetition counts and cooldowns.
 - Weekdays and same-day time windows in family timezone; server enforcement in child and supervised submission APIs. Unsupported overnight windows are rejected.
 - Submission/approval/help flow, points, reward creation/editing/eligibility/archive/request/review/fulfillment, point adjustments and family export.
 - Durable parent encouragement messages, optional claim-once Love Credits, read/claim receipts and message export.
@@ -24,6 +24,6 @@ The original `original/backend/server.py` and `original/frontend/src/` contain f
 5. **Resilience controls:** reversible pauses, recoverable archives, parent-guided retry of rejected attempts, and forgiving progress semantics. Rejected slots currently retain the server's existing unique-occurrence rule.
 6. **Account/privacy completion:** self-service account deletion/retention workflow and broader multi-parent/session administration. Export exists; it does not mean deletion is implemented.
 7. **Reliability:** physical-device acceptance of PIN/pairing, install behaviour and motion; offline authenticated reads/sync are not implemented. No offline point mutation queue is planned without a deduplication design.
-8. **World progression:** meaningful companion and environment unlocks beyond current level/streak/egg presentation.
+8. **Hero selection and world progression:** multiple child-selectable characters within the parent-set collection, plus meaningful companion and environment unlocks beyond current level/streak/egg presentation.
 
 Other themes come after this functional work. No claim of full original-version parity should be made until these gaps are resolved or explicitly removed from scope.
