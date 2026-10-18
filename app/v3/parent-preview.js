@@ -10,6 +10,7 @@ const store={
  '/api/rewards':{rewards:[{id:'reward-1',name:'Μια βόλτα με ποδήλατο μαζί',description:'Διαλέγουμε τη διαδρομή και παίρνουμε ένα μικρό πικνίκ.',points_cost:100,active:true,children:[{id:child,name:'Σοφία'},{id:other,name:'Νικόλας'}]}]},
  '/api/rewards/redemptions':{redemptions:[{id:'request-1',child_name:'Σοφία',reward_name:'Μια βόλτα με ποδήλατο μαζί',points_spent:100,status:'requested',requested_at:now()}]},
  '/api/messages':{messages:[]},
+ '/api/inactivity':{rules:[]},
  '/api/family/administration':{members:[],families:[],sessions:[],invitations:[],owner:true},
  '/api/routines':{routines:[],steps:[]},
  '/api/notifications/settings':{preferences:[],devices:[],timezone:'Europe/Athens'},
@@ -43,6 +44,7 @@ export async function previewApi(path,method='GET',body){
  else if(path==='/api/child/pairing')return {pairing_code:'SAMPLE-ONLY-NOT-A-REAL-PAIRING-CODE',expires_at:new Date(Date.now()+600000).toISOString()};
  else if(path==='/api/points/adjust'){const m=store['/api/progress'].children.find(x=>x.child_id===body.child_id);if(!m||m.points_balance+body.delta<0)throw Error('Δεν υπάρχουν αρκετοί πόντοι.');m.points_balance+=body.delta}
  else if(path==='/api/messages'){if(!store[path].messages.some(m=>m.request_id===body.request_id))store[path].messages.unshift({...body,id:crypto.randomUUID(),child_name:people.find(c=>c.id===body.child_id).display_name,created_at:now(),read_at:null,claimed_at:null})}
+ else if(path==='/api/inactivity'){const rules=store[path].rules;const old=rules.find(r=>r.child_id===body.child_id);if(old)Object.assign(old,body);else rules.push({...body,enabled:body.enabled?1:0})}
  else if(path==='/api/account/erase')throw Error('Οι οριστικές διαγραφές δεν εκτελούνται στην προεπισκόπηση.');
  else if(path==='/api/family/administration'){if(body.action==='invite')return {code:'SAMPLE-NOT-A-REAL-INVITATION',expires_at:now()};throw Error('Η ενέργεια διαχείρισης είναι διαθέσιμη μόνο στην πραγματική οικογένεια.')}
  else if(path==='/api/routines'){const r=store[path];if(body.action==='create')r.routines.push({id:crypto.randomUUID(),name:body.name});else if(body.action==='rename')r.routines.find(r=>r.id===body.id).name=body.name;else{r.steps=r.steps.filter(s=>s.child_id!==body.child_id);r.steps.push(...body.steps.map(s=>({...s,child_id:body.child_id})))}}

@@ -1,3 +1,4 @@
+import {inactivitySettings,saveInactivity,applyInactivityRules} from './inactivity-api.mjs';
 import {familyAdministration,administerFamily,eraseAccountData} from './administration-api.mjs';
 import {routineDefinitions,saveRoutines} from './routines-api.mjs';
 import {notificationSettings,saveNotificationSettings,pushKey,subscribePush,unsubscribePush,deliverReminders} from './notifications-api.mjs';
@@ -86,7 +87,7 @@ h1{font-size:29px;margin:10px 0}p{line-height:1.6}a,button{display:inline-block;
 }
 
 export default {
-  async scheduled(controller,env,ctx){ctx.waitUntil(deliverReminders(env))},
+  async scheduled(controller,env,ctx){ctx.waitUntil(Promise.allSettled([deliverReminders(env),applyInactivityRules(env)]))},
   async fetch(request, env) {
     const url = new URL(request.url);
     if (/^\/habit-hero\/v3\/(parent|parent-preview)\/?$/.test(url.pathname)) {
@@ -215,6 +216,8 @@ export default {
     if (url.pathname === '/api/family/administration' && request.method === 'GET') return familyAdministration(request,env);
     if (url.pathname === '/api/family/administration' && request.method === 'POST') return administerFamily(request,env);
     if (url.pathname === '/api/account/erase' && request.method === 'POST') return eraseAccountData(request,env);
+    if (url.pathname === '/api/inactivity' && request.method === 'GET') return inactivitySettings(request,env);
+    if (url.pathname === '/api/inactivity' && request.method === 'POST') return saveInactivity(request,env);
     if (url.pathname === '/api/analytics' && request.method === 'GET') return familyAnalytics(request,env);
     if (url.pathname === '/api/history' && request.method === 'GET') return familyHistory(request,env);
     if (url.pathname === '/api/child/history' && request.method === 'GET') return familyHistory(request,env,true);

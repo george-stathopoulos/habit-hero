@@ -53,7 +53,7 @@ export async function administerFamily(req,env){const {body,error}=await input(r
 // then closes the guard. Ordinary ledger writes remain immutable.
 function eraseStatements(env,family,parent,now,removeFamily){
  const queries=[env.DB.prepare('INSERT INTO family_erasure_authorizations(family_id,created_by,created_at) VALUES(?,?,?)').bind(family,parent,now)];
- const tables=['notification_deliveries','push_subscriptions','notification_preferences','family_invitations','family_messages','child_routine_steps','custom_routines','habit_occurrence_controls','habit_lifecycle_events','point_ledger','reward_redemptions','completion_submissions','habit_help_requests','habit_assignments','reward_eligibility','child_device_pairings'];
+ const tables=['inactivity_rules','notification_deliveries','push_subscriptions','notification_preferences','family_invitations','family_messages','child_routine_steps','custom_routines','habit_occurrence_controls','habit_lifecycle_events','point_ledger','reward_redemptions','completion_submissions','habit_help_requests','habit_assignments','reward_eligibility','child_device_pairings'];
  for(const table of tables){const sql=table==='notification_deliveries'?'DELETE FROM notification_deliveries WHERE subscription_id IN (SELECT id FROM push_subscriptions WHERE family_id=?)':'DELETE FROM '+table+' WHERE family_id=?';queries.push(env.DB.prepare(sql).bind(family))}
  queries.push(env.DB.prepare("DELETE FROM auth_sessions WHERE family_id=? AND role='child'").bind(family));
  for(const table of ['child_profiles','habits','reward_catalog'])queries.push(env.DB.prepare('DELETE FROM '+table+' WHERE family_id=?').bind(family));

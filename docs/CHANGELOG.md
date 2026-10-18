@@ -109,3 +109,7 @@ Email-bound 24-hour parent invitations, explicit family switching with re-lock, 
 ## 3.0 preview.17 — Trusted-device offline reading
 
 Explicit device opt-in stores a last-known family/child snapshot for up to 24 hours. Shared service worker caches public assets and data-free app shells, never API responses. Offline views are labelled read-only; writes remain online-only and are not queued. Snapshots clear on account/profile-switch attempts, child locking and authorization failure. Cached data cannot verify remote revocation while disconnected; this is disclosed and intended only for trusted devices. Reconnection refreshes from authoritative APIs. Physical-device install/permission/offline acceptance is intentionally pending because the user requested no further manual tests or visual checks.
+
+## 3.0 preview.18 — Optional inactivity rules
+
+Explicit parent opt-in per child, disabled by default. Configurable 24/48/72/168-hour grace and 1–100 points, reset by any submission or help request. The scheduler considers currently available active missions, caps deductions at balance, enforces a minimum full interval between charges and never catches up missed charges. Conditional ledger inserts and unique interval keys prevent duplicate/overdrawn writes; history/export expose the rule. Settings changes start fresh grace. No rules were enabled on real children; no extra manual tests/visual checks.
