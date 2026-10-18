@@ -14,6 +14,7 @@
       "/api/*",
       "/habit-hero/v2/*",
       "/habit-hero/v2",
+      "/habit-hero/v3/*",
       "/habit-hero/welcome/v2/*",
       "/_health"
     ],
@@ -27,6 +28,12 @@
     }
   ],
   "vars": {
+    "APP_RELEASE_REF": "main",
     "GOOGLE_CLIENT_ID": "375981700231-lrhrp78kndrq2dbnpummj32kaapgu9e9.apps.googleusercontent.com"
+  },
+  "triggers": {
+    "crons": [
+      "*/15 * * * *"
+    ]
   }
 }

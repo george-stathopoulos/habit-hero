@@ -2,6 +2,13 @@
 // Do not include session tokens, pairing codes, OAuth claims or authentication secrets.
 import {authorizedParent} from './family-api.mjs';
 const specs=[
+ ['inactivity_rules','inactivity_rules','child_id,enabled,points,hours,updated_at'],
+ ['custom_routines','custom_routines','id,name,created_at,updated_at'],
+ ['child_routine_steps','child_routine_steps','child_id,habit_id,routine_key,step_order,updated_at'],
+ ['reminder_preferences','notification_preferences','subject_id,enabled,reminder_time,quiet_start,quiet_end,approvals,love,updated_at'],
+ ['habit_lifecycle','habit_lifecycle_events','id,child_id,habit_id,completion_id,action,detail,created_at'],
+ ['occurrence_controls','habit_occurrence_controls','child_id,habit_id,occurrence_date,slot_index,deferred_until,retry_for,updated_at'],
+ ['messages','family_messages','id,child_id,created_by,body,gift_points,created_at,read_at,claimed_at'],
  ['children','child_profiles','id,display_name,age_band,avatar_id,avatar_level,created_at,updated_at'],
  ['habits','habits','id,name_el,name_en,points,emoji,frequency_type,active,created_at,updated_at,deleted_at'],
  ['habit_assignments','habit_assignments','habit_id,child_id,assigned_at'],

@@ -130,7 +130,7 @@ async function me(request,env){
   const now=new Date().toISOString();
   const row=await env.DB.prepare(`SELECT p.id,p.display_name,p.email_normalized,m.family_id
   FROM auth_sessions s JOIN parent_users p ON p.id=s.parent_id
-  JOIN family_memberships m ON m.parent_id=p.id JOIN families f ON f.id=m.family_id
+  JOIN family_memberships m ON m.parent_id=p.id AND (s.family_id IS NULL OR s.family_id=m.family_id) AND NOT EXISTS(SELECT 1 FROM family_membership_revocations rv WHERE rv.family_id=m.family_id AND rv.parent_id=m.parent_id) JOIN families f ON f.id=m.family_id
   WHERE s.token_hash=? AND s.role='parent' AND s.revoked_at IS NULL AND s.expires_at>?
   AND p.disabled_at IS NULL AND f.deleted_at IS NULL ORDER BY m.created_at LIMIT 1`)
    .bind(await hash(token),now).first();

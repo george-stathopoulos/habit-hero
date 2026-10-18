@@ -1,0 +1,106 @@
+[
+  {
+    "type": "habit-hero-layout",
+    "width": 320,
+    "viewport": 305,
+    "scrollWidth": 305,
+    "scene": {
+      "x": 0,
+      "y": 95,
+      "width": 305,
+      "height": 275
+    },
+    "content": {
+      "x": 0,
+      "y": 346,
+      "width": 305,
+      "height": 629
+    },
+    "navigation": {
+      "x": 0,
+      "y": 830,
+      "width": 305,
+      "height": 70
+    },
+    "targetsOK": true,
+    "icons": 3
+  },
+  {
+    "type": "habit-hero-layout",
+    "width": 390,
+    "viewport": 375,
+    "scrollWidth": 375,
+    "scene": {
+      "x": 0,
+      "y": 95,
+      "width": 375,
+      "height": 302
+    },
+    "content": {
+      "x": 0,
+      "y": 373,
+      "width": 375,
+      "height": 617
+    },
+    "navigation": {
+      "x": 0,
+      "y": 830,
+      "width": 375,
+      "height": 70
+    },
+    "targetsOK": true,
+    "icons": 3
+  },
+  {
+    "type": "habit-hero-layout",
+    "width": 768,
+    "viewport": 753,
+    "scrollWidth": 753,
+    "scene": {
+      "x": 43,
+      "y": 156,
+      "width": 322,
+      "height": 480
+    },
+    "content": {
+      "x": 389,
+      "y": 156,
+      "width": 322,
+      "height": 694
+    },
+    "navigation": {
+      "x": 16,
+      "y": 812,
+      "width": 721,
+      "height": 78
+    },
+    "targetsOK": true,
+    "icons": 3
+  },
+  {
+    "type": "habit-hero-layout",
+    "width": 1280,
+    "viewport": 1265,
+    "scrollWidth": 1265,
+    "scene": {
+      "x": 207,
+      "y": 176,
+      "width": 473,
+      "height": 540
+    },
+    "content": {
+      "x": 708,
+      "y": 176,
+      "width": 492,
+      "height": 679
+    },
+    "navigation": {
+      "x": 49,
+      "y": 176,
+      "width": 142,
+      "height": 292
+    },
+    "targetsOK": true,
+    "icons": 3
+  }
+]

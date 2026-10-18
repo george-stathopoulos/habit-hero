@@ -1,0 +1,27 @@
+import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
+import {readFileSync,readdirSync} from 'node:fs';
+import {parentMessages,sendMessage,childMessages,readMessage,claimLove} from '../../cloudflare/messages-api.mjs';
+const db=new DatabaseSync(':memory:');for(const file of readdirSync('cloudflare/migrations').filter(x=>x.endsWith('.sql')).sort())db.exec(readFileSync('cloudflare/migrations/'+file,'utf8'));
+const now=new Date().toISOString(),childA='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',childB='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+for(const suffix of ['1','2']){db.prepare('INSERT INTO families(id,display_name,created_at,updated_at) VALUES(?,?,?,?)').run('f'+suffix,'Family',now,now);db.prepare('INSERT INTO parent_users(id,email_normalized,display_name,created_at,updated_at) VALUES(?,?,?,?,?)').run('p'+suffix,'p'+suffix+'@example.test','Parent',now,now);db.prepare('INSERT INTO family_memberships(family_id,parent_id,created_at) VALUES(?,?,?)').run('f'+suffix,'p'+suffix,now)}
+for(const [id,family]of [[childA,'f1'],[childB,'f2']])db.prepare('INSERT INTO child_profiles(id,family_id,display_name,created_at,updated_at) VALUES(?,?,?,?,?)').run(id,family,'Child',now,now);
+let family='f1',child=childA,failBatch=false;
+const env={DB:{prepare:sql=>({bind:(...args)=>({first:async()=>sql.includes('FROM auth_sessions')?sql.includes("s.role='child'")?{family_id:family,child_id:child}:{family_id:family,parent_id:family==='f1'?'p1':'p2'}:db.prepare(sql).get(...args)||null,all:async()=>({results:db.prepare(sql).all(...args)}),run:async()=>({meta:{changes:Number(db.prepare(sql).run(...args).changes)}})})}),batch:async queries=>{db.exec('BEGIN');try{const result=[];for(let i=0;i<queries.length;i++){result.push(await queries[i].run());if(failBatch&&i===0)throw Error('Simulated transaction failure')}db.exec('COMMIT');return result}catch(error){db.exec('ROLLBACK');throw error}}}};
+const origin='https://habit-hero-cloudflare.george-stathopoulos.workers.dev';
+const request=(payload,isChild=false,extra={})=>new Request(origin+'/api/test',{method:'POST',headers:{origin,'content-type':'application/json',cookie:isChild?'__Host-hh_child='+'C'.repeat(32):'__Host-hh_session='+'P'.repeat(43),...extra},body:JSON.stringify(payload)});
+const payload={child_id:childA,body:'Είδα πόσο προσπάθησες. Μπράβο!',gift_points:25,request_id:crypto.randomUUID()};
+assert.equal((await sendMessage(request(payload,false,{origin:'https://evil.example'}),env)).status,403);
+assert.equal((await sendMessage(request({...payload,gift_points:101}),env)).status,400);
+assert.equal((await sendMessage(request({...payload,child_id:childB}),env)).status,404);
+const sent=await sendMessage(request(payload),env);assert.equal(sent.status,201);const id=(await sent.json()).id;
+await sendMessage(request(payload),env);assert.equal(db.prepare('SELECT COUNT(*) AS n FROM family_messages').get().n,1);assert.equal(db.prepare('SELECT COUNT(*) AS n FROM point_ledger').get().n,0);
+assert.equal((await parentMessages(request({}),env)).status,200);assert.equal((await childMessages(request({},true),env)).status,200);
+assert.equal((await readMessage(request({message_id:id},true),env)).status,200);
+failBatch=true;assert.equal((await claimLove(request({message_id:id},true),env)).status,503);assert.equal(db.prepare('SELECT COUNT(*) AS n FROM point_ledger').get().n,0);failBatch=false;
+assert.equal((await claimLove(request({message_id:id},true),env)).status,200);assert.equal((await claimLove(request({message_id:id},true),env)).status,200);
+assert.equal(db.prepare('SELECT COUNT(*) AS n,SUM(delta) AS total FROM point_ledger').get().n,1);assert.equal(db.prepare('SELECT SUM(delta) AS total FROM point_ledger').get().total,25);assert.ok(db.prepare('SELECT claimed_at FROM family_messages').get().claimed_at);
+family='f2';child=childB;assert.equal((await claimLove(request({message_id:id},true),env)).status,404);assert.equal((await readMessage(request({message_id:id},true),env)).status,404);assert.deepEqual((await (await childMessages(request({},true),env)).json()).messages,[]);
+assert.equal((await claimLove(request({message_id:id},false),env)).status,401);
+family='f1';child=childA;assert.equal((await sendMessage(request({...payload,request_id:crypto.randomUUID(),gift_points:0},true),env)).status,401);const plain=await (await sendMessage(request({...payload,request_id:crypto.randomUUID(),gift_points:0}),env)).json();assert.equal((await claimLove(request({message_id:plain.id},true),env)).status,400);assert.equal(db.prepare('SELECT SUM(delta) AS total FROM point_ledger').get().total,25);assert.deepEqual(db.prepare('PRAGMA foreign_key_check').all(),[]);db.close();
+console.log('PASS real SQLite send retries, delayed gift claim, duplicate claims, rollback, CSRF and cross-family isolation');

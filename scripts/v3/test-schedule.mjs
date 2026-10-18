@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import {validateSchedule,scheduleStatus,slotAvailability} from '../../cloudflare/schedule.mjs';
+import worker from '../../cloudflare/worker.mjs';
+const window=JSON.stringify(validateSchedule({weekdays:[1,2,3,4,5],start:'08:00',end:'18:00'}));
+for(const [instant,expected]of [['2026-10-19T04:59:00Z',false],['2026-10-19T05:00:00Z',true],['2026-10-19T14:59:00Z',true],['2026-10-19T15:00:00Z',false],['2026-10-18T09:00:00Z',false],['2026-10-26T06:00:00Z',true]])assert.equal(scheduleStatus(window,'Europe/Athens',new Date(instant)).schedule_available,expected,instant);
+assert.equal(scheduleStatus(null,'UTC').schedule_available,true);
+assert.equal(scheduleStatus('{bad','UTC').schedule_available,false);
+for(const value of [{weekdays:[]},{weekdays:[1,1]},{weekdays:[0]},{start:'20:00',end:'08:00'},{start:'08:00'},{start:'24:00',end:'25:00'}])assert.throws(()=>validateSchedule(value));
+const base='https://habit-hero-cloudflare.george-stathopoulos.workers.dev',id='11111111-2222-3333-4444-555555555555';let inserts=0,updates=[];
+const today=((new Date().getUTCDay()+6)%7)+1,other=today===7?1:today+1;
+const env={DB:{prepare:sql=>({bind:(...args)=>({first:async()=>sql.includes('FROM auth_sessions')?{family_id:'f1',child_id:id,parent_id:'p1',timezone:'UTC'}:sql.includes('SELECT h.id')?{id,frequency_type:'daily',frequency_count:1,frequency_days_json:JSON.stringify({weekdays:[other]})}:{id},all:async()=>({results:[]}),run:async()=>{if(sql.includes('INSERT INTO completion'))inserts++;if(sql.includes('UPDATE habits'))updates.push(args);return {meta:{changes:1}}}})})}};
+const post=(path,body,child=false)=>worker.fetch(new Request(base+path,{method:'POST',headers:{origin:base,'content-type':'application/json',cookie:child?'__Host-hh_child='+'C'.repeat(32):'__Host-hh_session='+'P'.repeat(43)},body:JSON.stringify(body)}),env);
+assert.equal((await post('/api/child/activities',{habit_id:id},true)).status,409);
+assert.equal((await post('/api/activities',{habit_id:id,child_id:id})).status,409);assert.equal(inserts,0,'Both submission routes block off-day writes');
+assert.equal((await post('/api/habits/update',{habit_id:id,name:'Read',points:10,frequency:'daily',frequency_count:2,retry_delay_minutes:45,description:'Step one\nStep two',benefit:'Practice',schedule:{weekdays:[1,3,5],start:'08:00',end:'18:00'}})).status,200);
+assert.equal(updates[0][3],2);assert.equal(updates[0][5],'Step one\nStep two');assert.deepEqual(JSON.parse(updates[0][7]).weekdays,[1,3,5]);
+assert.equal((await post('/api/habits/update',{habit_id:id,name:'Read',points:10,frequency:'daily',schedule:{weekdays:[]}})).status,400);
+console.log('PASS timezone/DST windows, end boundary, invalid schedules, both submission gates and full mission update');
+
+const moment=new Date('2026-10-19T09:10:00Z'),habit={frequency_type:'daily',retry_delay_minutes:30};assert.equal(slotAvailability(habit,[],2,'UTC',moment).schedule_available,false);assert.equal(slotAvailability(habit,[{slot_index:1,submitted_at:'2026-10-19T09:00:00Z'}],2,'UTC',moment).schedule_available,false);assert.equal(slotAvailability(habit,[{slot_index:1,submitted_at:'2026-10-19T08:00:00Z'}],2,'UTC',moment).schedule_available,true);assert.equal(slotAvailability(habit,[{slot_index:1,submission_status:'rejected'}],1,'UTC',moment).schedule_available,false);

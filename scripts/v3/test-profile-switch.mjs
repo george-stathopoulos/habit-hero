@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {createPinVerifier} from '../../cloudflare/pin-hash.mjs';
+import {householdState,unlockHousehold} from '../../cloudflare/household-auth.mjs';
+const verifier=await createPinVerifier('1234'),family='family-1';
+let previousValid=true,batches=0;
+const actor={session_id:'anchor-1',parent_id:'parent-1',family_id:family,display_name:'Parent',pin_hash:verifier,pin_attempts:0,pin_locked_until:null,household_mode:1};
+const env={DB:{prepare(sql){return {bind(...args){return {sql,args,async first(){if(sql.includes('FROM auth_sessions s'))return actor;if(sql.includes('FROM child_profiles'))return {id:'child-2',pin_hash:verifier,pin_attempts:0};return null;},async all(){return {results:[{id:'child-2',display_name:'Child'}]};},async run(){return {meta:{changes:1}};}};}};},async batch(statements){batches++;for(const statement of statements){if(statement.sql.includes('SET revoked_at=')){assert.equal(statement.args[2],family);previousValid=false;}}return statements.map(()=>({meta:{changes:1}}));}}};
+const base='https://habit-hero-cloudflare.george-stathopoulos.workers.dev';
+const cookie='__Host-hh_session='+'p'.repeat(64)+'; __Host-hh_child='+'c'.repeat(32);
+const request=payload=>new Request(base+'/api/household/unlock',{method:'POST',headers:{cookie,origin:base,'content-type':'application/json'},body:JSON.stringify(payload)});
+await householdState(new Request(base+'/api/household',{headers:{cookie}}),env);
+assert.equal(previousValid,true,'Opening/cancelling profile selection must not revoke the current child');assert.equal(batches,0);
+let result=await unlockHousehold(request({pin:'9999',child_id:'child-2'}),env);assert.equal(result.status,401);assert.equal(previousValid,true,'A failed PIN must preserve the current profile');
+result=await unlockHousehold(request({pin:'1234',child_id:'child-2'}),env);assert.equal(result.status,200);assert.equal(previousValid,false,'A verified switch revokes the old child in the unlock transaction');assert.match(result.headers.get('set-cookie'),/__Host-hh_child=/);
+previousValid=true;result=await unlockHousehold(request({pin:'1234'}),env);assert.equal(result.status,200);assert.equal(previousValid,false);assert.match(result.headers.get('set-cookie'),/Max-Age=0/,'Parent entry clears the child cookie');
+console.log('PASS reversible profile picker, failed PIN preservation and verified-switch session revocation');

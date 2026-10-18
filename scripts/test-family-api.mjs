@@ -45,4 +45,8 @@ r=await worker.fetch(new Request(base+'/api/children',{method:'POST',
 assert.equal(r.status,400);
 r=await worker.fetch(new Request(base+'/api/children',{method:'GET',headers:{cookie}}),authenticatedEnv);
 assert.equal(r.status,503,'Unimplemented child listing route remains disabled');
+r=await worker.fetch(new Request(base+'/api/children',{method:'POST',headers:{origin:base,cookie,'content-type':'application/json'},body:JSON.stringify({name:'Girl profile',age_band:'6-8',avatar_id:'hero-girl'})}),authenticatedEnv);assert.equal(r.status,201);assert.equal((await r.json()).avatar_id,'hero-girl');assert.equal(captured.args[4],'hero-girl');
+r=await worker.fetch(new Request(base+'/api/children',{method:'POST',headers:{origin:base,cookie,'content-type':'application/json'},body:JSON.stringify({name:'Invalid',avatar_id:'unvalidated-category'})}),authenticatedEnv);assert.equal(r.status,400);
+r=await worker.fetch(new Request(base+'/api/children/update',{method:'POST',headers:{origin:base,cookie,'content-type':'application/json'},body:JSON.stringify({child_id:'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',name:'Boy profile',age_band:'9-11',avatar_id:'hero-boy'})}),authenticatedEnv);assert.equal(r.status,200);assert.equal(captured.args[2],'hero-boy');
+r=await worker.fetch(new Request(base+'/api/children/update',{method:'POST',headers:{origin:base,cookie,'content-type':'application/json'},body:JSON.stringify({child_id:'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',name:'Invalid',avatar_id:'unknown'})}),authenticatedEnv);assert.equal(r.status,400);
 console.log('PASS parent dashboard, protected overview, CSRF and child creation scoping');

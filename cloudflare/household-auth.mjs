@@ -10,7 +10,7 @@ async function anchor(req,env){
  const t=parentToken(req);if(!t||!/^[a-zA-Z0-9_-]{40,128}$/.test(t))return null;
  return env.DB.prepare(`SELECT s.id AS session_id,s.pin_verified_at,s.household_mode,p.id AS parent_id,p.display_name,
  p.pin_hash,p.pin_attempts,p.pin_locked_until,m.family_id FROM auth_sessions s
- JOIN parent_users p ON p.id=s.parent_id JOIN family_memberships m ON m.parent_id=p.id
+ JOIN parent_users p ON p.id=s.parent_id JOIN family_memberships m ON m.parent_id=p.id AND (s.family_id IS NULL OR s.family_id=m.family_id) AND NOT EXISTS(SELECT 1 FROM family_membership_revocations rv WHERE rv.family_id=m.family_id AND rv.parent_id=m.parent_id)
  JOIN families f ON f.id=m.family_id
  WHERE s.token_hash=? AND s.role='parent' AND s.revoked_at IS NULL AND s.expires_at>?
  AND f.deleted_at IS NULL AND p.disabled_at IS NULL ORDER BY m.created_at LIMIT 1`)
@@ -90,18 +90,24 @@ export async function unlockHousehold(req,env){
    return out({detail:until?'Locked for 15 minutes.':'Incorrect PIN'},until?429:401);
   }
   await env.DB.prepare(`UPDATE ${scope} SET pin_attempts=0,pin_locked_until=NULL WHERE id=?`).bind(identifier).run();
+  // Opening the profile picker is reversible. Revoke the previous child only
+  // after the replacement PIN is verified, in the same batch as the new unlock.
+  const previousChild=(req.headers.get('cookie')||'').split(';').map(v=>v.trim()).find(v=>v.startsWith('__Host-hh_child='))?.slice(16);
+  const revokePrevious=previousChild&&/^[A-Za-z0-9_-]{32}$/.test(previousChild)
+   ?[env.DB.prepare("UPDATE auth_sessions SET revoked_at=? WHERE token_hash=? AND family_id=? AND role='child'").bind(now,await sha(previousChild),actor.family_id)]:[];
   if(child){
    const key=token(),nowHash=await sha(key),expires=new Date(Date.now()+12*3600000).toISOString();
    await env.DB.batch([
+    ...revokePrevious,
     env.DB.prepare(`UPDATE auth_sessions SET pin_verified_at=NULL WHERE id=? AND role='parent'`).bind(actor.session_id),
     env.DB.prepare(`INSERT INTO auth_sessions (id,child_id,family_id,role,token_hash,created_at,expires_at,pin_verified_at)
        VALUES (?,?,?,'child',?,?,?,?)`).bind(crypto.randomUUID(),child.id,actor.family_id,nowHash,now,expires,now)
    ]);
-   return out({role:'child',url:'/habit-hero/welcome/v2/child/'},200,{'set-cookie':'__Host-hh_child='+key+'; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=43200'});
+   return out({role:'child',url:'/habit-hero/v3/child/'},200,{'set-cookie':'__Host-hh_child='+key+'; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=43200'});
   }
   // Child cookies cannot authorize parent routes; parent unlock resets household profile selection.
-  await env.DB.prepare(`UPDATE auth_sessions SET pin_verified_at=? WHERE id=? AND role='parent'`).bind(now,actor.session_id).run();
-  return out({role:'parent',url:'/habit-hero/welcome/v2/parent/'});
+  await env.DB.batch([...revokePrevious,env.DB.prepare(`UPDATE auth_sessions SET pin_verified_at=? WHERE id=? AND role='parent'`).bind(now,actor.session_id)]);
+  return out({role:'parent',url:'/habit-hero/v3/parent/'},200,{'set-cookie':'__Host-hh_child=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0'});
  }catch{return out({detail:'PIN verification unavailable'},503)}
 }
 export async function exitToHousehold(req,env){
