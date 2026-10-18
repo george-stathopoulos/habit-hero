@@ -1,3 +1,4 @@
+import {notificationSettings,saveNotificationSettings,pushKey,subscribePush,unsubscribePush,deliverReminders} from './notifications-api.mjs';
 import {familyAnalytics} from './analytics-api.mjs';
 import {familyHistory} from './history-api.mjs';
 import {parentLifecycle,childPostpone} from './lifecycle-api.mjs';
@@ -83,6 +84,7 @@ h1{font-size:29px;margin:10px 0}p{line-height:1.6}a,button{display:inline-block;
 }
 
 export default {
+  async scheduled(controller,env,ctx){ctx.waitUntil(deliverReminders(env))},
   async fetch(request, env) {
     const url = new URL(request.url);
     if (/^\/habit-hero\/v3\/(parent|parent-preview)\/?$/.test(url.pathname)) {
@@ -199,6 +201,12 @@ export default {
       return createHabit(request,env);
     }
     if (url.pathname === '/api/habits/update' && request.method === 'POST') return updateHabit(request,env);
+    if (url.pathname === '/habit-hero/v3/notification-sw.js') {const asset=await env.ASSETS.fetch(new Request(new URL('/habit-hero/app/v3/notification-sw.js',request.url),request));const response=new Response(asset.body,asset);response.headers.set('service-worker-allowed','/habit-hero/');response.headers.set('cache-control','no-cache');return response;}
+    if (url.pathname === '/api/notifications/settings' && request.method === 'GET') return notificationSettings(request,env);
+    if (url.pathname === '/api/notifications/settings' && request.method === 'POST') return saveNotificationSettings(request,env);
+    if (url.pathname === '/api/push/key' && request.method === 'GET') return pushKey(request,env);
+    if (url.pathname === '/api/push/subscribe' && request.method === 'POST') return subscribePush(request,env);
+    if (url.pathname === '/api/push/unsubscribe' && request.method === 'POST') return unsubscribePush(request,env);
     if (url.pathname === '/api/analytics' && request.method === 'GET') return familyAnalytics(request,env);
     if (url.pathname === '/api/history' && request.method === 'GET') return familyHistory(request,env);
     if (url.pathname === '/api/child/history' && request.method === 'GET') return familyHistory(request,env,true);

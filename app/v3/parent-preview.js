@@ -10,6 +10,7 @@ const store={
  '/api/rewards':{rewards:[{id:'reward-1',name:'Μια βόλτα με ποδήλατο μαζί',description:'Διαλέγουμε τη διαδρομή και παίρνουμε ένα μικρό πικνίκ.',points_cost:100,active:true,children:[{id:child,name:'Σοφία'},{id:other,name:'Νικόλας'}]}]},
  '/api/rewards/redemptions':{redemptions:[{id:'request-1',child_name:'Σοφία',reward_name:'Μια βόλτα με ποδήλατο μαζί',points_spent:100,status:'requested',requested_at:now()}]},
  '/api/messages':{messages:[]},
+ '/api/notifications/settings':{preferences:[],devices:[],timezone:'Europe/Athens'},
  '/api/version':{current:'sample-preview',check_available:false}
 };
 store['/api/progress'].as_of=new Date().toISOString().slice(0,10);
@@ -40,6 +41,7 @@ export async function previewApi(path,method='GET',body){
  else if(path==='/api/child/pairing')return {pairing_code:'SAMPLE-ONLY-NOT-A-REAL-PAIRING-CODE',expires_at:new Date(Date.now()+600000).toISOString()};
  else if(path==='/api/points/adjust'){const m=store['/api/progress'].children.find(x=>x.child_id===body.child_id);if(!m||m.points_balance+body.delta<0)throw Error('Δεν υπάρχουν αρκετοί πόντοι.');m.points_balance+=body.delta}
  else if(path==='/api/messages'){if(!store[path].messages.some(m=>m.request_id===body.request_id))store[path].messages.unshift({...body,id:crypto.randomUUID(),child_name:people.find(c=>c.id===body.child_id).display_name,created_at:now(),read_at:null,claimed_at:null})}
+ else if(path==='/api/notifications/settings'){const prefs=store[path].preferences;const old=prefs.find(p=>p.subject_id===body.subject_id);if(old)Object.assign(old,body,{enabled:body.enabled?1:0});else prefs.push({...body,enabled:body.enabled?1:0})}
  else if(path==='/api/family/timezone')store['/api/family/overview'].family.timezone=body.timezone;
  else throw Error('Μη διαθέσιμη ενέργεια στην προεπισκόπηση.');return {ok:true};
 }

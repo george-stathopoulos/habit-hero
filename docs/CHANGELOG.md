@@ -93,3 +93,7 @@ Parent History and child Hero → full history share one filter/browser implemen
 ## 3.0 preview.13 — Analytics and weekly review
 
 Parent Progress supports 7/30/90-day periods and child filters. Family-local daily counts show attempts, approval status, earned/spent points, help and postponements. Per-habit totals and first/second-period approval counts support discussion without claiming a completion rate or ranking children. Weekly review includes active effort days and conversation prompts. Oversized reports request a smaller period rather than silently truncating. Manual tests/visual checks skipped on request.
+
+## 3.0 preview.14 — Reminders and Web Push
+
+Parent-configured daily reminder time and quiet hours per child/parents, pending approval reminders and Monday encouragement prompts. Browser/device opt-in is explicit. Native Web Push uses VAPID with an empty payload and generic lock-screen copy; family names and tasks are never sent to push providers. The Worker checks eligible tasks, schedule, postponement and retry availability every 15 minutes, records daily delivery keys and removes expired subscriptions. Each subscribed device requires browser support and permission; iPhone requires an installed web app. No physical-device delivery test was performed at the user's request. Migration 0009 precedes deployment. Settings, not private push keys/endpoints, are included in family export.

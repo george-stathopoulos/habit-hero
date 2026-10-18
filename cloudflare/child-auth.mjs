@@ -111,7 +111,7 @@ export async function childActivities(request,env){
       AND s.occurrence_date=${occurrenceSql}
     WHERE a.family_id=? AND a.child_id=? AND h.active=1 AND h.deleted_at IS NULL
     ORDER BY h.name_el,s.slot_index,s.submitted_at DESC,s.rowid DESC LIMIT 1000`).bind(today,today,today,child.family_id,child.child_id).all();
-  const controlRows=await env.DB.prepare('SELECT * FROM habit_occurrence_controls WHERE family_id=? AND child_id=?').bind(child.family_id,child.child_id).all();
+  const controlRows=await env.DB.prepare('SELECT * FROM habit_occurrence_controls WHERE family_id=? AND child_id=? AND occurrence_date IN (?,?,?,?)').bind(child.family_id,child.child_id,today,occurrenceKey('weekly',today),occurrenceKey('monthly',today),'1970-01-01').all();
   const controls=new Map((controlRows.results||[]).map(c=>[c.habit_id+'|'+c.occurrence_date+'|'+c.slot_index,c]));
   const grouped=new Map();
   for(const row of rows.results||[]){

@@ -1,3 +1,4 @@
+import {notificationControls} from './notifications.js';
 import {historyBrowser} from './history.js';
 import {routineNames,routineSteps,nextRoutineStep} from './routines.js';
 import {icon,habitIcon} from './icons.js';
@@ -61,7 +62,7 @@ function renderHistory(){
  for(const badge of state.progress?.badges||[]){const item=node('p',badge.emoji+' '+badge.name,'milestone-badge');milestones.append(item)}
  const full=node('button','Όλο το ιστορικό μου','secondary');full.onclick=()=>{
   const dialog=node('dialog',undefined,'history-dialog'),close=node('button','Κλείσιμο ×','secondary');close.onclick=()=>dialog.close();dialog.append(close,node('h2','Η διαδρομή μου'),historyBrowser({childOnly:true,fetchHistory:params=>preview?Promise.resolve({kind:params.get('kind')||'points',items:[],next_cursor:null}):api('/api/child/history?'+params)}));document.body.append(dialog);dialog.addEventListener('close',()=>dialog.remove());dialog.showModal();
- };milestones.append(full);
+ };milestones.append(full);if(!preview)milestones.append(notificationControls('child'));
  const activity=state.progress?.recent_activity||[];
  if(!activity.length)milestones.append(node('p','Οι πρώτες σου προσπάθειες θα εμφανιστούν εδώ.','intro'));
  for(const event of activity.slice(0,10)){const row=node('article',undefined,'history-item');row.append(node('strong',event.habit_name),node('p',({approved:'Εγκρίθηκε',pending:'Περιμένει τον γονέα',rejected:'Μίλησε με τον γονέα για την επόμενη προσπάθεια'}[event.status]||event.status)));milestones.append(row)}

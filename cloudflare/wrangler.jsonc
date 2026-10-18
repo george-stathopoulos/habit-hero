@@ -30,5 +30,10 @@
   "vars": {
     "APP_RELEASE_REF": "main",
     "GOOGLE_CLIENT_ID": "375981700231-lrhrp78kndrq2dbnpummj32kaapgu9e9.apps.googleusercontent.com"
+  },
+  "triggers": {
+    "crons": [
+      "*/15 * * * *"
+    ]
   }
 }
