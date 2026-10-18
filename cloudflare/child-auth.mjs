@@ -1,3 +1,4 @@
+import {occurrenceControl} from './lifecycle-state.mjs';
 import {scheduleStatus,slotAvailability} from './schedule.mjs';
 import {localDay} from './timezone.mjs';
 import {occurrenceKey,occurrenceSql} from './occurrence.mjs';
@@ -104,12 +105,14 @@ export async function childActivities(request,env){
   const today=localDay(child.timezone);
   const rows=await env.DB.prepare(`SELECT h.id AS habit_id,h.name_el AS habit_name,h.points,h.emoji,
     h.description_el,h.why_important_el,h.frequency_type,h.frequency_count,h.retry_delay_minutes,h.frequency_days_json,
-    s.slot_index,s.status AS submission_status,s.submitted_at
+    s.id AS completion_id,s.slot_index,s.status AS submission_status,s.submitted_at
     FROM habit_assignments a JOIN habits h ON h.id=a.habit_id AND h.family_id=a.family_id
     LEFT JOIN completion_submissions s ON s.family_id=a.family_id AND s.child_id=a.child_id AND s.habit_id=a.habit_id
       AND s.occurrence_date=${occurrenceSql}
     WHERE a.family_id=? AND a.child_id=? AND h.active=1 AND h.deleted_at IS NULL
-    ORDER BY h.name_el,s.slot_index LIMIT 200`).bind(today,today,today,child.family_id,child.child_id).all();
+    ORDER BY h.name_el,s.slot_index,s.submitted_at DESC,s.rowid DESC LIMIT 1000`).bind(today,today,today,child.family_id,child.child_id).all();
+  const controlRows=await env.DB.prepare('SELECT * FROM habit_occurrence_controls WHERE family_id=? AND child_id=?').bind(child.family_id,child.child_id).all();
+  const controls=new Map((controlRows.results||[]).map(c=>[c.habit_id+'|'+c.occurrence_date+'|'+c.slot_index,c]));
   const grouped=new Map();
   for(const row of rows.results||[]){
    if(!grouped.has(row.habit_id))grouped.set(row.habit_id,[]);
@@ -121,8 +124,14 @@ export async function childActivities(request,env){
    const target=first.frequency_type==='once'?1:Math.min(5,Math.max(1,Number(first.frequency_count)||1));
    for(let slot=1;slot<=target;slot++){
     const existing=group.find(x=>x.slot_index===slot);
-    activities.push({...first,...slotAvailability(first,group,slot,child.timezone),slot_index:slot,slot_total:target,
-      submission_status:existing?.submission_status||null,
+    const period=occurrenceKey(first.frequency_type,today),control=controls.get(first.habit_id+'|'+period+'|'+slot);
+    const retry=existing?.submission_status==='rejected'&&control?.retry_for===existing.completion_id;
+    const available=slotAvailability(first,retry?group.map(x=>x===existing?{...x,submission_status:null}:x):group,slot,child.timezone);
+    const deferred=!existing&&control?.deferred_until>new Date().toISOString();
+    activities.push({...first,...available,slot_index:slot,slot_total:target,
+      ...(deferred?{schedule_available:false,availability_reason:'Για αργότερα · '+new Intl.DateTimeFormat('el-GR',{timeZone:child.timezone,hour:'2-digit',minute:'2-digit'}).format(new Date(control.deferred_until))}:{}),
+      deferred_until:deferred?control.deferred_until:null,retry_available:retry,
+      submission_status:retry?null:existing?.submission_status||null,
       submitted_at:existing?.submitted_at||null});
    }
   }
@@ -132,7 +141,10 @@ export async function childActivities(request,env){
 export async function childSubmit(request,env){
  const parsed=await bodyOf(request);if(parsed.error)return parsed.error;
  const child=await authorizedChild(request,env);if(!child)return json({detail:'Not authenticated'},401);
- const habitId=parsed.body.habit_id,slot=parsed.body.slot_index??1;
+ return submitHabitForActor(child,parsed.body,env);
+}
+export async function submitHabitForActor(child,body,env){
+ const habitId=body.habit_id,slot=body.slot_index??1;
  if(!validUUID(habitId)||!Number.isInteger(slot)||slot<1||slot>5)return json({detail:'Invalid habit slot'},400);
  try{
   const assigned=await env.DB.prepare(`SELECT h.id,h.frequency_type,h.frequency_count,h.retry_delay_minutes,h.frequency_days_json
@@ -145,11 +157,13 @@ export async function childSubmit(request,env){
   const maximum=assigned.frequency_type==='once'?1:Math.min(5,Math.max(1,Number(assigned.frequency_count)||1));
   if(slot>maximum)return json({detail:'Habit slot not configured'},400);
   const now=new Date().toISOString(),period=occurrenceKey(assigned.frequency_type,localDay(child.timezone));
-  const current=await env.DB.prepare(`SELECT slot_index,submitted_at FROM completion_submissions
-    WHERE family_id=? AND child_id=? AND habit_id=? AND occurrence_date=? ORDER BY slot_index`)
+  const current=await env.DB.prepare(`SELECT id AS completion_id,status AS submission_status,slot_index,submitted_at FROM completion_submissions
+    WHERE family_id=? AND child_id=? AND habit_id=? AND occurrence_date=? ORDER BY submitted_at DESC,rowid DESC`)
     .bind(child.family_id,child.child_id,habitId,period).all();
   const entries=current.results||[];
-  if(entries.some(x=>x.slot_index===slot))return json({detail:'Already submitted'},409);
+  const existing=entries.find(x=>x.slot_index===slot),control=await occurrenceControl(env,child,habitId,period,slot);
+  if(existing&&(existing.submission_status!=='rejected'||control?.retry_for!==existing.completion_id))return json({detail:'Already submitted; parent retry permission required'},409);
+  if(control?.deferred_until>now)return json({detail:'Η αποστολή έχει μεταφερθεί για αργότερα. Επιλέξτε «Είμαι έτοιμος τώρα» για να επιστρέψετε.'},409);
   if(slot>1){
    const previous=entries.find(x=>x.slot_index===slot-1);
    if(!previous)return json({detail:'Complete the previous occurrence first'},409);
@@ -160,11 +174,14 @@ export async function childSubmit(request,env){
    if(delay>0&&Date.now()-Date.parse(previous.submitted_at)<delay*60000)
     return json({detail:'Please wait '+delay+' minutes between repetitions'},429);
   }
-  await env.DB.prepare(`INSERT INTO completion_submissions
+  const result=await env.DB.prepare(`INSERT INTO completion_submissions
    (id,family_id,child_id,habit_id,occurrence_date,slot_index,status,submitted_at,idempotency_key)
-   VALUES (?,?,?,?,?,?,'pending',?,?)`)
+   SELECT ?,?,?,?,?,?,'pending',?,? WHERE EXISTS(SELECT 1 FROM habits h JOIN habit_assignments a ON a.habit_id=h.id AND a.family_id=h.family_id WHERE h.id=? AND h.family_id=? AND a.child_id=? AND h.active=1 AND h.deleted_at IS NULL)
+    AND (? IS NULL OR EXISTS(SELECT 1 FROM habit_occurrence_controls c WHERE c.family_id=? AND c.child_id=? AND c.habit_id=? AND c.occurrence_date=? AND c.slot_index=? AND c.retry_for=?))`)
    .bind(crypto.randomUUID(),child.family_id,child.child_id,habitId,period,slot,now,
-     'child-'+habitId+'-'+period+'-'+slot).run();
+     'child-'+child.child_id+'-'+habitId+'-'+period+'-'+slot+'-'+(existing?.completion_id||'initial'),habitId,child.family_id,child.child_id,
+     existing?.completion_id||null,child.family_id,child.child_id,habitId,period,slot,existing?.completion_id||null).run();
+  if(result.meta?.changes!==1)return json({detail:'Η αποστολή άλλαξε. Ανανεώστε τη σελίδα.'},409);
   return json({status:'pending',slot_index:slot},201);
  }catch(e){
   if(/constraint|UNIQUE/i.test(String(e)))return json({detail:'Already submitted for this occurrence'},409);

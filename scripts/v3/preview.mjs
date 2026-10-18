@@ -6,7 +6,7 @@ import {householdPage} from '../../cloudflare/household-page.mjs';
 import {v3ParentPage} from '../../cloudflare/v3-parent-page.mjs';
 import {v3Page} from '../../cloudflare/v3-page.mjs';
 const root=resolve('app');
-const mime={'.css':'text/css','.js':'text/javascript','.webp':'image/webp','.svg':'image/svg+xml','.png':'image/png','.webmanifest':'application/manifest+json'};
+const mime={'.woff2':'font/woff2','.css':'text/css','.js':'text/javascript','.webp':'image/webp','.svg':'image/svg+xml','.png':'image/png','.webmanifest':'application/manifest+json'};
 export function previewServer(){return createServer(async(req,res)=>{
  const u=new URL(req.url,'http://localhost');
  if(/^\/habit-hero\/v3\/(parent|parent-preview)\/?$/.test(u.pathname)){const page=v3ParentPage(u.pathname.includes('parent-preview'));page.headers.set('content-security-policy',page.headers.get('content-security-policy').replace("frame-ancestors 'none'","frame-ancestors 'self'"));res.writeHead(200,Object.fromEntries(page.headers));let html=await page.text();if(u.searchParams.has('qa'))html=html.replace('</body>','<script type="module" src="/parent-metrics.js"></script></body>');res.end(html);return;}

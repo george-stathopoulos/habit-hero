@@ -36,6 +36,7 @@ jobs:
           node scripts/test-occurrence.mjs
           node scripts/v3/test-schedule.mjs
           node scripts/v3/test-messages.mjs
+          node scripts/v3/test-lifecycle.mjs
           node scripts/test-habits-api.mjs
           node scripts/test-family-api.mjs
           node scripts/test-activity-api.mjs

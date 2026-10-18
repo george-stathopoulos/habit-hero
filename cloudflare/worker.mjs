@@ -1,3 +1,4 @@
+import {parentLifecycle,childPostpone} from './lifecycle-api.mjs';
 import {parentMessages,sendMessage,childMessages,readMessage,claimLove} from './messages-api.mjs';
 import {childAskHelp,childHelpStatus,parentHelpRequests,respondToHelp} from './help-api.mjs';
 import {v2Page} from './v2-page.mjs';
@@ -196,6 +197,8 @@ export default {
       return createHabit(request,env);
     }
     if (url.pathname === '/api/habits/update' && request.method === 'POST') return updateHabit(request,env);
+    if (url.pathname === '/api/habits/lifecycle' && request.method === 'POST') return parentLifecycle(request,env);
+    if (url.pathname === '/api/child/postpone' && request.method === 'POST') return childPostpone(request,env);
     if (url.pathname === '/api/habits/archive' && request.method === 'POST') return archiveHabit(request,env);
     if (url.pathname === '/api/habits/assign' && request.method === 'POST') return assignHabit(request,env);
     if (url.pathname === '/api/habits/unassign' && request.method === 'POST') return unassignHabit(request,env);

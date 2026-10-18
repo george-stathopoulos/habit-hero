@@ -1,3 +1,4 @@
+import {submitHabitForActor} from './child-auth.mjs';
 import {scheduleStatus} from './schedule.mjs';
 import {localDay} from './timezone.mjs';
 import {occurrenceKey,occurrenceSql} from './occurrence.mjs';
@@ -47,30 +48,9 @@ export async function submitActivity(request,env){
  const {parent,body,error}=await writeContext(request,env);
  if(error)return error;
  if(!uuid(body.child_id)||!uuid(body.habit_id))return reply({detail:'Invalid habit or child'},400);
- const now=new Date().toISOString(),id=crypto.randomUUID();
- try{
-  const entry=await env.DB.prepare(`SELECT h.id,h.frequency_type,h.frequency_days_json FROM habits h
-    JOIN habit_assignments a ON a.habit_id=h.id AND a.family_id=h.family_id
-    JOIN child_profiles c ON c.id=a.child_id AND c.family_id=a.family_id
-    WHERE h.family_id=? AND h.id=? AND c.id=? AND h.active=1
-    AND h.deleted_at IS NULL AND c.deleted_at IS NULL`)
-    .bind(parent.family_id,body.habit_id,body.child_id).first();
-  if(!entry)return reply({detail:'Activity not assigned to this child'},404);
-  const schedule=scheduleStatus(entry.frequency_days_json,parent.timezone);
-  if(!schedule.schedule_available)return reply({detail:'Η αποστολή είναι διαθέσιμη: '+schedule.schedule_label},409);
-  const date=occurrenceKey(entry.frequency_type,localDay(parent.timezone));
-  await env.DB.prepare(`INSERT INTO completion_submissions
-   (id,family_id,child_id,habit_id,occurrence_date,status,submitted_at,idempotency_key)
-   VALUES (?,?,?,?,?,'pending',?,?)`)
-   .bind(id,parent.family_id,body.child_id,body.habit_id,date,now,
-     'supervised-'+body.habit_id+'-'+date).run();
-  return reply({id,status:'pending',date},201);
- }catch(e){
-  // UNIQUE on family/child/habit/date or idempotency key avoids double submission.
-  if(/UNIQUE|constraint/i.test(String(e)))return reply({detail:'Already submitted for this period'},409);
-  return reply({detail:'Could not submit activity'},503);
- }
+ return submitHabitForActor({...parent,child_id:body.child_id},body,env);
 }
+
 export async function listApprovals(request,env){
  const actor=await authorizedParent(request,env);
  if(!actor)return reply({detail:'Not authenticated'},401);
@@ -81,7 +61,14 @@ export async function listApprovals(request,env){
    JOIN habits h ON h.id=s.habit_id AND h.family_id=s.family_id
    WHERE s.family_id=? AND s.status='pending' AND c.deleted_at IS NULL
    ORDER BY s.submitted_at ASC LIMIT 100`).bind(actor.family_id).all();
-  return reply({pending:pending.results||[]});
+  const today=localDay(actor.timezone);
+  const rejected=await env.DB.prepare(`SELECT s.id,s.child_id,c.display_name AS child_name,s.habit_id,h.name_el AS habit_name,s.submitted_at FROM completion_submissions s
+   JOIN habits h ON h.id=s.habit_id AND h.family_id=s.family_id JOIN child_profiles c ON c.id=s.child_id AND c.family_id=s.family_id
+   WHERE s.family_id=? AND s.status='rejected' AND h.active=1 AND h.deleted_at IS NULL AND c.deleted_at IS NULL
+    AND s.occurrence_date=${occurrenceSql} AND NOT EXISTS(SELECT 1 FROM completion_submissions x WHERE x.family_id=s.family_id AND x.child_id=s.child_id AND x.habit_id=s.habit_id AND x.occurrence_date=s.occurrence_date AND x.slot_index=s.slot_index AND (x.status IN ('pending','approved') OR x.rowid>s.rowid))
+   AND NOT EXISTS(SELECT 1 FROM habit_occurrence_controls k WHERE k.family_id=s.family_id AND k.child_id=s.child_id AND k.habit_id=s.habit_id AND k.retry_for=s.id)
+   ORDER BY s.submitted_at DESC LIMIT 100`).bind(actor.family_id,today,today,today).all();
+  return reply({pending:pending.results||[],rejected:rejected.results||[]});
  }catch{return reply({detail:'Unable to load approvals'},503)}
 }
 export async function reviewActivity(request,env){

@@ -44,3 +44,5 @@ body[data-scene-paused=true] .egg-art,body[data-scene-paused=true] .egg-shine{an
 }
 @media(max-width:759px){.scene-greeting p{max-width:125px}}
 @media(min-width:760px){.primary,.secondary{font-size:16px;min-height:52px}.message-card p,.reward-card p,.intro{font-size:16px}.message-card time{font-size:13px}.message-card button{font-size:16px;min-height:52px}.mission-copy strong{font-size:17px}.mission-copy small{font-size:14px}.routine-card p{font-size:16px}.routine-card button{font-size:16px}.routine-filter button{font-size:15px;min-height:48px}}
+
+.detail-actions select{font:inherit;min-height:56px;border:1px solid #b2c8bc;border-radius:14px;padding:12px;background:white;color:var(--ink);width:100%}.postpone-label{font-size:17px;line-height:1.5}

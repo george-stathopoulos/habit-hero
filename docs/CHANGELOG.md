@@ -81,3 +81,7 @@
 - Remove the child category selector and old local overrides; reserve future child selection for characters inside the parent-set collection.
 
 Greek typography correction: both v3 interfaces now use bundled Noto Sans with genuine variable weights and Greek/Latin coverage, including accented Greek. Removed misleading local Nunito aliases and mixed parent serif/system families. Fonts are served locally under the existing content security policy.
+
+## 3.0 preview.11 — Habit lifecycle
+
+Parent pause/resume, recoverable archives and explicit retry authorization; child 15/30/60-minute postponement/cancellation within the same local day. Schedule gates remain enforced. Rejected submissions are preserved and a partial unique index permits at most one pending/approved submission per occurrence slot. Retry identifiers cannot award the same attempt twice. Lifecycle events and controls are included in export. Migration 0008 is required before deployment. Further tests and visual QA were skipped at the user's request.

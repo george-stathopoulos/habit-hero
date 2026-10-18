@@ -15,6 +15,7 @@ const store={
 store['/api/progress'].as_of=new Date().toISOString().slice(0,10);
 for(const m of store['/api/progress'].children)m.activity_by_day=Array.from({length:12},(_,i)=>{const d=new Date();d.setUTCDate(d.getUTCDate()-i*2);return {date:d.toISOString().slice(0,10),completed:i%2+1}});
 export async function previewApi(path,method='GET',body){
+ if(path==='/api/habits?state=all')path='/api/habits';
  if(method==='GET'){if(path==='/api/family/export')return structuredClone(store);if(!store[path])throw Error('Μη διαθέσιμη ενέργεια στην προεπισκόπηση.');return structuredClone(store[path])}
  const people=store['/api/family/overview'].children;
  if(path==='/api/approvals/review')store['/api/approvals'].pending=store['/api/approvals'].pending.filter(x=>x.id!==body.completion_id);
@@ -31,7 +32,8 @@ export async function previewApi(path,method='GET',body){
  else if(path==='/api/rewards/assign')store['/api/rewards'].rewards.find(x=>x.id===body.reward_id).children.push({id:body.child_id,name:people.find(x=>x.id===body.child_id).display_name});
  else if(path==='/api/rewards/unassign'){const r=store['/api/rewards'].rewards.find(x=>x.id===body.reward_id);r.children=r.children.filter(x=>x.id!==body.child_id)}
  else if(path==='/api/rewards/archive')store['/api/rewards'].rewards.find(x=>x.id===body.reward_id).active=false;
- else if(path==='/api/habits/archive')store['/api/habits'].habits=store['/api/habits'].habits.filter(x=>x.id!==body.habit_id);
+ else if(path==='/api/habits/archive')store['/api/habits'].habits.find(x=>x.id===body.habit_id).lifecycle='archived';
+ else if(path==='/api/habits/lifecycle'){if(body.action==='retry')store['/api/approvals'].rejected=(store['/api/approvals'].rejected||[]).filter(x=>x.id!==body.completion_id);else store['/api/habits'].habits.find(x=>x.id===body.habit_id).lifecycle=body.action==='pause'?'paused':'active'}
  else if(path==='/api/children/pin'||path==='/api/child/revoke')return {ok:true};
  else if(path==='/api/child/pairing')return {pairing_code:'SAMPLE-ONLY-NOT-A-REAL-PAIRING-CODE',expires_at:new Date(Date.now()+600000).toISOString()};
  else if(path==='/api/points/adjust'){const m=store['/api/progress'].children.find(x=>x.child_id===body.child_id);if(!m||m.points_balance+body.delta<0)throw Error('Δεν υπάρχουν αρκετοί πόντοι.');m.points_balance+=body.delta}

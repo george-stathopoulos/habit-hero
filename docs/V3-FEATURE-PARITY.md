@@ -49,3 +49,9 @@ The original `original/backend/server.py` and `original/frontend/src/` contain f
 8. **Hero selection and world progression:** multiple child-selectable characters within the parent-set collection, plus meaningful companion and environment unlocks beyond current level/streak/egg presentation.
 
 Other themes come after this functional work. No claim of full original-version parity should be made until these gaps are resolved or explicitly removed from scope.
+
+## Structural delivery progress
+
+1. Habit lifecycle implemented: pause/resume/restore, same-day timed postponement and parent-authorized retries retaining rejected records. General rescheduling uses the existing parent schedule editor. No automatic carry-over across recurrence periods.
+2. Comprehensive history: next.
+Items 3–9 follow the agreed order. Item 10 (onboarding/help content, additional graphics/themes) is explicitly deferred.

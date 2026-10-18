@@ -6,15 +6,16 @@ export async function listHabits(request,env){
  const actor=await authorizedParent(request,env);
  if(!actor)return respond({detail:'Not authenticated'},401);
  try{
-  const result=await env.DB.prepare(`SELECT h.id,h.name_el,h.name_en,h.points,h.emoji,h.frequency_type,h.frequency_count,h.retry_delay_minutes,h.description_el,h.why_important_el,h.frequency_days_json,
+  const includeAll=new URL(request.url).searchParams.get('state')==='all';
+  const result=await env.DB.prepare(`SELECT h.active,h.deleted_at,h.id,h.name_el,h.name_en,h.points,h.emoji,h.frequency_type,h.frequency_count,h.retry_delay_minutes,h.description_el,h.why_important_el,h.frequency_days_json,
    a.child_id,c.display_name AS child_name
    FROM habits h LEFT JOIN habit_assignments a ON a.family_id=h.family_id AND a.habit_id=h.id
    LEFT JOIN child_profiles c ON c.id=a.child_id AND c.family_id=h.family_id AND c.deleted_at IS NULL
-   WHERE h.family_id=? AND h.active=1 AND h.deleted_at IS NULL ORDER BY h.created_at DESC LIMIT 150`)
+   WHERE h.family_id=? ${includeAll?'':'AND h.active=1 AND h.deleted_at IS NULL'} ORDER BY h.created_at DESC LIMIT 500`)
    .bind(actor.family_id).all();
   const habits=new Map();
   for(const r of result.results||[]){
-   if(!habits.has(r.id))habits.set(r.id,{id:r.id,name:r.name_el,points:r.points,emoji:r.emoji,frequency:r.frequency_type,frequency_count:r.frequency_count??1,retry_delay_minutes:r.retry_delay_minutes??0,description:r.description_el||'',benefit:r.why_important_el||'',schedule:readSchedule(r.frequency_days_json),children:[]});
+   if(!habits.has(r.id))habits.set(r.id,{id:r.id,lifecycle:r.deleted_at?'archived':r.active===0?'paused':'active',name:r.name_el,points:r.points,emoji:r.emoji,frequency:r.frequency_type,frequency_count:r.frequency_count??1,retry_delay_minutes:r.retry_delay_minutes??0,description:r.description_el||'',benefit:r.why_important_el||'',schedule:readSchedule(r.frequency_days_json),children:[]});
    if(r.child_id&&r.child_name)habits.get(r.id).children.push({id:r.child_id,name:r.child_name});
   }
   return respond({habits:[...habits.values()]});

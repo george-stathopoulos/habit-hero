@@ -7,7 +7,7 @@ const queries=[];
 const bindable=(sql)=>({bind:(...args)=>{queries.push({sql,args});return {
  first:async()=>{
   if(sql.includes('FROM auth_sessions'))return {parent_id:'parent1',family_id:'family1',display_name:'Parent',family_name:'Family'};
-  if(sql.includes('SELECT h.id,h.frequency_type,h.frequency_days_json FROM habits'))return {id:uuid,frequency_type:'daily'};
+  if(sql.includes('SELECT h.id,h.frequency_type,h.frequency_count'))return {id:uuid,frequency_type:'daily'};
   if(sql.includes('SELECT s.id,s.child_id,s.status,h.points'))return {id:other,child_id:uuid,status:'pending',points:15};
   return null;
  },
@@ -34,7 +34,7 @@ r=await get('/api/points',{cookie});assert.equal(r.status,200);
 assert.equal((await r.json()).balances[0].points,15);
 r=await post('/api/activities',{child_id:uuid,habit_id:other},{cookie,origin:'https://evil.invalid'});assert.equal(r.status,403);
 r=await post('/api/activities',{child_id:uuid,habit_id:other},{cookie,origin:base});assert.equal(r.status,201);
-assert(queries.some(q=>q.sql.includes('JOIN habit_assignments')&&q.args[0]==='family1'&&q.args[2]===uuid));
+assert(queries.some(q=>q.sql.includes('FROM habit_assignments')&&q.args[0]==='family1'&&q.args[1]===uuid));
 r=await post('/api/activities',{child_id:'invalid',habit_id:other},{cookie,origin:base});assert.equal(r.status,400);
 r=await post('/api/approvals/review',{completion_id:other,decision:'approved'},{cookie,origin:'https://evil.invalid'});assert.equal(r.status,403);
 r=await post('/api/approvals/review',{completion_id:other,decision:'approved'},{cookie,origin:base});assert.equal(r.status,200);
