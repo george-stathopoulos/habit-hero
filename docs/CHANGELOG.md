@@ -85,3 +85,7 @@ Greek typography correction: both v3 interfaces now use bundled Noto Sans with g
 ## 3.0 preview.11 — Habit lifecycle
 
 Parent pause/resume, recoverable archives and explicit retry authorization; child 15/30/60-minute postponement/cancellation within the same local day. Schedule gates remain enforced. Rejected submissions are preserved and a partial unique index permits at most one pending/approved submission per occurrence slot. Retry identifiers cannot award the same attempt twice. Lifecycle events and controls are included in export. Migration 0008 is required before deployment. Further tests and visual QA were skipped at the user's request.
+
+## 3.0 preview.12 — Comprehensive history
+
+Parent History and child Hero → full history share one filter/browser implementation. Protected endpoints paginate points, submissions, reviewed decisions, rewards and lifecycle events with stable time/id cursors. Parents filter by child; child sessions are always restricted to their own records. Date boundaries follow family timezone, including DST offsets. Filters include period, name and status. No additional manual tests or visual checks, as requested.

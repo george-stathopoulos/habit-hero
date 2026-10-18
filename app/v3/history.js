@@ -1,0 +1,16 @@
+const node=(tag,text,cls)=>{const el=document.createElement(tag);if(text!==undefined)el.textContent=String(text);if(cls)el.className=cls;return el};
+const button=(text,action,cls)=>{const b=node('button',text,cls);b.type='button';b.onclick=action;return b};
+const row=(title,description)=>{const el=node('article',undefined,'history-entry'),body=node('div');body.append(node('h3',title),node('p',description));el.append(body);return {el,body}};
+const date=value=>new Date(value).toLocaleString('el-GR',{dateStyle:'medium',timeStyle:'short'});
+export function historyBrowser({fetchHistory,children=[],childOnly=false}){
+ const box=node('section',undefined,'history-browser'),form=node('form'),filters=node('div',undefined,'field-grid');
+ const select=(label,key,choices)=>{const l=node('label',undefined,'field'),input=node('select');input.name=key;for(const [value,text]of choices){const op=node('option',text);op.value=value;input.append(op)}l.append(node('span',label),input);filters.append(l);return input};
+ select('Είδος','kind',[['points','Κίνηση πόντων'],['attempts','Όλες οι προσπάθειες'],['approvals','Αποφάσεις γονέα'],['rewards','Αιτήματα επάθλων'],['lifecycle','Αλλαγές και διαλείμματα']]);
+ if(!childOnly)select('Παιδί','child',[['','Όλη η οικογένεια'],...children.map(c=>[c.id,c.display_name||c.name])]);
+ for(const [key,label,type]of [['from','Από','date'],['to','Έως','date'],['q','Αναζήτηση ονόματος','search']]){const l=node('label',undefined,'field'),input=node('input');input.type=type;input.name=key;l.append(node('span',label),input);filters.append(l)}
+ select('Κατάσταση','status',[['','Όλες'],['pending','Σε αναμονή'],['approved','Εγκρίθηκε'],['rejected','Δεν εγκρίθηκε'],['requested','Ζητήθηκε'],['fulfilled','Παραδόθηκε'],['habit_completion','Πόντοι συνήθειας'],['love_credit','Love Credits'],['pause','Παύση'],['resume','Συνέχιση'],['postpone','Για αργότερα']]);
+ const submit=button('Εμφάνιση',()=>{},'primary');submit.type='submit';const results=node('div'),more=button('Περισσότερες εγγραφές',()=>draw(true),'primary'),status=node('p',undefined,'muted');status.setAttribute('role','status');more.hidden=true;
+ let cursor=null,query=null,pending=false;
+ async function draw(append=false){if(pending)return;pending=true;submit.disabled=more.disabled=true;try{if(!append){query=new URLSearchParams(new FormData(form));cursor=null;results.replaceChildren()}const params=new URLSearchParams(query);if(cursor)params.set('cursor',cursor);const data=await fetchHistory(params);if(!form.isConnected)return;for(const entry of data.items){const r=row((entry.child_name||'Οικογένεια')+' · '+entry.title,date(entry.at)+' · '+entry.status);r.body.append(node('span',(data.kind==='points'&&entry.points>0?'+':'')+entry.points+' πόντοι','badge'));results.append(r.el)}cursor=data.next_cursor;more.hidden=!cursor;status.textContent=results.children.length?'Εμφανίζονται '+results.children.length+' εγγραφές.':'Δεν υπάρχουν εγγραφές με αυτά τα φίλτρα.'}catch(e){status.textContent=e.message}finally{pending=false;submit.disabled=more.disabled=false}}
+ form.append(filters,submit);form.onsubmit=e=>{e.preventDefault();draw()};box.append(form,status,results,more);draw();return box;
+}

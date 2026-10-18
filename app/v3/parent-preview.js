@@ -16,6 +16,7 @@ store['/api/progress'].as_of=new Date().toISOString().slice(0,10);
 for(const m of store['/api/progress'].children)m.activity_by_day=Array.from({length:12},(_,i)=>{const d=new Date();d.setUTCDate(d.getUTCDate()-i*2);return {date:d.toISOString().slice(0,10),completed:i%2+1}});
 export async function previewApi(path,method='GET',body){
  if(path==='/api/habits?state=all')path='/api/habits';
+ if(path.startsWith('/api/history?')){const q=new URLSearchParams(path.split('?')[1]);return {kind:q.get('kind')||'points',items:[{id:'history-sample',child_name:'Σοφία',title:'Βουρτσίζω τα δόντια μου',at:now(),status:'approved',points:10}],next_cursor:null}}
  if(method==='GET'){if(path==='/api/family/export')return structuredClone(store);if(!store[path])throw Error('Μη διαθέσιμη ενέργεια στην προεπισκόπηση.');return structuredClone(store[path])}
  const people=store['/api/family/overview'].children;
  if(path==='/api/approvals/review')store['/api/approvals'].pending=store['/api/approvals'].pending.filter(x=>x.id!==body.completion_id);

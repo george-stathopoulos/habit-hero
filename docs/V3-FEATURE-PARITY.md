@@ -55,3 +55,5 @@ Other themes come after this functional work. No claim of full original-version 
 1. Habit lifecycle implemented: pause/resume/restore, same-day timed postponement and parent-authorized retries retaining rejected records. General rescheduling uses the existing parent schedule editor. No automatic carry-over across recurrence periods.
 2. Comprehensive history: next.
 Items 3–9 follow the agreed order. Item 10 (onboarding/help content, additional graphics/themes) is explicitly deferred.
+
+2. Comprehensive history implemented for parent and child: 30-entry pages, stable cursors, family-local date ranges, type/status/name filters and child isolation. Parent Histories / child Hero → full history.
