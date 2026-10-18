@@ -65,3 +65,5 @@ Items 3–9 follow the agreed order. Item 10 (onboarding/help content, additiona
 5. Flexible routines implemented: custom names, bulk setup and per-child ordering for shared missions. Parent Missions → custom routine / routines per child. Shared mission editor retains common defaults; personal settings override them.
 
 6. Account/family administration implemented: parent invitations, family switch/re-lock, revoked membership tracking, session revocation, family reset and account deletion. Destructive actions require a fresh parent PIN and exact confirmation. Joint-family audit records retain anonymized identity references; sole-parent family data is erased from active storage. Backup expiry follows the provider's retention policy, with no unverified expiry promise.
+
+7. Offline reading/reconnection implemented behind explicit trusted-device opt-in, with 24-hour snapshots, cached public shells/assets, labelled stale state and no queued point mutations. Cached data cannot verify remote revocation offline. Physical-device acceptance remains pending by request; do not describe that validation as completed.
