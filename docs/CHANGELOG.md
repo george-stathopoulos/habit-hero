@@ -89,3 +89,7 @@ Parent pause/resume, recoverable archives and explicit retry authorization; chil
 ## 3.0 preview.12 — Comprehensive history
 
 Parent History and child Hero → full history share one filter/browser implementation. Protected endpoints paginate points, submissions, reviewed decisions, rewards and lifecycle events with stable time/id cursors. Parents filter by child; child sessions are always restricted to their own records. Date boundaries follow family timezone, including DST offsets. Filters include period, name and status. No additional manual tests or visual checks, as requested.
+
+## 3.0 preview.13 — Analytics and weekly review
+
+Parent Progress supports 7/30/90-day periods and child filters. Family-local daily counts show attempts, approval status, earned/spent points, help and postponements. Per-habit totals and first/second-period approval counts support discussion without claiming a completion rate or ranking children. Weekly review includes active effort days and conversation prompts. Oversized reports request a smaller period rather than silently truncating. Manual tests/visual checks skipped on request.

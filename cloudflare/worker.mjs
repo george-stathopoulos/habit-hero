@@ -1,3 +1,4 @@
+import {familyAnalytics} from './analytics-api.mjs';
 import {familyHistory} from './history-api.mjs';
 import {parentLifecycle,childPostpone} from './lifecycle-api.mjs';
 import {parentMessages,sendMessage,childMessages,readMessage,claimLove} from './messages-api.mjs';
@@ -198,6 +199,7 @@ export default {
       return createHabit(request,env);
     }
     if (url.pathname === '/api/habits/update' && request.method === 'POST') return updateHabit(request,env);
+    if (url.pathname === '/api/analytics' && request.method === 'GET') return familyAnalytics(request,env);
     if (url.pathname === '/api/history' && request.method === 'GET') return familyHistory(request,env);
     if (url.pathname === '/api/child/history' && request.method === 'GET') return familyHistory(request,env,true);
     if (url.pathname === '/api/habits/lifecycle' && request.method === 'POST') return parentLifecycle(request,env);

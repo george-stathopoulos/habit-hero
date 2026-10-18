@@ -57,3 +57,5 @@ Other themes come after this functional work. No claim of full original-version 
 Items 3–9 follow the agreed order. Item 10 (onboarding/help content, additional graphics/themes) is explicitly deferred.
 
 2. Comprehensive history implemented for parent and child: 30-entry pages, stable cursors, family-local date ranges, type/status/name filters and child isolation. Parent Histories / child Hero → full history.
+
+3. Analytics and weekly review implemented: Parent Progress, 7/30/90-day filters, daily/per-habit outcomes, help/postponements, point movement and family conversation prompts. Counts measure submitted effort, not scheduled-opportunity adherence.
