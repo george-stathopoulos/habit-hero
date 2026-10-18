@@ -1,3 +1,4 @@
+import {familyAdministration,administerFamily,eraseAccountData} from './administration-api.mjs';
 import {routineDefinitions,saveRoutines} from './routines-api.mjs';
 import {notificationSettings,saveNotificationSettings,pushKey,subscribePush,unsubscribePush,deliverReminders} from './notifications-api.mjs';
 import {familyAnalytics} from './analytics-api.mjs';
@@ -211,6 +212,9 @@ export default {
     if (url.pathname === '/api/routines' && request.method === 'GET') return routineDefinitions(request,env);
     if (url.pathname === '/api/routines' && request.method === 'POST') return saveRoutines(request,env);
     if (url.pathname === '/api/child/routines' && request.method === 'GET') return routineDefinitions(request,env,true);
+    if (url.pathname === '/api/family/administration' && request.method === 'GET') return familyAdministration(request,env);
+    if (url.pathname === '/api/family/administration' && request.method === 'POST') return administerFamily(request,env);
+    if (url.pathname === '/api/account/erase' && request.method === 'POST') return eraseAccountData(request,env);
     if (url.pathname === '/api/analytics' && request.method === 'GET') return familyAnalytics(request,env);
     if (url.pathname === '/api/history' && request.method === 'GET') return familyHistory(request,env);
     if (url.pathname === '/api/child/history' && request.method === 'GET') return familyHistory(request,env,true);

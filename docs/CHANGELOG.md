@@ -101,3 +101,7 @@ Parent-configured daily reminder time and quiet hours per child/parents, pending
 ## 3.0 preview.15 — Custom and personal routines
 
 Parents create/rename family routines and bulk-assign routine/step ordering across a child's assigned missions. Per-child overrides keep sibling ordering independent; clearing a routine is an explicit override of the shared default. Existing weekday/window/approval rules remain unchanged. Custom routines and overrides are included in export. Migration 0010 is additive. Manual tests/visual checks skipped as requested.
+
+## 3.0 preview.16 — Family and account administration
+
+Email-bound 24-hour parent invitations, explicit family switching with re-lock, revocable parent memberships and session management. Owner removal of a parent also revokes child sessions/pairings for reconnecting under remaining guardians. Parent data reset and account deletion require exact typed confirmation and PIN unlock within 15 minutes. Active database deletion uses a transaction-scoped family erasure guard; normal ledger updates/deletes remain forbidden. Joint-family records retain an anonymized actor, and ownership passes to another active guardian. Families without another active guardian are erased. Provider recovery-copy retention is outside this feature. No real deletions, invitations or access grants were performed during implementation; manual tests/visual checks skipped.

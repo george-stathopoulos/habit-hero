@@ -18,6 +18,10 @@ on:
         description: Apply only reviewed custom routine schema 0010
         type: boolean
         default: false
+      administration_only:
+        description: Apply only reviewed family administration schema 0011
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -42,7 +46,7 @@ jobs:
           test -n "$CLOUDFLARE_API_TOKEN"
           test -n "$CLOUDFLARE_ACCOUNT_ID"
       - name: Refuse unrelated pending legacy migrations
-        if: ${{ inputs.messages_only != true && inputs.lifecycle_only != true && inputs.notifications_only != true && inputs.routines_only != true }}
+        if: ${{ inputs.messages_only != true && inputs.lifecycle_only != true && inputs.notifications_only != true && inputs.routines_only != true && inputs.administration_only != true }}
         working-directory: cloudflare
         run: |
           npx --yes wrangler@4 d1 execute habit-hero-db --remote --command "SELECT name FROM d1_migrations ORDER BY name;" --json > /tmp/hh-applied-migrations.json
@@ -55,11 +59,11 @@ jobs:
           if(pending.some(file=>file!=='0007_family_messages.sql'))throw Error('Unrelated legacy migrations require inspection before applying the message table.');
           JS
       - name: Apply reviewed migrations to EU remote D1
-        if: ${{ inputs.messages_only != true && inputs.lifecycle_only != true && inputs.notifications_only != true && inputs.routines_only != true }}
+        if: ${{ inputs.messages_only != true && inputs.lifecycle_only != true && inputs.notifications_only != true && inputs.routines_only != true && inputs.administration_only != true }}
         working-directory: cloudflare
         run: printf 'y\n' | npx --yes wrangler@4 d1 migrations apply habit-hero-db --remote
       - name: Verify legacy columns before scoped message migration
-        if: ${{ inputs.messages_only == true || inputs.lifecycle_only == true || inputs.notifications_only == true || inputs.routines_only == true }}
+        if: ${{ inputs.messages_only == true || inputs.lifecycle_only == true || inputs.notifications_only == true || inputs.routines_only == true || inputs.administration_only == true }}
         working-directory: cloudflare
         run: |
           npx --yes wrangler@4 d1 execute habit-hero-db --remote --command "PRAGMA table_info(family_settings); PRAGMA table_info(auth_sessions); PRAGMA table_info(parent_users); PRAGMA table_info(habit_help_requests); PRAGMA table_info(completion_submissions); PRAGMA table_info(habits);" --json > /tmp/hh-existing-schema.json || { cat /tmp/hh-existing-schema.json; exit 1; }
@@ -72,11 +76,13 @@ jobs:
           if(fields.length!==required.length||required.some((names,index)=>names.some(name=>!fields[index]?.has(name))))throw Error('Existing schema does not match the current Worker. Stop for inspection.');
           JS
       - name: Apply only reviewed message table without replaying legacy migrations
-        if: ${{ inputs.messages_only == true || inputs.lifecycle_only == true || inputs.notifications_only == true || inputs.routines_only == true }}
+        if: ${{ inputs.messages_only == true || inputs.lifecycle_only == true || inputs.notifications_only == true || inputs.routines_only == true || inputs.administration_only == true }}
         working-directory: cloudflare
         run: |
           mkdir -p .message-migrations
-          if [ "${{ inputs.routines_only }}" = "true" ]; then
+          if [ "${{ inputs.administration_only }}" = "true" ]; then
+            cp migrations/0011_family_administration.sql .message-migrations/
+          elif [ "${{ inputs.routines_only }}" = "true" ]; then
             cp migrations/0010_custom_routines.sql .message-migrations/
           elif [ "${{ inputs.notifications_only }}" = "true" ]; then
             cp migrations/0009_notifications.sql .message-migrations/

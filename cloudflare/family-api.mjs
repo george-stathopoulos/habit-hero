@@ -17,10 +17,10 @@ export async function authorizedParent(req,env) {
  const token=cookie(req);
  if(!env.DB||!token||! /^[a-zA-Z0-9_-]{40,128}$/.test(token))return null;
  try {
-  const row=await env.DB.prepare(`SELECT s.parent_id,m.family_id,p.display_name,f.display_name AS family_name,
+  const row=await env.DB.prepare(`SELECT s.id AS session_id,s.pin_verified_at,m.role AS membership_role,s.parent_id,m.family_id,p.display_name,f.display_name AS family_name,
     COALESCE(settings.timezone,'UTC') AS timezone
    FROM auth_sessions s JOIN parent_users p ON p.id=s.parent_id
-   JOIN family_memberships m ON m.parent_id=s.parent_id JOIN families f ON f.id=m.family_id
+   JOIN family_memberships m ON m.parent_id=s.parent_id AND (s.family_id IS NULL OR s.family_id=m.family_id) AND NOT EXISTS(SELECT 1 FROM family_membership_revocations rv WHERE rv.family_id=m.family_id AND rv.parent_id=m.parent_id) JOIN families f ON f.id=m.family_id
    LEFT JOIN family_settings settings ON settings.family_id=f.id
    WHERE s.token_hash=? AND s.role='parent' AND s.revoked_at IS NULL AND s.expires_at>?
    AND p.disabled_at IS NULL AND f.deleted_at IS NULL
