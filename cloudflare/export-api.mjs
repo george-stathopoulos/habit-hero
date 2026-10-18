@@ -2,6 +2,8 @@
 // Do not include session tokens, pairing codes, OAuth claims or authentication secrets.
 import {authorizedParent} from './family-api.mjs';
 const specs=[
+ ['custom_routines','custom_routines','id,name,created_at,updated_at'],
+ ['child_routine_steps','child_routine_steps','child_id,habit_id,routine_key,step_order,updated_at'],
  ['reminder_preferences','notification_preferences','subject_id,enabled,reminder_time,quiet_start,quiet_end,approvals,love,updated_at'],
  ['habit_lifecycle','habit_lifecycle_events','id,child_id,habit_id,completion_id,action,detail,created_at'],
  ['occurrence_controls','habit_occurrence_controls','child_id,habit_id,occurrence_date,slot_index,deferred_until,retry_for,updated_at'],

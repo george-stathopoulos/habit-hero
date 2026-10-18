@@ -61,3 +61,5 @@ Items 3–9 follow the agreed order. Item 10 (onboarding/help content, additiona
 3. Analytics and weekly review implemented: Parent Progress, 7/30/90-day filters, daily/per-habit outcomes, help/postponements, point movement and family conversation prompts. Counts measure submitted effort, not scheduled-opportunity adherence.
 
 4. Reminder scheduling and Web Push implemented. Parent Settings → reminders/quiet hours; parent and child devices opt in separately. Background delivery is implemented but remains unverified on physical devices. Processing is bounded to 20 subscriptions per invocation with rotation; large installations need a queue/batched dispatcher before claiming high-volume delivery guarantees. Permissions and platform limits remain browser controlled.
+
+5. Flexible routines implemented: custom names, bulk setup and per-child ordering for shared missions. Parent Missions → custom routine / routines per child. Shared mission editor retains common defaults; personal settings override them.

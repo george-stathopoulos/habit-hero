@@ -97,3 +97,7 @@ Parent Progress supports 7/30/90-day periods and child filters. Family-local dai
 ## 3.0 preview.14 — Reminders and Web Push
 
 Parent-configured daily reminder time and quiet hours per child/parents, pending approval reminders and Monday encouragement prompts. Browser/device opt-in is explicit. Native Web Push uses VAPID with an empty payload and generic lock-screen copy; family names and tasks are never sent to push providers. The Worker checks eligible tasks, schedule, postponement and retry availability every 15 minutes, records daily delivery keys and removes expired subscriptions. Each subscribed device requires browser support and permission; iPhone requires an installed web app. No physical-device delivery test was performed at the user's request. Migration 0009 precedes deployment. Settings, not private push keys/endpoints, are included in family export.
+
+## 3.0 preview.15 — Custom and personal routines
+
+Parents create/rename family routines and bulk-assign routine/step ordering across a child's assigned missions. Per-child overrides keep sibling ordering independent; clearing a routine is an explicit override of the shared default. Existing weekday/window/approval rules remain unchanged. Custom routines and overrides are included in export. Migration 0010 is additive. Manual tests/visual checks skipped as requested.

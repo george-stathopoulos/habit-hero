@@ -112,6 +112,8 @@ export async function childActivities(request,env){
     WHERE a.family_id=? AND a.child_id=? AND h.active=1 AND h.deleted_at IS NULL
     ORDER BY h.name_el,s.slot_index,s.submitted_at DESC,s.rowid DESC LIMIT 1000`).bind(today,today,today,child.family_id,child.child_id).all();
   const controlRows=await env.DB.prepare('SELECT * FROM habit_occurrence_controls WHERE family_id=? AND child_id=? AND occurrence_date IN (?,?,?,?)').bind(child.family_id,child.child_id,today,occurrenceKey('weekly',today),occurrenceKey('monthly',today),'1970-01-01').all();
+  const routineSteps=await env.DB.prepare('SELECT habit_id,routine_key,step_order FROM child_routine_steps WHERE family_id=? AND child_id=?').bind(child.family_id,child.child_id).all();
+  const childRoutines=new Map((routineSteps.results||[]).map(r=>[r.habit_id,r]));
   const controls=new Map((controlRows.results||[]).map(c=>[c.habit_id+'|'+c.occurrence_date+'|'+c.slot_index,c]));
   const grouped=new Map();
   for(const row of rows.results||[]){
@@ -128,7 +130,8 @@ export async function childActivities(request,env){
     const retry=existing?.submission_status==='rejected'&&control?.retry_for===existing.completion_id;
     const available=slotAvailability(first,retry?group.map(x=>x===existing?{...x,submission_status:null}:x):group,slot,child.timezone);
     const deferred=!existing&&control?.deferred_until>new Date().toISOString();
-    activities.push({...first,...available,slot_index:slot,slot_total:target,
+    const personal=childRoutines.get(first.habit_id);
+    activities.push({...first,...available,...(personal?{routine:personal.routine_key,routine_order:personal.step_order}:{}),slot_index:slot,slot_total:target,
       ...(deferred?{schedule_available:false,availability_reason:'Για αργότερα · '+new Intl.DateTimeFormat('el-GR',{timeZone:child.timezone,hour:'2-digit',minute:'2-digit'}).format(new Date(control.deferred_until))}:{}),
       deferred_until:deferred?control.deferred_until:null,retry_available:retry,
       submission_status:retry?null:existing?.submission_status||null,

@@ -1,3 +1,4 @@
+import {routineDefinitions,saveRoutines} from './routines-api.mjs';
 import {notificationSettings,saveNotificationSettings,pushKey,subscribePush,unsubscribePush,deliverReminders} from './notifications-api.mjs';
 import {familyAnalytics} from './analytics-api.mjs';
 import {familyHistory} from './history-api.mjs';
@@ -207,6 +208,9 @@ export default {
     if (url.pathname === '/api/push/key' && request.method === 'GET') return pushKey(request,env);
     if (url.pathname === '/api/push/subscribe' && request.method === 'POST') return subscribePush(request,env);
     if (url.pathname === '/api/push/unsubscribe' && request.method === 'POST') return unsubscribePush(request,env);
+    if (url.pathname === '/api/routines' && request.method === 'GET') return routineDefinitions(request,env);
+    if (url.pathname === '/api/routines' && request.method === 'POST') return saveRoutines(request,env);
+    if (url.pathname === '/api/child/routines' && request.method === 'GET') return routineDefinitions(request,env,true);
     if (url.pathname === '/api/analytics' && request.method === 'GET') return familyAnalytics(request,env);
     if (url.pathname === '/api/history' && request.method === 'GET') return familyHistory(request,env);
     if (url.pathname === '/api/child/history' && request.method === 'GET') return familyHistory(request,env,true);
