@@ -13,7 +13,29 @@ Updated 2026-10-18. Features take priority over additional themes. Source inspec
 - Goals and editable suggestions, parent 30-day activity calendar, child milestone badges and recent attempts, child reward-request history.
 - One Playful world with independent depth planes, scenery animation, pointer/tilt/scroll movement, garden curtain and animated egg.
 
-## Still missing from the original product's broader feature set
+## APK comparison: corrected baseline
+
+Inspected on 2026-10-18: `application-d830e72d-029a-41ca-96f8-796adcd4b957.apk`, 88.6 MiB, modified 2026-09-26. This is the most recent non-Netflix APK in Downloads. It is not the largest by byte count: the February builds are slightly larger. Habit Hero identity is confirmed by strings in its packaged Hermes bundle.
+
+SHA-256: `69f3808998b0e961ed64b3eb27be22a0ea98a8e208c004ec111b3782e593e551`.
+
+Method: inspected packaged `assets/index.android.bundle` screen/API identifiers and cross-referenced corresponding repository source. This establishes included feature code, not successful execution against the APK's former backend. No Android runtime acceptance was performed. The source snapshot is corroborating evidence, not a claim of exact build-source equivalence.
+
+Confirmed included capabilities not fully represented in v3:
+
+- **Task postponement:** bundle includes `/child/postponed-tasks`; original task API has postponement. V3 offers submit/help, without the equivalent postponement flow.
+- **Detailed analytics:** packaged parent analytics and child-analytics screens; original charts include daily trends, per-habit outcomes, weekly/monthly totals. V3 has a 30-day calendar and summary metrics, not equivalent analytics screens.
+- **Comprehensive points and event histories:** packaged comprehensive-points-history, approval-history and redemption-history endpoints. V3's bounded recent lists and basic review views do not provide equivalent full history/period controls.
+- **Custom photo avatars with parent controls:** packaged custom-avatar-status and custom-avatar-settings. Original source supports enablement and eligibility modes. V3 currently uses the parent-set illustrated collection only.
+- **Automatic inactivity penalties:** packaged inactivity-penalty-settings; original parent controls configure points/time interval. V3 manual point adjustments are not this feature. Restore only after deciding whether automatic deductions fit the product.
+- **Help retry flow:** packaged parent encourage-retry endpoint and original corresponding action. V3's help handling does not yet provide equivalent retry semantics for a rejected occurrence.
+- **Love Credits parent reminders:** packaged love-credits-reminder endpoint and original dashboard reminder. Sending/claiming credits exists in v3; this prompt is missing.
+- **Account reset/deletion:** packaged reset-app and delete-account API paths; original Danger Zone implements confirmation flows. V3 export is available, but reset/deletion is not.
+- **Onboarding/support information:** packaged onboarding-guide, help-feedback and privacy-policy screens. V3 lacks equivalent dedicated guided/support screens. This is separate from ordinary authentication/setup.
+
+Do not present custom routine names, offline sync, narrative weekly recaps, recoverable archives or richer world unlocks as proven APK capabilities: those were proposed improvements in the earlier backlog. Native push code exists in the repository, but packaged working notification delivery has not been established by this inspection. Additional themes are deliberately deferred by the user.
+
+## Broader backlog (not an APK parity checklist)
 
 The original `original/backend/server.py` and `original/frontend/src/` contain functionality beyond the current Cloudflare implementation. These services are not used as a production backend for v3.
 
